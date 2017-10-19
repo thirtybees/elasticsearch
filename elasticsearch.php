@@ -58,6 +58,8 @@ class Elasticsearch extends Module
      */
     protected $hooks = [
         'displayTop',
+        'displayLeftColumn',
+        'displayRightColumn',
     ];
 
     /**
