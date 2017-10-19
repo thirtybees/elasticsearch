@@ -1,0 +1,52 @@
+.v-cloak {
+    display: none;
+}
+
+#elasticsearch-block-top {
+    position: relative;
+    margin-top: 30px;
+}
+
+@media (max-width: 767px) {
+    #elasticsearch-block-top {
+        margin-top: 15px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    #elasticsearch-block-top {
+        margin-top: 10px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    #elasticsearch-block-top {
+        margin-top: 20px;
+    }
+}
+
+#elasticsearch-results {
+    position: absolute;
+    z-index: 100000;
+    background-color: white;
+    width: calc(100% - 81px);
+    border: solid 1px #cbcbcb;
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+#elasticsearch-results > span.elastic-suggestion {
+    display: inline-block;
+    width: 100%;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+
+#elasticsearch-results > span.elastic-suggestion.active {
+    background-color: #ddd;
+}
+
+#elasticsearch-results > span.elastic-suggestion:not(.active):hover {
+    background-color: #efefef;
+}
