@@ -345,7 +345,7 @@ class Elasticsearch extends Module
     }
 
     /**
-     * Get ElasticSearch Client
+     * Get ElasticSearch Client with read access
      *
      * @return \Elasticsearch\Client|null
      *
@@ -389,7 +389,7 @@ class Elasticsearch extends Module
     }
 
     /**
-     * Get ElasticSearch Client
+     * Get ElasticSearch Client with write access
      *
      * @return \Elasticsearch\Client|null
      *
@@ -526,8 +526,12 @@ class Elasticsearch extends Module
             }
         }
 
-        if (isset($client) && isset($client->cluster()->stats()['nodes']['versions'])) {
-            return (string) min($client->cluster()->stats()['nodes']['versions']);
+        if (isset($client)) {
+            $stats = $client->cluster()->stats();
+
+            if (isset($stats['nodes']['versions'])) {
+                return (string) min($client->cluster()->stats()['nodes']['versions']);
+            }
         }
 
         return $this->l('Unknown');
