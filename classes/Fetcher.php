@@ -43,6 +43,10 @@ if (!defined('_TB_VERSION_')) {
 /**
  * Class Fetcher
  *
+ * When fetching a product for Elasticsearch indexing, it will call the functions as defined in the
+ * `$attributes` array. If the value `null` is used, it will grab the property directly from the
+ * thirty bees Product object.
+ *
  * @package ElasticsearchModule
  */
 class Fetcher
@@ -205,13 +209,20 @@ class Fetcher
     }
 
     /**
-     * GETTERS
+     * Get stock quantity
      */
     protected static function getStockQty($product)
     {
         return Product::getQuantity($product->id);
     }
 
+    /**
+     * Get the ordered quantity
+     *
+     * @param Product $product
+     *
+     * @return int
+     */
     protected static function getOrderedQty($product)
     {
         if (!$product instanceof Product) {
@@ -279,6 +290,14 @@ class Fetcher
         return $prices;
     }
 
+    /**
+     * Generate large image link
+     *
+     * @param Product $product
+     * @param int     $idLang
+     *
+     * @return string
+     */
     protected static function generateImageLinkLarge($product, $idLang)
     {
         $link = new Link();
@@ -293,6 +312,14 @@ class Fetcher
         return $imageLink;
     }
 
+    /**
+     * Generate small image link
+     *
+     * @param Product $product
+     * @param int     $idLang
+     *
+     * @return string
+     */
     protected static function generateImageLinkSmall($product, $idLang)
     {
         $link = new Link();
@@ -307,6 +334,14 @@ class Fetcher
         return $imageLink;
     }
 
+    /**
+     * Generate url slug
+     *
+     * @param Product $product
+     * @param int     $idLang
+     *
+     * @return string
+     */
     protected static function generateLinkRewrite($product, $idLang)
     {
         return Context::getContext()->link->getProductLink(
@@ -328,6 +363,14 @@ class Fetcher
         return $category->name;
     }
 
+    /**
+     * Get category names without path
+     *
+     * @param Product $product
+     * @param int     $idLang
+     *
+     * @return array
+     */
     protected static function getCategoriesNamesWithoutPath($product, $idLang)
     {
         $categories = static::getNestedCategoriesData($idLang, $product);
@@ -338,6 +381,14 @@ class Fetcher
         return $results;
     }
 
+    /**
+     * Get nested categories data
+     *
+     * @param int     $idLang
+     * @param Product $product
+     *
+     * @return array
+     */
     protected static function getNestedCategoriesData($idLang, $product)
     {
         $cats = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
@@ -392,6 +443,14 @@ class Fetcher
         return $categories;
     }
 
+    /**
+     * Get category path
+     *
+     * @param int $idCategory
+     * @param int $idLang
+     *
+     * @return array
+     */
     protected static function getCategoryPath($idCategory, $idLang)
     {
         $cats = [];
@@ -420,6 +479,13 @@ class Fetcher
         return $cats;
     }
 
+    /**
+     * Get nested categories without paths
+     *
+     * @param array $cats
+     * @param array $results
+     * @param int   $idLang
+     */
     protected static function getNestedCatsWithoutPath($cats, &$results, $idLang)
     {
         foreach ($cats as $cat) {
@@ -433,6 +499,14 @@ class Fetcher
         }
     }
 
+    /**
+     * Get category names
+     *
+     * @param Product $product
+     * @param int     $idLang
+     *
+     * @return array
+     */
     protected static function getCategoriesNames($product, $idLang)
     {
         $categories = static::getNestedCategoriesData($idLang, $product);
@@ -486,31 +560,75 @@ class Fetcher
         }
     }
 
+    /**
+     * Get manufacturer name
+     *
+     * @param Product $product
+     *
+     * @return string
+     */
     protected static function getManufacturerName($product)
     {
         return Manufacturer::getNameById((int) $product->id_manufacturer);
     }
 
+    /**
+     * Get supplier name
+     *
+     * @param Product $product
+     *
+     * @return string
+     */
     protected static function getSupplierName($product)
     {
         return (string) $product->supplier_name;
     }
 
+    /**
+     * Get trimmed reference
+     *
+     * @param Product $product
+     *
+     * @return string
+     *
+     * @todo: figure out if we can also use an untrimmed reference
+     */
     protected static function getTrimmedRef($product)
     {
         return (string) substr($product->reference, 3, strlen($product->reference));
     }
 
+    /**
+     * Get on sale flag
+     *
+     * @param Product $product
+     *
+     * @return bool
+     */
     protected static function getOnSale($product)
     {
         return (bool) $product->on_sale;
     }
 
+    /**
+     * Get available now flag
+     *
+     * @param Product $product
+     *
+     * @return bool
+     */
     protected static function getAvailableNow($product)
     {
         return (bool) $product->available_now;
     }
 
+    /**
+     * Get the base price of a product
+     *
+     * @param int $idProduct
+     *
+     * @return float
+     */
     protected static function getProductBasePrice($idProduct)
     {
         return (float) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
