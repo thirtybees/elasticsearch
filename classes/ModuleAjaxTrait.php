@@ -88,7 +88,7 @@ trait ModuleAjaxTrait
         die(json_encode([
             'success' => true,
             'indexed' => 0,
-            'total'   => (int) IndexStatus::countProducts(),
+            'total'   => (int) IndexStatus::countProducts(null, $this->context->shop->id),
         ]));
     }
 
@@ -122,7 +122,7 @@ trait ModuleAjaxTrait
             die(json_encode([
                 'success'  => true,
                 'indexed'  => IndexStatus::getIndexed(null, $this->context->shop->id),
-                'total'    => (int) IndexStatus::countProducts(),
+                'total'    => (int) IndexStatus::countProducts(null, $this->context->shop->id),
                 'nbErrors' => 0,
                 'errors'   => [],
             ]));
@@ -214,7 +214,7 @@ trait ModuleAjaxTrait
         die(json_encode([
             'success'  => true,
             'indexed'  => IndexStatus::getIndexed(null, $this->context->shop->id),
-            'total'    => (int) IndexStatus::countProducts(),
+            'total'    => (int) IndexStatus::countProducts(null, $this->context->shop->id),
             'nbErrors' => count($failed),
             'errors'   => $failed,
         ]));
