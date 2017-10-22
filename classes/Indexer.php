@@ -179,7 +179,7 @@ class Indexer
         $properties = [];
         foreach ($searchableMetas as $meta) {
             // Searchable fields can have both text and keyword fields
-            if (substr($properties[$meta['code']], -11) === '_color_code') {
+            if (substr($meta['code'], -11) === '_color_code') {
                 $properties[$meta['code']] = [
                     'type' => 'keyword',
                 ];
