@@ -407,6 +407,11 @@ class Elasticsearch extends Module
 
                 static::$writeClient = $client;
             } catch (Exception $e) {
+                $context = Context::getContext();
+                if (isset($context->employee->id) && $context->employee->id) {
+                    $context->controller->errors[] = $e->getMessage();
+                }
+
                 return null;
             }
 
@@ -519,9 +524,12 @@ class Elasticsearch extends Module
         try {
             $client = static::getWriteclient();
         } catch (Exception $e) {
-            if (isset($this->context->employee->id) && $this->context->employee->id) {
-                $error = strip_tags($e->getMessage());
-                $this->context->controller->errors[] = sprintf($this->l('Unable to initialize Elasticsearch: %s'), $error);
+            $context = Context::getContext();
+            if (isset($context->employee->id) && $context->employee->id) {
+                $context->controller->errors[] = sprintf(
+                    $this->l('Unable to initialize Elasticsearch: %s'),
+                    strip_tags($e->getMessage())
+                );
             }
         }
 
@@ -533,6 +541,13 @@ class Elasticsearch extends Module
                     return (string) min($client->cluster()->stats()['nodes']['versions']);
                 }
             } catch (Exception $e) {
+                $context = Context::getContext();
+                if (isset($context->employee->id) && $context->employee->id) {
+                    $context->controller->errors[] = sprintf(
+                        $this->l('Unable to initialize Elasticsearch: %s'),
+                        strip_tags($e->getMessage())
+                    );
+                }
             }
         }
 
