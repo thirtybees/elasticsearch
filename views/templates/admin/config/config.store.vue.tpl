@@ -23,6 +23,7 @@
         tab: window.location.hash.substr(5) || '{$initialTab|escape:'javascript':'UTF-8'}',
         status: {$status|json_encode},
         elasticsearchVersion: '{l s='Loading...' mod='elasticsearch' js=1}',
+        elasticErrors: null,
         indexing: false,
         cancelingIndexing: false,
         saving: false,
@@ -37,6 +38,9 @@
         },
         setElasticsearchVersion: function (state, version) {
           state.elasticsearchVersion = version;
+        },
+        setElasticErrors: function (state, errors) {
+          state.elasticErrors = errors;
         },
         setIndexing: function (state, indexing) {
           state.indexing = indexing;

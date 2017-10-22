@@ -244,7 +244,7 @@ trait ModuleAjaxTrait
         die(json_encode([
             'success' => true,
             'indexed' => IndexStatus::getIndexed(null, $idShop),
-            'total'   => (int) IndexStatus::countProducts(),
+            'total'   => (int) IndexStatus::countProducts(null, $idShop),
         ]));
     }
 
@@ -254,6 +254,9 @@ trait ModuleAjaxTrait
     public function ajaxProcessGetElasticsearchVersion()
     {
         header('Content-Type: application/json; charset=utf-8');
-        die(json_encode(['version' => $this->getElasticVersion()]));
+        die(json_encode([
+            'version' => $this->getElasticVersion(),
+            'errors'  => $this->context->controller->errors,
+        ]));
     }
 }
