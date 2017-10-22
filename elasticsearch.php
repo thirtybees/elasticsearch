@@ -66,6 +66,10 @@ class Elasticsearch extends Module
      */
     public function __construct()
     {
+        if (Context::getContext()->controller instanceof AdminControllerCore) {
+            Context::getContext()->controller->multishop_context = Shop::CONTEXT_SHOP;
+        }
+
         $this->version = '1.0.0';
         $this->name = 'elasticsearch';
         $this->author = 'thirty bees';
