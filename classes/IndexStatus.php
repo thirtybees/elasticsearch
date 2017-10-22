@@ -151,11 +151,11 @@ class IndexStatus extends \ObjectModel
             (new DbQuery())
                 ->select('ps.`id_product`, ps.`id_shop`, pl.`id_lang`, ps.`date_upd` AS `product_updated`, eis.`date_upd` AS `product_indexed`')
                 ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
-                ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'pl.`id_product` = ps.`id_product`')
+                ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'pl.`id_product` = ps.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
                 ->leftJoin(bqSQL(IndexStatus::$definition['table']), 'eis', 'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`')
-                ->where($idLang ?'eis.`id_lang` = '.(int) $idLang : '')
-                ->where($idShop ? 'eis.`id_shop` = '.(int) $idShop : '')
+                ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
                 ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
+                ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
                 ->limit($limit, $offset)
         );
 
