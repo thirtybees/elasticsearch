@@ -115,7 +115,7 @@ trait ModuleAjaxTrait
         $metas = Meta::getAllMetas(Context::getContext()->language->id);
 
         // Check which products are available for indexing
-        $products = IndexStatus::getProductsToIndex($amount);
+        $products = IndexStatus::getProductsToIndex($amount, 0, null, $this->context->shop->id);
 
         if (empty($products)) {
             // Nothing to index
