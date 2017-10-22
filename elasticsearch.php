@@ -176,7 +176,7 @@ class Elasticsearch extends Module
             'initialTab'     => 'config',
             'status'         => [
                 'indexed' => IndexStatus::getIndexed(null, $this->context->shop->id),
-                'total'   => (int) IndexStatus::countProducts($this->context->language->id, $this->context->shop->id),
+                'total'   => (int) IndexStatus::countProducts(null, $this->context->shop->id),
             ],
             'totalProducts'  => IndexStatus::countProducts($this->context->language->id, $this->context->shop->id),
             'languages'      => Language::getLanguages(false, false, false),
