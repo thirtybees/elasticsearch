@@ -124,7 +124,7 @@ class Fetcher
             $groupName = Tools::link_rewrite($attribute['group_name']);
             $attributeName = $attribute['attribute_name'];
 
-            if (!isset($elasticProduct->{$groupName})) {
+            if (!isset($elasticProduct->{$groupName}) || !is_array($elasticProduct->{$groupName})) {
                 $elasticProduct->{$groupName} = [];
             }
 
@@ -136,7 +136,7 @@ class Fetcher
                 // Add a special property for the color group
                 // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
                 // will eventually be in the same order, so that's how you can link them later
-                if (!isset($elasticProduct->{"{$groupName}_color_code"})) {
+                if (!isset($elasticProduct->{"{$groupName}_color_code"}) || !is_array($elasticProduct->{"{$groupName}_color_code"})) {
                     $elasticProduct->{"{$groupName}_color_code"} = [];
                 }
 
