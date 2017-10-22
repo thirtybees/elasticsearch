@@ -100,7 +100,7 @@ class Meta extends ObjectModel
         }
         $results = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
             (new DbQuery())
-                ->select('m.`*`, ml.`name`, ml.`id_lang`')
+                ->select('m.*, ml.`name`, ml.`id_lang`')
                 ->from(bqSQL(static::$definition['table']), 'm')
                 ->rightJoin(bqSQL(static::$definition['table']).'_lang', 'ml', 'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'`')
                 ->where('ml.`id_lang` IN ('.implode(',', array_map('intval', $idLangs)).')')
