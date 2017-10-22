@@ -18,7 +18,6 @@
  */
 
 use Elasticsearch\ClientBuilder;
-use ElasticsearchModule\AttributesHelper;
 use ElasticsearchModule\IndexStatus;
 use ElasticsearchModule\Meta;
 
@@ -519,7 +518,7 @@ class Elasticsearch extends Module
     {
         try {
             $client = static::getWriteclient();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if (isset($this->context->employee->id) && $this->context->employee->id) {
                 $error = strip_tags($e->getMessage());
                 $this->context->controller->errors[] = sprintf($this->l('Unable to initialize Elasticsearch: %s'), $error);
@@ -527,10 +526,13 @@ class Elasticsearch extends Module
         }
 
         if (isset($client)) {
-            $stats = $client->cluster()->stats();
+            try {
+                $stats = $client->cluster()->stats();
 
-            if (isset($stats['nodes']['versions'])) {
-                return (string) min($client->cluster()->stats()['nodes']['versions']);
+                if (isset($stats['nodes']['versions'])) {
+                    return (string) min($client->cluster()->stats()['nodes']['versions']);
+                }
+            } catch (Exception $e) {
             }
         }
 
