@@ -254,7 +254,7 @@ class Elasticsearch extends Module
         }
 
         $this->context->smarty->assign([
-            'idGroup'            => (int) $this->context->customer->id ?: 1,
+            'idGroup'            => (int) $this->context->customer->id_default_group ?: 1,
             'taxes'              => $taxes,
             'currencyConversion' => (float) $conversion,
         ]);
