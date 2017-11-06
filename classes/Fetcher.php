@@ -64,134 +64,134 @@ class Fetcher
      * @var array $attributes
      */
     public static $attributes = [
-        'name'          => [
-            'function'     => null,
-            'default'      => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
-            'elastic_types'        => [
+        'name'                    => [
+            'function'      => null,
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
+            'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'reference'     => [
-            'function'     => [__CLASS__, 'getTrimmedRef'],
-            'default'      => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
-            'elastic_types'        => [
+        'reference'               => [
+            'function'      => [__CLASS__, 'getTrimmedRef'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
+            'elastic_types' => [
                 META::ELASTIC_TYPE_KEYWORD,
                 META::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'on_sale'       => [
-            'function'     => [__CLASS__, 'getOnSale'],
-            'default'      => Meta::ELASTIC_TYPE_BINARY,
+        'on_sale'                 => [
+            'function' => [__CLASS__, 'getOnSale'],
+            'default'  => Meta::ELASTIC_TYPE_BINARY,
         ],
-        'available_now' => [
-            'function'     => [__CLASS__, 'getAvailableNow'],
-            'default'      => Meta::ELASTIC_TYPE_BINARY,
+        'available_now'           => [
+            'function' => [__CLASS__, 'getAvailableNow'],
+            'default'  => Meta::ELASTIC_TYPE_BINARY,
         ],
         'category'                => [
-            'function' => [__CLASS__, 'getCategoryName'],
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+            'function'      => [__CLASS__, 'getCategoryName'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
         'categories'              => [
-            'function' => [__CLASS__, 'getCategoriesNames'],
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+            'function'      => [__CLASS__, 'getCategoriesNames'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'manufacturer' => [
-            'function'     => [__CLASS__, 'getManufacturerName'],
-            'default'      => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
-            'elastic_types'        => [
+        'manufacturer'            => [
+            'function'      => [__CLASS__, 'getManufacturerName'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
+            'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
         'categories_without_path' => [
-            'function' => [__CLASS__, 'getCategoriesNamesWithoutPath'],
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+            'function'      => [__CLASS__, 'getCategoriesNamesWithoutPath'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
         'date_add'                => [
-            'function' => null,
-            'default' => Meta::ELASTIC_TYPE_DATE,
+            'function'     => null,
+            'default'      => Meta::ELASTIC_TYPE_DATE,
             'configurable' => false,
         ],
-        'date_upd' => [
+        'date_upd'                => [
             'function'     => null,
             'default'      => Meta::ELASTIC_TYPE_DATE,
             'configurable' => false,
         ],
         'description'             => [
-            'function' => null,
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+            'function'      => null,
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
         'description_short'       => [
-            'function' => null,
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+            'function'      => null,
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'ean13'                  => [
-            'function' => [__CLASS__, 'getEan'],
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+        'ean13'                   => [
+            'function'      => [__CLASS__, 'getEan'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'image_link_large' => [
+        'image_link_large'        => [
             'function' => [__CLASS__, 'generateImageLinkLarge'],
             'default'  => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible' => false,
+            'visible'  => false,
         ],
         'image_link_small'        => [
             'function' => [__CLASS__, 'generateImageLinkSmall'],
-            'default' => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible'  => false,
         ],
         'link'                    => [
             'function' => [__CLASS__, 'generateLinkRewrite'],
-            'default' => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible'  => false,
         ],
         'id_tax_rules_group'      => [
             'function' => null,
-            'default' => Meta::ELASTIC_TYPE_NESTED,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_NESTED,
+            'visible'  => false,
         ],
         'price_tax_excl'          => [
             'function' => [__CLASS__, 'getPriceTaxExcl'],
-            'default' => Meta::ELASTIC_TYPE_FLOAT,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_FLOAT,
+            'visible'  => false,
         ],
         'supplier'                => [
-            'function' => [__CLASS__, 'getSupplierName'],
-            'default' => Meta::ELASTIC_TYPE_TEXT,
-            'configurable' => true,
+            'function'      => [__CLASS__, 'getSupplierName'],
+            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -199,31 +199,31 @@ class Fetcher
         ],
         'ordered_qty'             => [
             'function' => [__CLASS__, 'getOrderedQty'],
-            'default' => Meta::ELASTIC_TYPE_INTEGER,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_INTEGER,
+            'visible'  => false,
         ],
         'stock_qty'               => [
             'function' => [__CLASS__, 'getStockQty'],
-             'default' => Meta::ELASTIC_TYPE_INTEGER,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_INTEGER,
+            'visible'  => false,
         ],
         'condition'               => [
             'function' => null,
-            'default' => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible'  => false,
         ],
         'weight'                  => [
             'function' => null,
-            'default' => Meta::ELASTIC_TYPE_FLOAT,
-            'visible' => false,
+            'default'  => Meta::ELASTIC_TYPE_FLOAT,
+            'visible'  => false,
         ],
         'pageviews'               => [
             'function' => [__CLASS__, 'getPageViews'],
-            'default' => Meta::ELASTIC_TYPE_INTEGER,
+            'default'  => Meta::ELASTIC_TYPE_INTEGER,
         ],
         'sales'                   => [
             'function' => [__CLASS__, 'getSales'],
-            'default' => Meta::ELASTIC_TYPE_INTEGER,
+            'default'  => Meta::ELASTIC_TYPE_INTEGER,
         ],
     ];
 
@@ -281,7 +281,7 @@ class Fetcher
             if ($attribute['is_color_group']) {
                 // Add a special property for the color group
                 // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
-                // will eventually be in the same order, so that's how you can link them later
+                // will eventually be in the same order, so that's how you can match them later
                 if (!isset($elasticProduct->{"{$groupName}_color_code"}) || !is_array($elasticProduct->{"{$groupName}_color_code"})) {
                     $elasticProduct->{"{$groupName}_color_code"} = [];
                 }
