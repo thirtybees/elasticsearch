@@ -259,7 +259,9 @@ class Elasticsearch extends Module
             'currencyConversion' => (float) $conversion,
         ]);
 
-        $metas = Meta::getAllMetas()[$this->context->language->id];
+        $metas = Meta::getAllMetas($this->context->language->id);
+        $metas = $metas[$this->context->language->id];
+
         $aggegrations = [];
         foreach ($metas as $meta) {
             if (!$meta['aggregatable']) {
@@ -538,7 +540,9 @@ class Elasticsearch extends Module
                 $stats = $client->cluster()->stats();
 
                 if (isset($stats['nodes']['versions'])) {
-                    return (string) min($client->cluster()->stats()['nodes']['versions']);
+                    $clusterStats = $client->cluster()->stats();
+
+                    return (string) min($clusterStats['nodes']['versions']);
                 }
             } catch (Exception $e) {
                 $context = Context::getContext();
