@@ -136,7 +136,7 @@ class Indexer
         }
 
         // Delete the indices first
-        $client = Elasticsearch::getWriteclient();
+        $client = Elasticsearch::getWriteClient();
         if (!$client) {
             return;
         }
@@ -215,7 +215,7 @@ class Indexer
         }
 
         // Push the mappings to Elasticsearch
-        $client = Elasticsearch::getWriteclient();
+        $client = Elasticsearch::getWriteClient();
         if (!$client) {
             return;
         }

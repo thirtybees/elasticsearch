@@ -66,7 +66,7 @@ trait MetaAttributesTrait
         $metas = static::getAllMetas();
 
         $type = 'property';
-        foreach (array_keys(Fetcher::$attributes) as &$defaultAttribute) {
+        foreach (array_keys(Fetcher::$attributes) as $defaultAttribute) {
             $id = $defaultAttribute;
             $position = isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
             $name = [];
@@ -96,7 +96,7 @@ trait MetaAttributesTrait
         }
 
         $type = 'feature';
-        foreach (\Feature::getFeatures($idLang) as &$feature) {
+        foreach (\Feature::getFeatures($idLang) as $feature) {
             $id = Tools::link_rewrite($feature['name']);
             $position = isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
             $name = [];
@@ -126,7 +126,7 @@ trait MetaAttributesTrait
         }
 
         $type = 'attribute';
-        foreach (static::getAttributes($idLang) as &$tbAttribute) {
+        foreach (static::getAttributes($idLang) as $tbAttribute) {
             $id = Tools::link_rewrite($tbAttribute['attribute_group']);
             $position = isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
             $name = [];

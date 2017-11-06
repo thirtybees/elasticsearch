@@ -26,6 +26,7 @@ use DbQuery;
 use Dispatcher;
 use Language;
 use Product;
+use Shop;
 
 if (!defined('_TB_VERSION_')) {
     return;
@@ -90,13 +91,16 @@ class IndexStatus extends \ObjectModel
      */
     public static function countProducts($idLang = null, $idShop = null)
     {
+        if (!$idShop) {
+            $idShop = Shop::getContextShopID();
+        }
+
         return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
             (new DbQuery())
                 ->select('COUNT(*)')
                 ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
-                ->rightJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'ps.`id_product` = pl.`id_product`')
-                ->where($idLang ? 'pl.`id_lang` = '.(int) $idLang : '')
-                ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
+                ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
+                ->where('ps.`id_shop` = '.(int) $idShop)
         );
     }
 
