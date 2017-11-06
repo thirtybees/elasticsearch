@@ -175,7 +175,8 @@ class Indexer
 
 
         // Gather the properties and build the mappings
-        $searchableMetas = current(Meta::getAllMetas());
+        $searchableMetas = Meta::getAllMetas();
+        $searchableMetas = current($searchableMetas);
         $properties = [];
         foreach ($searchableMetas as $meta) {
             // Searchable fields can have both text and keyword fields
