@@ -19,8 +19,7 @@
   <h3 class="page-heading"><i class="icon icon-server"></i> {l s='Elasticsearch status' mod='elasticsearch'}</h3>
   <div class="alert alert-info"><strong>{l s='Elasticsearch version' mod='elasticsearch'}:</strong> <span>%% elasticsearchVersion %%</span>
   </div>
-  <label for="product-progress">{l s='Amount of items indexed' mod='elasticsearch'}: %% productsIndexed %% / %%
-    productsToIndex %%&nbsp;
+  <label for="product-progress">{l s='Amount of items indexed' mod='elasticsearch'}: %% productsIndexed %% / %% productsToIndex %%&nbsp;
     <span class="small">(%% totalProducts %% {l s='products' mod='elasticsearch'}
       x %% languages.length %% {l s='languages' mod='elasticsearch'})</span>
   </label>
