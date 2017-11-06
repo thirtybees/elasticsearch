@@ -394,7 +394,7 @@ class Elasticsearch extends Module
      *
      * @throws \Exception
      */
-    public static function getWriteclient()
+    public static function getWriteClient()
     {
         if (!isset(static::$writeClient)) {
             try {
@@ -522,7 +522,7 @@ class Elasticsearch extends Module
     protected function getElasticVersion()
     {
         try {
-            $client = static::getWriteclient();
+            $client = static::getWriteClient();
         } catch (Exception $e) {
             $context = Context::getContext();
             if (isset($context->employee->id) && $context->employee->id) {

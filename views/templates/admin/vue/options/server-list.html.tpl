@@ -66,16 +66,39 @@
         <tr v-for="(server, index) in servers" :class="index % 2 ? 'odd' : ''">
           <td>Server %% server.index %%</td>
           <td>
-            <a href="#" v-if="server.read" class="list-action-enable action-enabled"
-               @click="toggleRead(server, $event)"><i class="icon icon-check"></i></a>
-            <a href="#" v-if="!server.read" class="list-action-enable action-disabled"
-               @click="toggleRead(server, $event)"><i class="icon icon-times"></i></a>
+            <a href="#"
+               class="list-action-enable action-enabled"
+               v-if="server.read || server.proxy"
+               @click="toggleRead(server, $event)"
+            ><i class="icon icon-check"></i>
+            </a>
+            <a href="#"
+               v-if="!server.read"
+               class="list-action-enable action-disabled"
+               @click="toggleRead(server, $event)"
+            >
+              <i class="icon icon-times"></i>
+            </a>
           </td>
           <td>
-            <a href="#" v-if="server.write" class="list-action-enable action-enabled"
-               @click="toggleWrite(server, $event)"><i class="icon icon-check"></i></a>
+            <a href="#" v-if="server.write || server.proxy" class="list-action-enable action-enabled"
+               @click="toggleWrite(server, $event)">
+              <i class="icon icon-check"></i>
+            </a>
             <a href="#" v-if="!server.write" class="list-action-enable action-disabled"
-               @click="toggleWrite(server, $event)"><i class="icon icon-times"></i></a>
+               @click="toggleWrite(server, $event)">
+              <i class="icon icon-times"></i>
+            </a>
+          </td>
+          <td>
+            <a href="#" v-if="server.proxy" class="list-action-enable action-enabled"
+               @click="toggleProxy(server, $event)">
+              <i class="icon icon-check"></i>
+            </a>
+            <a href="#" v-if="!server.write" class="list-action-enable action-disabled"
+               @click="toggleProxy(server, $event)">
+              <i class="icon icon-times"></i>
+            </a>
           </td>
           <td>
             <input type="text" :value="server.url" @keyup="updateUrl(server, $event)">
