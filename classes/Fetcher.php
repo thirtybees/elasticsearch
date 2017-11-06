@@ -57,7 +57,7 @@ class Fetcher
      * Defaults:
      * - function: null
      * - default: 'text'
-     * - configurable: false (always false if visible is false)
+     * - type_configurable: false (always false if visible is false)
      * - elastic_types: all
      * - visible: true
      *
@@ -67,7 +67,7 @@ class Fetcher
         'name'                    => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -76,7 +76,7 @@ class Fetcher
         'reference'               => [
             'function'      => [__CLASS__, 'getTrimmedRef'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 META::ELASTIC_TYPE_KEYWORD,
                 META::ELASTIC_TYPE_TEXT,
@@ -93,7 +93,7 @@ class Fetcher
         'category'                => [
             'function'      => [__CLASS__, 'getCategoryName'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -102,7 +102,7 @@ class Fetcher
         'categories'              => [
             'function'      => [__CLASS__, 'getCategoriesNames'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -111,7 +111,7 @@ class Fetcher
         'manufacturer'            => [
             'function'      => [__CLASS__, 'getManufacturerName'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -120,7 +120,7 @@ class Fetcher
         'categories_without_path' => [
             'function'      => [__CLASS__, 'getCategoriesNamesWithoutPath'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -129,17 +129,15 @@ class Fetcher
         'date_add'                => [
             'function'     => null,
             'default'      => Meta::ELASTIC_TYPE_DATE,
-            'configurable' => false,
         ],
         'date_upd'                => [
             'function'     => null,
             'default'      => Meta::ELASTIC_TYPE_DATE,
-            'configurable' => false,
         ],
         'description'             => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -148,7 +146,7 @@ class Fetcher
         'description_short'       => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -157,7 +155,7 @@ class Fetcher
         'ean13'                   => [
             'function'      => [__CLASS__, 'getEan'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -191,7 +189,7 @@ class Fetcher
         'supplier'                => [
             'function'      => [__CLASS__, 'getSupplierName'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'configurable'  => true,
+            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,

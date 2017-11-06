@@ -98,6 +98,7 @@ class Meta extends ObjectModel
         if (!is_array($idLangs) || !empty($idLangs)) {
             $idLangs = Language::getLanguages(false, null, true);
         }
+
         $results = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
             (new DbQuery())
                 ->select('m.*, ml.`name`, ml.`id_lang`')
