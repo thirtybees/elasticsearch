@@ -47,6 +47,8 @@
             write: 1,
             url: ''
           };
+
+          this.$store.commit('checkConfigChange');
         },
         toggleDraftRead: function toggleDraftRead() {
           if (this.proxied) {
@@ -77,6 +79,8 @@
             }
           );
           item.read = !item.read;
+
+          this.$store.commit('checkConfigChange');
         },
         toggleWrite: function toggleWrite(server, event) {
           if (this.proxied) {
@@ -90,6 +94,8 @@
             }
           );
           item.write = !item.write;
+
+          this.$store.commit('checkConfigChange');
         },
         updateUrl: function updateUrl(server, event) {
           var item = _.find(
@@ -99,11 +105,15 @@
             }
           );
           item.url = event.target.value;
+
+          this.$store.commit('checkConfigChange');
         },
         deleteServer: function deleteServer(server) {
           this.$store.state.config[this.configKey] = this.$store.state.config[this.configKey].filter(function (item) {
             return item.url != server.url;
           });
+
+          this.$store.commit('checkConfigChange');
         }
       }
     };
