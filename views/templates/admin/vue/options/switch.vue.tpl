@@ -25,7 +25,7 @@
       methods: {
         setChecked: function (value) {
           this.$store.commit('setConfig', {
-            configKey: this.configKey,
+            key: this.configKey,
             value: value
           });
         }

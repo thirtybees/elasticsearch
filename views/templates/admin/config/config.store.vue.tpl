@@ -18,8 +18,14 @@
 <script type="text/javascript">
   (function () {
     window.config = new Vuex.Store({
+      data: function () {
+        return {
+          initialConfig: JSON.stringify({$config|json_encode}),
+        };
+      },
       state: {
         config: {$config|json_encode},
+        configChanged: false,
         tab: window.location.hash.substr(5) || '{$initialTab|escape:'javascript':'UTF-8'}',
         status: {$status|json_encode},
         elasticsearchVersion: '{l s='Loading...' mod='elasticsearch' js=1}',
@@ -32,6 +38,13 @@
       mutations: {
         setConfig: function (state, props) {
           state.config[props.key] = props.value;
+
+          state.configChanged = JSON.stringify(state.config) !== this.initialConfig;
+        },
+        setInitialConfig: function (state, config) {
+          this.initialConfig = config;
+
+          state.configChanged = JSON.stringify(state.config) !== this.initialConfig;
         },
         setTab: function (state, tabKey) {
           state.tab = tabKey;

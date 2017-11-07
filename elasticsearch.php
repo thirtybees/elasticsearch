@@ -37,6 +37,7 @@ class Elasticsearch extends Module
 
     const LOGGING_ENABLED = 'ELASTICSEARCH_LOGGING';
     const SERVERS = 'ELASTICSEARCH_SERVERS';
+    const PROXY = 'ELASTICSEARCH_PROXY';
     const METAS = 'ELASTICSEARCH_METAS';
     const INDEX_CHUNK_SIZE = 'ELASTICSEARCH_ICHUNK_SIZE';
     const INDEX_PREFIX = 'ELASTICSEARCH_IPREFIX';
@@ -100,6 +101,7 @@ class Elasticsearch extends Module
 
         Configuration::updateGlobalValue(static::INDEX_CHUNK_SIZE, 10);
         Configuration::updateGlobalValue(static::INDEX_PREFIX, 'thirtybees');
+        Configuration::updateGlobalValue(static::PROXY, true);
         Configuration::updateGlobalValue(static::SHARDS, 3);
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
@@ -117,6 +119,7 @@ class Elasticsearch extends Module
     public function uninstall()
     {
         Configuration::deleteByName(static::SERVERS);
+        Configuration::deleteByName(static::PROXY);
         Configuration::deleteByName(static::LOGGING_ENABLED);
         Configuration::deleteByName(static::INDEX_CHUNK_SIZE);
         Configuration::deleteByName(static::INDEX_PREFIX);
@@ -505,6 +508,7 @@ class Elasticsearch extends Module
     {
         return [
             static::LOGGING_ENABLED => (int) Configuration::get(static::LOGGING_ENABLED),
+            static::PROXY           => (int) Configuration::get(static::PROXY),
             static::SERVERS         => (array) json_decode(Configuration::get(static::SERVERS), true),
             static::SHARDS          => (int) Configuration::get(static::SHARDS),
             static::REPLICAS        => (int) Configuration::get(static::REPLICAS),

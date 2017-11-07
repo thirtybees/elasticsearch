@@ -17,8 +17,10 @@
  *}
 <div class="panel panel-default">
   <h3><i class="icon icon-plug"></i> {l s='Connection' mod='elasticsearch'}</h3>
-  <server-list :display-name="'{l s='Server list' mod='elasticsearch' js=1}'"
-               config-key="{Elasticsearch::SERVERS}"></server-list>
+  <div class="form-horizontal form-wrapper">
+    <toggle display-name="{l s='Use an ajax proxy' mod='elasticsearch' js=1}" config-key="{Elasticsearch::PROXY}"></toggle>
+    <server-list display-name="{l s='Server list' mod='elasticsearch' js=1}" config-key="{Elasticsearch::SERVERS}"></server-list>
+  </div>
   <div class="panel-footer">
     <button type="submit" class="btn btn-default pull-right ajax-save-btn" :disabled="!canSubmit"
             @click="submitSettings">
