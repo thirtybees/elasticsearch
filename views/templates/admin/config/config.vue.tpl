@@ -111,7 +111,7 @@
           return {$tabs|json_encode};
         },
         canSubmit: function () {
-          return JSON.stringify(this.$store.state.config) !== this.initialConfig && !this.loading;
+          return this.$store.state.configChanged && !this.loading;
         },
         productsIndexed: function () {
           return this.$store.state.status.indexed;
@@ -134,7 +134,6 @@
       },
       data: function data() {
         return {
-          initialConfig: JSON.stringify({$config|json_encode}),
           totalProducts: {$totalProducts|intval},
           languages: {$languages|json_encode}
         };
@@ -200,7 +199,7 @@
             dataType: 'json',
             data: JSON.stringify(this.$store.state.config),
             success: function () {
-              self.initialConfig = JSON.stringify(self.$store.state.config);
+              this.$store.commit('setInitialConfig', JSON.stringify(self.$store.state.config));
               window.showSuccessMessage('{l s='Settings have been successfully updated' mod='elasticsearch' js=1}');
             },
             complete: function () {

@@ -34,6 +34,9 @@
       computed: {
         servers: function servers() {
           return this.$store.state.config[this.configKey];
+        },
+        proxied: function proxied() {
+          return !!this.$store.state.config['{ElasticSearch::PROXY}'];
         }
       },
       methods: {
@@ -46,15 +49,27 @@
           };
         },
         toggleDraftRead: function toggleDraftRead() {
+          if (this.proxied) {
+            return;
+          }
+
           this.serverDraft.read = !this.serverDraft.read;
         },
         toggleDraftWrite: function toggleDraftWrite() {
+          if (this.proxied) {
+            return;
+          }
+
           this.serverDraft.write = !this.serverDraft.write;
         },
         updateDraftUrl: function updateDraftUrl(event) {
           this.serverDraft.url = event.target.value;
         },
         toggleRead: function toggleRead(server, event) {
+          if (this.proxied) {
+            return;
+          }
+
           var item = _.find(
             this.$store.state.config[this.configKey],
             {
@@ -64,6 +79,10 @@
           item.read = !item.read;
         },
         toggleWrite: function toggleWrite(server, event) {
+          if (this.proxied) {
+            return;
+          }
+
           var item = _.find(
             this.$store.state.config[this.configKey],
             {

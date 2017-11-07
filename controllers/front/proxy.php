@@ -51,7 +51,7 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
             $this->client = Elasticsearch::getWriteClient();
             if (!$this->client) {
                 die(json_encode([
-                    'success' => false,
+                    'success'  => false,
                     'messages' => ['Unable to initialize the Elasticsearch client'],
                 ]));
             }
