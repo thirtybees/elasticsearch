@@ -32,7 +32,7 @@
       </header>
       <section class="filter_list">
         <ul class="list-unstyled sortable">
-          <li v-for="(meta, index) in metas" :key="meta.code" class="filter_list_item" draggable="true" style="display: table;">
+          <li v-for="(meta, index) in metas" v-if="meta.visible" :key="meta.code" class="filter_list_item" draggable="true" style="display: table;">
             <span class="col-lg-2">
               <meta-badge :meta="meta" id-lang="idLang"></meta-badge>
             </span>
@@ -62,8 +62,8 @@
 
             <div class="pull-right">
             <span>{l s='Field type:' mod='elasticsearch'} </span>
-            <select @change="updateElasticType(meta.code, $event)" class="selectpicker col-lg-2">
-              <option v-for="elasticType in _.sortBy(elasticTypes)"
+            <select @change="updateElasticType(meta.code, $event)" class="selectpicker col-lg-2" :disabled="!meta.type_configurable">
+              <option v-for="elasticType in (meta.elastic_types ? _.sortBy(meta.elastic_types) : _.sortBy(elasticTypes))"
                       :value="elasticType"
                       :selected="meta.elastic_type === elasticType ? 'selected' : null"
                       :data-content.once="'<kbd>' + elasticType + '</kbd>'"
