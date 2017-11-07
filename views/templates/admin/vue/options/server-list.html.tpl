@@ -26,7 +26,7 @@
       %% displayName %%
     </span>
   </label>
-  <div class="table-responsive clearfix">
+  <div class="table-responsive col-lg-9">
     <table class="table overflow-y">
       <thead>
         <tr>

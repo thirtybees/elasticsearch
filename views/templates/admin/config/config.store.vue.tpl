@@ -17,15 +17,15 @@
  *}
 <script type="text/javascript">
   (function () {
+    function checkConfigChange(state) {
+      state.configChanged = !_.isEqual(state.config, JSON.parse(state.initialConfig));
+    }
+
     window.config = new Vuex.Store({
-      data: function () {
-        return {
-          initialConfig: JSON.stringify({$config|json_encode}),
-        };
-      },
       state: {
         config: {$config|json_encode},
         configChanged: false,
+        initialConfig: JSON.stringify({$config|json_encode}),
         tab: window.location.hash.substr(5) || '{$initialTab|escape:'javascript':'UTF-8'}',
         status: {$status|json_encode},
         elasticsearchVersion: '{l s='Loading...' mod='elasticsearch' js=1}',
@@ -39,12 +39,12 @@
         setConfig: function (state, props) {
           state.config[props.key] = props.value;
 
-          state.configChanged = JSON.stringify(state.config) !== this.initialConfig;
+          checkConfigChange(state);
         },
         setInitialConfig: function (state, config) {
-          this.initialConfig = config;
+          state.initialConfig = config;
 
-          state.configChanged = JSON.stringify(state.config) !== this.initialConfig;
+          checkConfigChange(state);
         },
         setTab: function (state, tabKey) {
           state.tab = tabKey;
@@ -75,24 +75,32 @@
           if (typeof target !== 'undefined') {
             target['name'][payload.idLang] = payload.value;
           }
+
+          checkConfigChange(state);
         },
         setMetaFilterLimit: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.result_limit = payload.value;
           }
+
+          checkConfigChange(state);
         },
         setMetaFilterStyle: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.display_type = payload.value;
           }
+
+          checkConfigChange(state);
         },
         setMetaOperator: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.operator = payload.value;
           }
+
+          checkConfigChange(state);
         },
         setNewMetaPosition: function (state, payload) {
           // Edit a clone of the array (directly will cause unnecessary UI updates)
@@ -101,12 +109,16 @@
 
           // Trigger an update by setting the clone
           state.config[payload.configKey] = array;
+
+          checkConfigChange(state);
         },
         setMetaElasticType: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target['elastic_type'] = payload.value;
           }
+
+          checkConfigChange(state);
         },
         setMetaAggregatable: function(state, payload) {
           console.log(payload);
@@ -114,18 +126,24 @@
           if (typeof target !== 'undefined') {
             target.aggregatable = payload.value
           }
+
+          checkConfigChange(state);
         },
         setMetaSearchable: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.searchable = payload.value;
           }
+
+          checkConfigChange(state);
         },
         incrementWeight: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.weight += 1.0000;
           }
+
+          checkConfigChange(state);
         },
         decrementWeight: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
@@ -137,15 +155,25 @@
 
             target.weight = targetWeight;
           }
+
+          checkConfigChange(state);
         },
         setWeight: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.weight = payload.targetWeight;
           }
+
+          checkConfigChange(state);
         },
         setTextValue: function (state, payload) {
           state.config[payload.code] = payload.value;
+
+          checkConfigChange(state);
+
+        },
+        checkConfigChange: function (state) {
+          checkConfigChange(state);
         }
       }
     });
