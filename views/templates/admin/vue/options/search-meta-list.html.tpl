@@ -27,7 +27,7 @@
   <div class="col-lg-9">
     <section class="filter_panel">
       <header class="clearfix">
-        <span class="badge badge-info">{l s='Total fields:' mod='elasticsearch'} %% metas.length %%</span>
+        <span class="badge badge-info">{l s='Total fields:' mod='elasticsearch'} %% _.filter(metas, function (item) { return item.visible; }).length %%</span>
         <span class="badge badge-success">{l s='Searchable fields:' mod='elasticsearch'} %% nbSearchable %%</span>
       </header>
       <section class="filter_list">
