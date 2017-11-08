@@ -150,14 +150,14 @@
           if (!$.isEmptyObject(selectedFilters)) {
             $.each(state.selectedFilters, function (filterName, filters) {
               $.each(filters, function (index, filter) {
-                if (!aggregatedFilters[filterName][filter]) {
-                  delete(selectedFilters[filterName][index]);
+                if (_.findIndex(aggregatedFilters[filterName], ['code', filter])) {
+                  selectedFilters[filterName] = _.remove(selectedFilters[filterName], ['code', filter]);
                 }
               });
             });
           }
 
-          state.selectedFilters = selectedFilters;
+          Vue.set(state, 'selectedFilters', selectedFilters);
 
 //          setFiltersInUrl({
 //            query: state.query,
@@ -212,27 +212,36 @@
         },
         toggleSelectedFilter: function (state, payload) {
           var shouldEnable = true;
-          if (typeof state.selectedFilters[payload.code] === 'undefined') {
-            state.selectedFilters[payload.code] = [];
+          var selectedFilters = $.extend(true, {ldelim}{rdelim}, state.selectedFilters);
+          if (typeof selectedFilters[payload.aggregationCode] === 'undefined') {
+            selectedFilters[payload.aggregationCode] = {
+              name: payload.aggregationName,
+              values: []
+            };
             shouldEnable = true;
           } else {
-            shouldEnable = state.selectedFilters[payload.code].indexOf(payload.filter) < 0;
+            shouldEnable = _.findIndex(selectedFilters[payload.aggregationCode].values, ['code', payload.filterCode]) < 0;
           }
 
           if (shouldEnable) {
-            state.selectedFilters[payload.code].push(payload.filter);
+            selectedFilters[payload.aggregationCode].values.push({
+              code: payload.filterCode,
+              name: payload.filterName
+            });
           } else {
-            state.selectedFilters[payload.code].splice(state.selectedFilters[payload.code].indexOf(payload.filter), 1);
-            if (!state.selectedFilters[payload.code].length) {
-              delete state.selectedFilters[payload.code];
+            selectedFilters[payload.aggregationCode].values.splice(_.findIndex(selectedFilters[payload.aggregationCode].values, ['code', payload.filterCode]), 1);
+            if (!selectedFilters[payload.aggregationCode].values.length) {
+              delete selectedFilters[payload.aggregationCode];
             }
           }
 
-          if (typeof state.selectedFilters === 'undefined') {
-            state.selectedFilters = {ldelim}{rdelim};
+          if (typeof selectedFilters === 'undefined') {
+            selectedFilters = {ldelim}{rdelim};
           }
 
-          updateResults(state, state.query, this.getters.elasticQuery, false)
+          Vue.set(state, 'selectedFilters', selectedFilters);
+
+//          updateResults(state, state.query, this.getters.elasticQuery, false);
         }
       },
       getters: {

@@ -3,18 +3,18 @@
     <div id="layered_block_left" class="block">
       <h2 class="title_block section-title-column">{l s='Catalog' mod='elasticsearch'}</h2>
       <div class="block_content">
-        <div id="enabled_filters" v-if="selectedFilters.length">
+        <div id="enabled_filters" v-if="_.values(selectedFilters).length">
         <span class="layered_subtitle" style="float: none;">
         {l s='Enabled filters:' mod='elasticsearch'}
         </span>
-          <ul>
-            <li v-for="(filterValues, filterName) in selectedFilters">
+          <ul v-for="(filter, filterName) in selectedFilters">
+            <li v-for="value in filter.values">
               <a href="#"
-                 title="{l s='Clear' mod='elasticsearch'}">
-                <i class="icon icon-remove"></i> %% filterName %%: %%filter%%
+                 title="{l s='Cancel' mod='elasticsearch'}">
+                <i class="icon icon-remove"></i>
               </a>
+              %% filter.name %%: %% value.name %%
             </li>
-
           </ul>
         </div>
 

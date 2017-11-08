@@ -101,27 +101,33 @@
           var code = this.findCode(bucket);
 
           if (typeof this.$store.state.metas[code] !== 'undefined') {
-            console.log(this.$store.state.metas[code].position);
-
             return this.$store.state.metas[code].position;
           }
 
-          console.log(Infinity);
           return Infinity;
         },
-        toggleFilter: function (bucket) {
+        findAggregationName: function (bucket) {
           var code = this.findCode(bucket);
 
+          return this.$store.state.metas[code].name;
+        },
+        toggleFilter: function (bucket) {
+          var aggregationCode = this.findCode(bucket);
+          var filterName = this.findName(bucket);
+          var aggregationName = this.findAggregationName(bucket);
+
           this.$store.commit('toggleSelectedFilter', {
-            code: code,
-            filter: bucket.key
+            filterName: filterName,
+            filterCode: bucket.key,
+            aggregationName: aggregationName,
+            aggregationCode: aggregationCode,
           });
         },
         isFilterChecked: function (bucket) {
           var code = this.findCode(bucket);
 
           if (typeof this.selectedFilters[code] !== 'undefined') {
-            return ((this.selectedFilters[code]).indexOf(bucket.key) > -1);
+            return (_.findIndex(this.selectedFilters[code].values, bucket.key) > -1);
           }
 
           return false;
