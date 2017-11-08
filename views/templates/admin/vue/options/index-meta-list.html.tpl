@@ -55,7 +55,7 @@
               </div>
               <div v-if="languages.length > 1" class="col-lg-2">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                  <span>%% _.find(languages, ['id_lang', idLang.toString()]).iso_code %%</span>
+                  <span>%% _.find(languages, {ldelim}id_lang: idLang.toString(){rdelim}).iso_code %%</span>
                   <i class="icon-caret-down"></i>
                 </button>
                 <ul class="dropdown-menu">

@@ -18,6 +18,21 @@
 {capture name="template"}{include file=ElasticSearch::tpl('admin/vue/options/search-meta-list.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
+    function debounce(func, wait, immediate) {
+      var timeout;
+      return function() {
+        var context = this, args = arguments;
+        var later = function() {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+      };
+    };
+
     window.VueSearchMetaList = {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
@@ -51,7 +66,7 @@
             targetWeight: event.target.value
           });
         },
-        toggleMetaSearchable: _.debounce(function (meta, event) {
+        toggleMetaSearchable: debounce(function (meta, event) {
           this.$store.commit('setMetaSearchable', {
             configKey: this.configKey,
             code: meta.code,

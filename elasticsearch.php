@@ -151,9 +151,6 @@ class Elasticsearch extends Module
         // SweetAlert 2
         $this->context->controller->addJS($this->_path.'views/js/sweetalert-2.0.6.min.js');
 
-        // ES6 Promises polyfill
-        $this->context->controller->addJS($this->_path.'views/js/core-2.4.1.min.js');
-
         // Lodash
         $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
 
