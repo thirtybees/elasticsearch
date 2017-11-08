@@ -57,7 +57,6 @@ class Fetcher
      * Defaults:
      * - function: null
      * - default: 'text'
-     * - type_configurable: false (always false if visible is false)
      * - elastic_types: all
      * - visible: true
      *
@@ -67,7 +66,6 @@ class Fetcher
         'name'                    => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -76,7 +74,6 @@ class Fetcher
         'reference'               => [
             'function'      => [__CLASS__, 'getTrimmedRef'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 META::ELASTIC_TYPE_KEYWORD,
                 META::ELASTIC_TYPE_TEXT,
@@ -89,11 +86,13 @@ class Fetcher
         'available_now'           => [
             'function' => [__CLASS__, 'getAvailableNow'],
             'default'  => Meta::ELASTIC_TYPE_BINARY,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_BINARY,
+            ],
         ],
         'category'                => [
             'function'      => [__CLASS__, 'getCategoryName'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -102,7 +101,6 @@ class Fetcher
         'categories'              => [
             'function'      => [__CLASS__, 'getCategoriesNames'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -111,7 +109,6 @@ class Fetcher
         'manufacturer'            => [
             'function'      => [__CLASS__, 'getManufacturerName'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -120,7 +117,6 @@ class Fetcher
         'categories_without_path' => [
             'function'      => [__CLASS__, 'getCategoriesNamesWithoutPath'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -129,15 +125,20 @@ class Fetcher
         'date_add'                => [
             'function'     => null,
             'default'      => Meta::ELASTIC_TYPE_DATE,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_DATE,
+            ],
         ],
         'date_upd'                => [
             'function'     => null,
             'default'      => Meta::ELASTIC_TYPE_DATE,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_DATE,
+            ],
         ],
         'description'             => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -146,7 +147,6 @@ class Fetcher
         'description_short'       => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -155,7 +155,6 @@ class Fetcher
         'ean13'                   => [
             'function'      => [__CLASS__, 'getEan'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -165,31 +164,45 @@ class Fetcher
             'function' => [__CLASS__, 'generateImageLinkLarge'],
             'default'  => Meta::ELASTIC_TYPE_KEYWORD,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_KEYWORD,
+            ],
         ],
         'image_link_small'        => [
             'function' => [__CLASS__, 'generateImageLinkSmall'],
             'default'  => Meta::ELASTIC_TYPE_KEYWORD,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_KEYWORD,
+            ],
         ],
         'link'                    => [
             'function' => [__CLASS__, 'generateLinkRewrite'],
             'default'  => Meta::ELASTIC_TYPE_KEYWORD,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_KEYWORD,
+            ],
         ],
         'id_tax_rules_group'      => [
             'function' => null,
             'default'  => Meta::ELASTIC_TYPE_NESTED,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_NESTED,
+            ],
         ],
         'price_tax_excl'          => [
             'function' => [__CLASS__, 'getPriceTaxExcl'],
             'default'  => Meta::ELASTIC_TYPE_FLOAT,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_FLOAT,
+            ],
         ],
         'supplier'                => [
             'function'      => [__CLASS__, 'getSupplierName'],
             'default'       => Meta::ELASTIC_TYPE_TEXT,
-            'type_configurable'  => true,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
@@ -199,29 +212,47 @@ class Fetcher
             'function' => [__CLASS__, 'getOrderedQty'],
             'default'  => Meta::ELASTIC_TYPE_INTEGER,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_INTEGER,
+            ],
         ],
         'stock_qty'               => [
             'function' => [__CLASS__, 'getStockQty'],
             'default'  => Meta::ELASTIC_TYPE_INTEGER,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_INTEGER,
+            ],
         ],
         'condition'               => [
             'function' => null,
             'default'  => Meta::ELASTIC_TYPE_KEYWORD,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_KEYWORD,
+            ],
         ],
         'weight'                  => [
             'function' => null,
             'default'  => Meta::ELASTIC_TYPE_FLOAT,
             'visible'  => false,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_FLOAT,
+            ],
         ],
         'pageviews'               => [
             'function' => [__CLASS__, 'getPageViews'],
             'default'  => Meta::ELASTIC_TYPE_INTEGER,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_INTEGER,
+            ],
         ],
         'sales'                   => [
             'function' => [__CLASS__, 'getSales'],
             'default'  => Meta::ELASTIC_TYPE_INTEGER,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_INTEGER,
+            ],
         ],
     ];
 
