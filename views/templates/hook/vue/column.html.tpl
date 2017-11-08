@@ -20,7 +20,7 @@
 
         <div v-for="aggregation in aggregations" v-if="aggregation.buckets.length" class="layered_filter" :key="aggregation.meta.code">
           <div class="layered_subtitle_heading">
-            <span class="layered_subtitle">%% findName(aggregation.buckets[0]) %%</span>
+            <span class="layered_subtitle">%% aggregation.meta.name %%</span>
           </div>
           <ul v-if="aggregation.meta.display_type == 0" class="layered_filter_ul">
             <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable" :key="index">

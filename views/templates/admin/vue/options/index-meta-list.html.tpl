@@ -62,7 +62,7 @@
 
             <div class="pull-right">
             <span>{l s='Field type:' mod='elasticsearch'} </span>
-            <select @change="updateElasticType(meta.code, $event)" class="selectpicker col-lg-2" :disabled="!meta.type_configurable">
+            <select @change="updateElasticType(meta.code, $event)" class="selectpicker col-lg-2" :disabled="meta.elastic_types ? meta.elastic_types.length <= 1 : true">
               <option v-for="elasticType in (meta.elastic_types ? _.sortBy(meta.elastic_types) : _.sortBy(elasticTypes))"
                       :value="elasticType"
                       :selected="meta.elastic_type === elasticType ? 'selected' : null"
