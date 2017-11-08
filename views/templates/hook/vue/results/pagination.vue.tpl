@@ -46,7 +46,7 @@
           }
 
           if (page > this.nbPages) {
-            page = nbPages;
+            page = this.nbPages;
           }
 
           this.$store.commit('setPage', page);
