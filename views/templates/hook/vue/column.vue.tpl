@@ -111,10 +111,16 @@
 
           return this.$store.state.metas[code].name;
         },
+        findOperator: function (bucket) {
+          var code = this.findCode(bucket);
+
+          return (parseInt(this.$store.state.metas[code].operator, 10) === 1 ? 'OR' : 'AND');
+        },
         toggleFilter: function (bucket) {
           var aggregationCode = this.findCode(bucket);
           var filterName = this.findName(bucket);
           var aggregationName = this.findAggregationName(bucket);
+          var operator = this.findOperator(bucket);
           var checked = this.isFilterChecked(bucket);
 
           this.$store.commit('toggleSelectedFilter', {
@@ -122,6 +128,7 @@
             filterCode: bucket.key,
             aggregationName: aggregationName,
             aggregationCode: aggregationCode,
+            operator: operator,
             checked: !checked
           });
         },
