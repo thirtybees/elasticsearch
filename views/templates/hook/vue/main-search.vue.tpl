@@ -172,7 +172,7 @@
         },
         blurHandler: function () {
           var elasticsearchResults = document.getElementById('elasticsearch-results');
-          if (elasticsearchResults.length && !matches(elasticsearchResults, ':hover')) {
+          if (typeof elasticsearchResults !== 'undefined' && !matches(elasticsearchResults, ':hover')) {
             this.$store.commit('eraseSuggestions');
           }
         },

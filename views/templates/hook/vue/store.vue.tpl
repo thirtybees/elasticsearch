@@ -145,7 +145,6 @@
           }
 
           // Handle the selected filters
-          var aggregatedFilters = findAggregatedFilters(response.aggregations);
           var selectedFilters = _.cloneDeep(state.selectedFilters);
           if (!_.isEmpty(selectedFilters)) {
             _.forEach(state.selectedFilters, function (filters, filterName) {
@@ -239,11 +238,24 @@
               name: payload.filterName
             });
           } else {
-            selectedFilters[payload.aggregationCode].values.splice(_.findIndex(selectedFilters[payload.aggregationCode].values, ['code', payload.filterCode]), 1);
+            var position = -1;
+            var finger = 0;
+            _.forEach(selectedFilters[payload.aggregationCode].values, function (item) {
+              if (item.code === payload.filterCode) {
+                position = finger;
+
+                return false;
+              }
+              finger++;
+            });
+
+            selectedFilters[payload.aggregationCode].values.splice(position, 1);
             if (!selectedFilters[payload.aggregationCode].values.length) {
               delete selectedFilters[payload.aggregationCode];
             }
           }
+
+          console.log(selectedFilters);
 
           if (typeof selectedFilters === 'undefined') {
             selectedFilters = {ldelim}{rdelim};

@@ -18,6 +18,21 @@
 {capture name="template"}{include file=ElasticSearch::tpl('admin/vue/options/filter-meta-list.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
+    function debounce(func, wait, immediate) {
+      var timeout;
+      return function() {
+        var context = this, args = arguments;
+        var later = function() {
+          timeout = null;
+          if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+      };
+    }
+
     window.VueFilterMetaList = {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
@@ -78,7 +93,7 @@
             value: event.target.value
           });
         },
-        toggleMetaAggregatable: _.debounce(function (meta, event) {
+        toggleMetaAggregatable: debounce(function (meta, event) {
           this.$store.commit('setMetaAggregatable', {
             configKey: this.configKey,
             code: meta.code,
