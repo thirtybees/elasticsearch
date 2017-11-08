@@ -61,12 +61,12 @@
           throw JSON.stringify(bucket);
         },
         findCode: function (bucket) {
-          if (typeof bucket['name'] !== 'undefined'
-            && typeof bucket['name']['hits'] !== 'undefined'
-            && typeof bucket['name']['hits']['hits'] !== 'undefined'
-            && typeof bucket['name']['hits']['hits'][0] !== 'undefined'
-            && typeof bucket['name']['hits']['hits'][0]['_source'] !== 'undefined') {
-            return Object.keys(bucket['name']['hits']['hits'][0]['_source'])[0];
+          if (typeof bucket.name !== 'undefined'
+            && typeof bucket.name.hits !== 'undefined'
+            && typeof bucket.name.hits.hits !== 'undefined'
+            && typeof bucket.name.hits.hits[0] !== 'undefined'
+            && typeof bucket.name.hits.hits[0]._source !== 'undefined') {
+            return Object.keys(bucket.name.hits.hits[0]._source)[0];
           }
 
           return false;
@@ -115,19 +115,43 @@
           var aggregationCode = this.findCode(bucket);
           var filterName = this.findName(bucket);
           var aggregationName = this.findAggregationName(bucket);
+          var checked = this.isFilterChecked(bucket);
 
           this.$store.commit('toggleSelectedFilter', {
             filterName: filterName,
             filterCode: bucket.key,
             aggregationName: aggregationName,
             aggregationCode: aggregationCode,
+            checked: !checked
+          });
+        },
+        removeFilter: function (aggregationCode, aggregationName, filterCode, filterName) {
+          this.$store.commit('toggleSelectedFilter', {
+            filterName: filterName,
+            filterCode: filterCode,
+            aggregationName: aggregationName,
+            aggregationCode: aggregationCode,
+            checked: false
           });
         },
         isFilterChecked: function (bucket) {
           var code = this.findCode(bucket);
 
-          if (typeof this.selectedFilters[code] !== 'undefined') {
-            return (_.findIndex(this.selectedFilters[code].values, bucket.key) > -1);
+          if (typeof this.selectedFilters[code] !== 'undefined'
+            && typeof this.selectedFilters[code].values !== 'undefined') {
+            console.log(JSON.stringify(this.selectedFilters[code]));
+            var position = -1;
+            var finger = 0;
+            _.forEach(this.selectedFilters[code].values, function (filter) {
+              if (filter.code === bucket.key) {
+                position = finger;
+
+                return false;
+              }
+              finger++;
+            });
+
+            return position > -1;
           }
 
           return false;

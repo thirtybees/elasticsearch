@@ -97,8 +97,8 @@
 
       var matches = '';
       $.each(selectedFilters, function (filterName, filters) {
-        $.each(filters, function (index, filter) {
-          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter +'", "operator": "and" } } }';
+        $.each(filters.values, function (index, filter) {
+          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code +'", "operator": "and" } } }';
         });
       });
 
@@ -150,8 +150,19 @@
           if (!$.isEmptyObject(selectedFilters)) {
             $.each(state.selectedFilters, function (filterName, filters) {
               $.each(filters, function (index, filter) {
-                if (_.findIndex(aggregatedFilters[filterName], ['code', filter])) {
-                  selectedFilters[filterName] = _.remove(selectedFilters[filterName], ['code', filter]);
+                var position = -1;
+                var finger = 0;
+                _.forEach(filter.values, function (item) {
+                  if (item.code === bucket.key) {
+                    position = finger;
+
+                    return false;
+                  }
+                  finger++;
+                });
+
+                if (position > -1) {
+                  selectedFilters[filterName] = _.pullAt(selectedFilters[filterName], position);
                 }
               });
             });
@@ -211,16 +222,14 @@
           updateResults(state, state.query, this.getters.elasticQuery, false);
         },
         toggleSelectedFilter: function (state, payload) {
-          var shouldEnable = true;
+          var shouldEnable = payload.checked;
           var selectedFilters = $.extend(true, {ldelim}{rdelim}, state.selectedFilters);
           if (typeof selectedFilters[payload.aggregationCode] === 'undefined') {
             selectedFilters[payload.aggregationCode] = {
               name: payload.aggregationName,
+              code: payload.aggregationCode,
               values: []
             };
-            shouldEnable = true;
-          } else {
-            shouldEnable = _.findIndex(selectedFilters[payload.aggregationCode].values, ['code', payload.filterCode]) < 0;
           }
 
           if (shouldEnable) {
@@ -241,7 +250,7 @@
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 
-//          updateResults(state, state.query, this.getters.elasticQuery, false);
+          updateResults(state, state.query, this.getters.elasticQuery, false);
         }
       },
       getters: {
