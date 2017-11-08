@@ -34,7 +34,9 @@
       },
       computed: {
         aggregations: function () {
-          return this.$store.state.aggregations;
+          return _.sortBy(_.values(this.$store.state.aggregations), function (agg) {
+            return parseInt(agg.meta.position, 10);
+          });
         },
         selectedFilters: function () {
           return this.$store.state.selectedFilters;
@@ -94,6 +96,18 @@
           }
 
           return 0;
+        },
+        findPosition: function (bucket) {
+          var code = this.findCode(bucket);
+
+          if (typeof this.$store.state.metas[code] !== 'undefined') {
+            console.log(this.$store.state.metas[code].position);
+
+            return this.$store.state.metas[code].position;
+          }
+
+          console.log(Infinity);
+          return Infinity;
         },
         toggleFilter: function (bucket) {
           var code = this.findCode(bucket);
