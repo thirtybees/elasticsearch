@@ -104,7 +104,7 @@
         },
         setNewMetaPosition: function (state, payload) {
           // Edit a clone of the array (directly will cause unnecessary UI updates)
-          var array = $.extend(true, [], state.config[payload.configKey]);
+          var array = _.cloneDeep(state.config[payload.configKey]);
           array.splice(payload.to, 0, array.splice(payload.from, 1)[0]);
 
           // Trigger an update by setting the clone

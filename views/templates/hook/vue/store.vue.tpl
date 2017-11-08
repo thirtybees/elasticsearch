@@ -30,9 +30,9 @@
 //
 //        var hash = '#q=' + query;
 //
-//        $.each(selectedFilters, function (filterName, filters) {
+//        _.forEach(selectedFilters, function (filters, filterName) {
 //          hash += '/' + filterName + '=';
-//          $.each(filters, function (index, filter) {
+//          _.forEach(filters, function (filter, index) {
 //            if (index > 1) {
 //              hash += '+';
 //            }
@@ -45,8 +45,8 @@
 //    }
 
 //    function getFiltersFromUrl() {
-//      $.each(selectedFilters, function (filterName, filters) {
-//        $.each(filters, function (index, filter) {
+//      _.forEach(selectedFilters, function (filters, filterName) {
+//        _.forEach(filters, function (filter, index) {
 //          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter +'", "operator": "and" } } }';
 //        });
 //      });
@@ -70,9 +70,9 @@
     function findAggregatedFilters(aggregations) {
       var foundFilters = {};
 
-      $.each(aggregations, function (aggregationName, aggregation) {
+      _.forEach(aggregations, function (aggregation) {
         var category = null;
-        $.each(aggregation.buckets, function (index, bucket) {
+        _.forEach(aggregation.buckets, function (bucket) {
           if (!category) {
             category = Object.keys(bucket.name.hits.hits[0]['_source'])[0];
             foundFilters[category] = {};
@@ -91,14 +91,14 @@
      * @returns {string}
      */
     function buildMatches(selectedFilters) {
-      if ($.isEmptyObject(selectedFilters)) {
+      if (_.isEmpty(selectedFilters)) {
         return false;
       }
 
       var matches = '';
-      $.each(selectedFilters, function (filterName, filters) {
-        $.each(filters.values, function (index, filter) {
-          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code +'", "operator": "and" } } }';
+      _.forEach(selectedFilters, function (filters, filterName) {
+        _.forEach(filters.values, function (filter) {
+          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code +'", "operator": "' + (filters.operator ? filters.operator : 'AND') + '" } } }';
         });
       });
 
@@ -128,7 +128,7 @@
 
           // Handle the suggestions
           if (showSuggestions) {
-            state.suggestions = $.extend(true, [], _.take(response.hits.hits, 5));
+            state.suggestions = _.cloneDeep(_.take(response.hits.hits, 5));
           } else {
             state.suggestions = [];
           }
@@ -146,10 +146,10 @@
 
           // Handle the selected filters
           var aggregatedFilters = findAggregatedFilters(response.aggregations);
-          var selectedFilters = $.extend(true, {ldelim}{rdelim}, state.selectedFilters);
-          if (!$.isEmptyObject(selectedFilters)) {
-            $.each(state.selectedFilters, function (filterName, filters) {
-              $.each(filters, function (index, filter) {
+          var selectedFilters = _.cloneDeep(state.selectedFilters);
+          if (!_.isEmpty(selectedFilters)) {
+            _.forEach(state.selectedFilters, function (filters, filterName) {
+              _.forEach(filters, function (filter, index) {
                 var position = -1;
                 var finger = 0;
                 _.forEach(filter.values, function (item) {
@@ -202,7 +202,7 @@
           state.results = payload.results;
         },
         resetSuggestions: function (state) {
-          state.suggestions = $.extend(true, [], _.take(state.results, 5));
+          state.suggestions = _.cloneDeep(_.take(state.results, 5));
         },
         eraseSuggestions: function (state) {
           state.suggestions = [];
@@ -223,11 +223,12 @@
         },
         toggleSelectedFilter: function (state, payload) {
           var shouldEnable = payload.checked;
-          var selectedFilters = $.extend(true, {ldelim}{rdelim}, state.selectedFilters);
+          var selectedFilters = _.cloneDeep(state.selectedFilters);
           if (typeof selectedFilters[payload.aggregationCode] === 'undefined') {
             selectedFilters[payload.aggregationCode] = {
               name: payload.aggregationName,
               code: payload.aggregationCode,
+              operator: payload.operator,
               values: []
             };
           }
