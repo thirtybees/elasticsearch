@@ -8,9 +8,11 @@
         {l s='Enabled filters:' mod='elasticsearch'}
         </span>
           <ul v-for="(filter, filterName) in selectedFilters">
-            <li v-for="value in filter.values">
-              <a href="#"
-                 title="{l s='Cancel' mod='elasticsearch'}">
+            <li v-for="value in filter.values"
+                style="cursor: pointer"
+                @click="removeFilter(filter.code, filter.name, value.code, value.name)"
+            >
+              <a title="{l s='Cancel' mod='elasticsearch'}">
                 <i class="icon icon-remove"></i>
               </a>
               %% filter.name %%: %% value.name %%
