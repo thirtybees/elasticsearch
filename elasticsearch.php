@@ -276,6 +276,7 @@ class Elasticsearch extends Module
                 // Aggregate on the special aggregate field
                 'terms' => [
                     'field' => $meta['code'].'_agg',
+                    'size'  => (int) $meta['result_limit'] ?: 10000,
                 ],
                 // This part is added to get the actual display name and meta code of the filter value
                 'aggs'  => [

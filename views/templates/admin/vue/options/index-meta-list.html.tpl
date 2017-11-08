@@ -32,7 +32,13 @@
       </header>
       <section class="filter_list">
         <ul class="list-unstyled sortable">
-          <li v-for="(meta, index) in metas" v-if="meta.visible" :key="meta.code" class="filter_list_item" draggable="true" style="display: table;">
+          <li v-for="(meta, index) in metas"
+              v-if="meta.visible"
+              :key="meta.code"
+              class="filter_list_item"
+              draggable="true"
+              style="display: table;"
+          >
             <span class="col-lg-2">
               <meta-badge :meta="meta" id-lang="idLang"></meta-badge>
             </span>

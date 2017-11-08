@@ -33,7 +33,13 @@
       </header>
       <section class="filter_list">
         <ul class="list-unstyled sortable">
-          <li v-for="(meta, index) in metas" v-if="meta.visible" :key="meta.code" class="filter_list_item" draggable="true" style="display: table;">
+          <li v-for="(meta, index) in metas"
+              v-if="meta.visible"
+              :key="meta.code"
+              class="filter_list_item"
+              draggable="true"
+              style="display: table;"
+          >
             <span class="switch prestashop-switch col-lg-2 col-md-3 col-sm-4 col-xs-4"
                   @click="toggleMetaAggregatable(meta, $event)"
                   style="margin: 0 5px; pointer-events: all"
@@ -66,7 +72,7 @@
                 <div class="col-lg-6">
                   <select @change="filterLimitChanged(meta, $event)" class="selectpicker">
                     <option value="0" :selected="parseInt(meta.result_limit, 10) === 0">{l s='No limit' mod='elasticsearch'}</option>
-                    {*<option v-for="limit in [3, 4, 5, 10, 20]" :value.once="limit" :selected="meta.result_limit == limit">%% limit %%</option>*}
+                    <option v-for="limit in [3, 4, 5, 10, 20]" :value.once="limit" :selected="meta.result_limit == limit">%% limit %%</option>
                   </select>
                 </div>
               </div>
