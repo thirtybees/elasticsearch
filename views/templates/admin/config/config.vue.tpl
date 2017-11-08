@@ -199,7 +199,7 @@
             dataType: 'json',
             data: JSON.stringify(this.$store.state.config),
             success: function () {
-              this.$store.commit('setInitialConfig', JSON.stringify(self.$store.state.config));
+              self.$store.commit('setInitialConfig', JSON.stringify(self.$store.state.config));
               window.showSuccessMessage('{l s='Settings have been successfully updated' mod='elasticsearch' js=1}');
             },
             complete: function () {
