@@ -240,7 +240,7 @@ class Meta extends ObjectModel
 //            static::DISPLAY_TYPE_RADIO    => 'Radio buttons',
 //            static::DISPLAY_TYPE_LIST     => 'Dropdown',
 //            static::DISPLAY_TYPE_SLIDER   => 'Slider',
-//            static::DISPLAY_TYPE_COLORS   => 'Colors',
+            static::DISPLAY_TYPE_COLORS   => 'Colors',
         ];
     }
 }

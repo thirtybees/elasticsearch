@@ -32,10 +32,25 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/main-search.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    var $target = $('#es-searchbox');
-    if (!$target.length) {
+    var target = document.getElementById('es-searchbox');
+    if (typeof target === 'undefined') {
       return;
     }
+
+    var matches = function(el, selector) {
+      var _matches = (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector);
+
+      if (_matches) {
+        return _matches.call(el, selector);
+      } else {
+        var nodes = el.parentNode.querySelectorAll(selector);
+        for (var i = nodes.length; i--;) {
+          if (nodes[i] === el)
+            return true;
+        }
+        return false;
+      }
+    };
 
     function getHashValue(key) {
       if (typeof key !== 'string') {
@@ -156,8 +171,8 @@
           this.suggestionIndex = -1;
         },
         blurHandler: function () {
-          $elasticsearchResults = $('#elasticsearch-results');
-          if ($elasticsearchResults.length && !$elasticsearchResults.is(':hover')) {
+          var elasticsearchResults = document.getElementById('elasticsearch-results');
+          if (elasticsearchResults.length && !matches(elasticsearchResults, ':hover')) {
             this.$store.commit('eraseSuggestions');
           }
         },

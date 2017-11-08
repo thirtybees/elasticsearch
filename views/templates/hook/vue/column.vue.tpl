@@ -146,7 +146,6 @@
 
           if (typeof this.selectedFilters[code] !== 'undefined'
             && typeof this.selectedFilters[code].values !== 'undefined') {
-            console.log(JSON.stringify(this.selectedFilters[code]));
             var position = -1;
             var finger = 0;
             _.forEach(this.selectedFilters[code].values, function (filter) {

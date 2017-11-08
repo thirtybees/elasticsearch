@@ -19,11 +19,25 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/column.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    $(document).ready(function () {
-      var $target = $('#elasticsearch-column-left');
-      if ($target.length) {
+    function ready(fn) {
+      if (document.readyState !== 'loading') {
+        fn();
+      } else if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', fn);
+      } else {
+        document.attachEvent('onreadystatechange', function() {
+          if (document.readyState !== 'loading') {
+            fn();
+          }
+        });
+      }
+    }
+
+    ready(function () {
+      var target = document.getElementById('elasticsearch-column-left');
+      if (typeof target !== 'undefined') {
         new Vue({
-          el: $target[0],
+          el: target,
           components: {
             ElasticsearchColumn: window.ElasticsearchModule.components.column,
           },

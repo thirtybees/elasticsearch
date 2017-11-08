@@ -25,12 +25,26 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    $(document).ready(function () {
-      var $target = $('#elasticsearch-results');
-      if ($target.length) {
+    function ready(fn) {
+      if (document.readyState !== 'loading') {
+        fn();
+      } else if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', fn);
+      } else {
+        document.attachEvent('onreadystatechange', function() {
+          if (document.readyState !== 'loading') {
+            fn();
+          }
+        });
+      }
+    }
+
+    ready(function () {
+      var target = document.getElementById('elasticsearch-results');
+      if (typeof target !== 'undefined') {
         new Vue({
           delimiters: ['%%', '%%'],
-          el: $target[0],
+          el: target,
           components: {
             ProductCount: window.ElasticsearchModule.components.productCount,
             ShowAll: window.ElasticsearchModule.components.showAll,
