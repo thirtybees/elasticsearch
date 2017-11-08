@@ -84,7 +84,16 @@
             return name;
           }
 
-          return false;
+          return '#000000';
+        },
+        findDisplayType: function (bucket) {
+          var code = this.findCode(bucket);
+
+          if (typeof this.$store.state.metas[code] !== 'undefined') {
+            return this.$store.state.metas[code].display_type;
+          }
+
+          return 0;
         },
         toggleFilter: function (bucket) {
           var code = this.findCode(bucket);

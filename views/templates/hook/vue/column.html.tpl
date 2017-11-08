@@ -22,7 +22,7 @@
           <div class="layered_subtitle_heading">
             <span class="layered_subtitle">%% aggregationName %%</span>
           </div>
-          <ul class="layered_filter_ul">
+          <ul v-if="findDisplayType(aggregation.buckets[0]) == 0" class="layered_filter_ul">
             <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable" :key="index">
               <div class="checkbox">
                 <label>
@@ -34,6 +34,22 @@
                   </a>
                 </label>
               </div>
+            </li>
+          </ul>
+          <ul v-if="findDisplayType(aggregation.buckets[0]) == 5" class="layered_filter_ul color-group">
+            <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable pointer" :key="index" @click="toggleFilter(bucket)">
+              <input :class="'color-option' + (isFilterChecked(bucket) ? ' on' : '')"
+                     type="button"
+                     :aria-label.once="findName(bucket)"
+                     :style.once="'background: ' + findColorCode(bucket)"
+              >
+              <label class="layered_color"
+                     :aria-label="findName(bucket)"
+              >
+                <a data-rel="nofollow">
+                  %% findName(bucket) %% <span class="pointer"> (%% bucket.doc_count %%)</span>
+                </a>
+              </label>
             </li>
           </ul>
         </div>
