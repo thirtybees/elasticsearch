@@ -18,11 +18,11 @@
           </ul>
         </div>
 
-        <div v-for="(aggregation, aggregationName) in aggregations" v-if="aggregation.buckets.length" class="layered_filter" :key="aggregationName">
+        <div v-for="aggregation in aggregations" v-if="aggregation.buckets.length" class="layered_filter" :key="aggregation.meta.code">
           <div class="layered_subtitle_heading">
-            <span class="layered_subtitle">%% aggregationName %%</span>
+            <span class="layered_subtitle">%% findName(aggregation.buckets[0]) %%</span>
           </div>
-          <ul v-if="findDisplayType(aggregation.buckets[0]) == 0" class="layered_filter_ul">
+          <ul v-if="aggregation.meta.display_type == 0" class="layered_filter_ul">
             <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable" :key="index">
               <div class="checkbox">
                 <label>
@@ -36,7 +36,7 @@
               </div>
             </li>
           </ul>
-          <ul v-if="findDisplayType(aggregation.buckets[0]) == 5" class="layered_filter_ul color-group">
+          <ul v-if="aggregation.meta.display_type == 5" class="layered_filter_ul color-group">
             <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable pointer" :key="index" @click="toggleFilter(bucket)">
               <input :class="'color-option' + (isFilterChecked(bucket) ? ' on' : '')"
                      type="button"
@@ -45,9 +45,10 @@
               >
               <label class="layered_color"
                      :aria-label="findName(bucket)"
+                     style="cursor: pointer"
               >
-                <a data-rel="nofollow">
-                  %% findName(bucket) %% <span class="pointer"> (%% bucket.doc_count %%)</span>
+                <a data-rel="nofollow" style="cursor: pointer">
+                  %% findName(bucket) %% <span style="cursor: pointer"> (%% bucket.doc_count %%)</span>
                 </a>
               </label>
             </li>

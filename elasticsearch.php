@@ -282,6 +282,12 @@ class Elasticsearch extends Module
                     'name'       => ['top_hits' => ['size' => 1, '_source' => ['include' => [$meta['code']]]]],
                     'color_code' => ['top_hits' => ['size' => 1, '_source' => ['include' => ["{$meta['code']}_color_code"]]]],
                 ],
+                'meta' => [
+                    'name'         => $meta['name'],
+                    'code'         => $meta['code'],
+                    'position'     => $meta['position'],
+                    'display_type' => $meta['display_type'],
+                ],
             ];
         }
 
