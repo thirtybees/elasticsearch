@@ -24,33 +24,61 @@
 
     var ajaxAttempts = 3;
 
+    function addClass(el, className) {
+      if (el.classList) {
+        el.classList.add(className);
+      } else {
+        el.className += ' ' + className;
+      }
+    }
+
+    function removeClass(el, className) {
+      if (el.classList) {
+        el.classList.remove(className);
+      } else {
+        el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+      }
+    }
+
     function indexProducts(self) {
-      $.ajax({
-        url: window.elasticAjaxUrl + '&ajax=1&action=indexRemaining',
-        method: 'GET',
-        dataType: 'json',
-        success: function (response) {
-          if (typeof response !== 'undefined'
-            && typeof response.indexed !== 'undefined'
-            && typeof response.total !== 'undefined'
-          ) {
-            self.$store.commit('setIndexingStatus', {
-              indexed: response.indexed,
-              total: response.total
-            });
-          } else {
-            swal({
-              title: '{l s='Error!' mod='elasticsearch' js=1}',
-              text: '{l s='Unable to connect with the Elasticsearch server. Has the connection been configured?' mod='elasticsearch' js=1}',
-              icon: 'error'
-            });
+      var request = new XMLHttpRequest();
+      request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=indexRemaining', true);
+
+      request.onreadystatechange = function() {
+        if (this.readyState === 4) {
+          var response;
+          try {
+            response = JSON.parse(this.responseText);
+          } catch (e) {
+            response = null;
           }
-        },
-        complete: function (xhr) {
-          if ((parseInt(xhr.status, 10) !== 200 && ajaxAttempts > 0)
-            || (!self.$store.state.cancelingIndexing && xhr.responseJSON && xhr.responseJSON.indexed !== xhr.responseJSON.total)
+
+          if (this.status >= 200 && this.status < 400) {
+            // Success!
+            if (typeof response !== 'undefined'
+              && typeof response.indexed !== 'undefined'
+              && typeof response.total !== 'undefined'
+            ) {
+              self.$store.commit('setIndexingStatus', {
+                indexed: response.indexed,
+                total: response.total
+              });
+            } else {
+              swal({
+                title: '{l s='Error!' mod='elasticsearch' js=1}',
+                text: '{l s='Unable to connect with the Elasticsearch server. Has the connection been configured?' mod='elasticsearch' js=1}',
+                icon: 'error'
+              });
+            }
+          } else {
+            // Error :(
+          }
+
+          // Finally
+          if ((parseInt(this.status, 10) !== 200 && ajaxAttempts > 0)
+            || (!self.$store.state.cancelingIndexing && typeof response !== 'undefined' && response.indexed !== response.total)
           ) {
-            if (parseInt(xhr.status, 10) !== 200) {
+            if (this.status < 200 || this.status >= 400) {
               // Decrement if failure...
               ajaxAttempts -= 1;
             } else {
@@ -72,22 +100,42 @@
             self.$store.commit('setCancelingIndexing', false);
           }
         }
-      });
+      };
+
+      request.send();
+      request = null;
     }
 
     new Vue({
       created: function () {
         var self = this;
-        $.ajax({
-          url: window.elasticAjaxUrl + '&ajax=1&action=getElasticsearchVersion',
-          method: 'GET',
-          dataType: 'json',
-          success: function (response) {
-            if (response && response.version) {
-              self.$store.commit('setElasticsearchVersion', response.version);
+        var request = new XMLHttpRequest();
+        request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=getElasticsearchVersion', true);
+
+        request.onreadystatechange = function() {
+          if (this.readyState === 4) {
+            var response;
+            try {
+              response = JSON.parse(this.responseText);
+            } catch (e) {
+              response = null;
             }
+
+            if (this.status >= 200 && this.status < 400) {
+              // Success!
+              if (response && response.version) {
+                self.$store.commit('setElasticsearchVersion', response.version);
+              }
+            } else {
+              // Error :(
+            }
+
+            // Finally
           }
-        });
+        };
+
+        request.send();
+        request = null;
       },
       delimiters: ['%%', '%%'],
       el: '#es-module-page',
@@ -143,15 +191,15 @@
           this.$store.commit('setTab', tabKey);
         },
         setLoading: function (loading) {
-          $('.ajax-save-btn').each(function (index, elem) {
+          _.forEach(document.querySelectorAll('.ajax-save-btn'), function (elem, index) {
+            var i = elem.querySelector('i');
             if (loading) {
-              $i = $(elem).find('i');
-              $i.removeClass('process-icon-save').addClass('process-icon-loading');
-              $(elem).attr('disabled', 'disabled');
+              removeClass(i, 'process-icon-save');
+              addClass(i, 'process-icon-loading');
+              elem.setAttribute('disabled', 'disabled');
             } else {
-              $i = $(elem).find('i');
-              $i.addClass('process-icon-save').removeClass('process-icon-loading');
-              $(elem).removeAttr('disabled');
+              removeClass(i, 'process-icon-loading');
+              elem.removeAttribute('disabled');
             }
           });
         },
@@ -167,22 +215,41 @@
         },
         eraseIndex: function () {
           var self = this;
-          $.ajax({
-            url: window.elasticAjaxUrl + '&ajax=1&action=eraseIndex',
-            method: 'GET',
-            dataType: "json",
-            success: function (response) {
-              if (typeof response !== 'undefined'
-                && typeof response.indexed !== 'undefined'
-                && typeof response.total !== 'undefined'
-              ) {
-                self.$store.commit('setIndexingStatus', {
-                  indexed: response.indexed,
-                  total: response.total
-                });
+
+          var request = new XMLHttpRequest();
+          request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=eraseIndex', true);
+
+          request.onreadystatechange = function() {
+            if (this.readyState === 4) {
+              var response;
+              try {
+                response = JSON.parse(this.responseText);
+              } catch (e) {
+                response = null;
               }
+
+              if (this.status >= 200 && this.status < 400) {
+                // Success!
+                if (typeof response !== 'undefined'
+                  && typeof response.indexed !== 'undefined'
+                  && typeof response.total !== 'undefined'
+                ) {
+                  self.$store.commit('setIndexingStatus', {
+                    indexed: response.indexed,
+                    total: response.total
+                  });
+                }
+              } else {
+                // Error :(
+              }
+
+              // Finally
+              self.$store.commit('setSaving', false);
             }
-          });
+          };
+
+          request.send(JSON.stringify(this.$store.state.config));
+          request = null;
         },
         submitSettings: function (event) {
           if (this.$store.state.saving) {
@@ -192,20 +259,28 @@
           this.$store.commit('setSaving', true);
 
           var self = this;
-          $.ajax({
-            url: window.elasticAjaxUrl + '&ajax=1&action=saveSettings',
-            method: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            data: JSON.stringify(this.$store.state.config),
-            success: function () {
-              self.$store.commit('setInitialConfig', JSON.stringify(self.$store.state.config));
-              window.showSuccessMessage('{l s='Settings have been successfully updated' mod='elasticsearch' js=1}');
-            },
-            complete: function () {
+
+          var request = new XMLHttpRequest();
+          request.open('POST', window.elasticAjaxUrl + '&ajax=1&action=saveSettings', true);
+          request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+          request.onreadystatechange = function() {
+            if (this.readyState === 4) {
+              if (this.status >= 200 && this.status < 400) {
+                // Success!
+                self.$store.commit('setInitialConfig', JSON.stringify(self.$store.state.config));
+                window.showSuccessMessage('{l s='Settings have been successfully updated' mod='elasticsearch' js=1}');
+              } else {
+                // Error :(
+              }
+
+              // Finally
               self.$store.commit('setSaving', false);
             }
-          });
+          };
+
+          request.send(JSON.stringify(this.$store.state.config));
+          request = null;
         }
       }
     })

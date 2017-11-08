@@ -219,8 +219,6 @@ class Elasticsearch extends Module
      */
     public function hookDisplayTop()
     {
-        $this->context->controller->addJquery();
-
         // lodash
         $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
 
@@ -232,8 +230,8 @@ class Elasticsearch extends Module
         $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
 //        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
 
-        // jQuery Elasticsearch client
-        $this->context->controller->addJS($this->_path.'views/js/elasticsearch.jquery-13.3.1.min.js');
+        // Elasticsearch client
+        $this->context->controller->addJS($this->_path.'views/js/elasticsearch.13.3.1.min.js');
 
         // Autocomplete CSS
         if (file_exists(__DIR__.'views/templates/themes/'.$this->context->shop->theme_name.'/front.css')) {

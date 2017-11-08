@@ -19,7 +19,7 @@
   (function () {
     // Initialize the ElasticsearchModule object if it does not exist
     window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.client = new $.es.Client({
+    window.ElasticsearchModule.client = new elasticsearch.Client({
       hosts: {Elasticsearch::getReadHosts()|json_encode}
     });
 
