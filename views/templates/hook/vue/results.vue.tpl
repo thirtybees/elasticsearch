@@ -45,12 +45,6 @@
         new Vue({
           delimiters: ['%%', '%%'],
           el: target,
-          components: {
-            ProductCount: window.ElasticsearchModule.components.productCount,
-            ShowAll: window.ElasticsearchModule.components.showAll,
-            Pagination: window.ElasticsearchModule.components.pagination,
-            ProductListItem: window.ElasticsearchModule.components.productListItem,
-          },
           template: '{$smarty.capture.template|escape:'javascript':'UTF-8'}',
           store: window.ElasticsearchModule.store,
           data: {

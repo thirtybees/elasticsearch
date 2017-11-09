@@ -97,9 +97,13 @@
 
       var matches = '';
       _.forEach(selectedFilters, function (filters, filterName) {
-        _.forEach(filters.values, function (filter) {
-          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code +'", "operator": "' + (filters.operator ? filters.operator : 'AND') + '" } } }';
-        });
+        if (parseInt(filters.display_type, 10) === 4) {
+          matches += ', { "range": {"' + filters.aggregation_code + '_agg" : { "gte": ' + filters.values.min + ', "lte": ' + filters.values.max + ' } } }';
+        } else {
+          _.forEach(filters.values, function (filter) {
+            matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code + '", "operator": "' + (filters.operator ? filters.operator : 'AND') + '" } } }';
+          });
+        }
       });
 
       return matches.substring(2);
@@ -148,7 +152,7 @@
           var selectedFilters = _.cloneDeep(state.selectedFilters);
           if (!_.isEmpty(selectedFilters)) {
             _.forEach(state.selectedFilters, function (filters, filterName) {
-              _.forEach(filters, function (filter, index) {
+              _.forEach(filters, function (filter) {
                 var position = -1;
                 var finger = 0;
                 _.forEach(filter.values, function (item) {
@@ -255,11 +259,35 @@
             }
           }
 
-          console.log(selectedFilters);
-
           if (typeof selectedFilters === 'undefined') {
             selectedFilters = {ldelim}{rdelim};
           }
+
+          Vue.set(state, 'selectedFilters', selectedFilters);
+
+          updateResults(state, state.query, this.getters.elasticQuery, false);
+        },
+        addOrUpdateSelectedRangeFilter: function (state, payload) {
+          var selectedFilters = _.cloneDeep(state.selectedFilters);
+          selectedFilters[payload.code] = {
+            code: payload.code,
+            aggregation_code: payload.aggregation_code,
+            name: payload.name,
+            display_type: payload.display_type,
+            values: {
+              min: payload.min,
+              max: payload.max
+            }
+          };
+
+          Vue.set(state, 'selectedFilters', selectedFilters);
+
+          updateResults(state, state.query, this.getters.elasticQuery, false);
+        },
+        removeSelectedRangeFilter: function (state, payload) {
+          var selectedFilters = _.cloneDeep(state.selectedFilters);
+
+          delete selectedFilters[payload.code];
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 

@@ -220,7 +220,7 @@ class Elasticsearch extends Module
         $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
 
         // Vue.js
-        $this->context->controller->addJS('https://unpkg.com/vue@2.4.1');
+        $this->context->controller->addJS('https://unpkg.com/vue@2.4.4');
 //        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
 
         // Vuex
@@ -266,18 +266,57 @@ class Elasticsearch extends Module
                 continue;
             }
 
+            // If meta is a slider (display_type = slider/4), then pick the min and max value
+            if ((int) $meta['display_type'] === 4) {
+                $aggegrations["{$meta['code']}_min"] = [
+                    'min'  => [
+                        'field' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                    ],
+                    'meta' => [
+                        'name'            => $meta['name'],
+                        'code'            => "{$meta['code']}_min",
+                        'slider_code'     => $meta['code'],
+                        'slider_agg_code' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                        'position'        => $meta['position'],
+                        'display_type'    => $meta['display_type'],
+                    ],
+                ];
+                $aggegrations["{$meta['code']}_max"] = [
+                    'max'  => [
+                        'field' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                    ],
+                    'meta' => [
+                        'name'            => $meta['name'],
+                        'code'            => "{$meta['code']}_max",
+                        'slider_code'     => $meta['code'],
+                        'slider_agg_code' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                        'position'        => $meta['position'],
+                        'display_type'    => $meta['display_type'],
+                    ],
+                ];
+
+                continue;
+            }
+
+            // Pick the meta value
+            $aggs  = [
+                'name' => ['top_hits' => ['size' => 1, '_source' => ['include' => [$meta['code']]]]],
+            ];
+
+            // If meta is a color (display_type = color/5), then pick the color code as well
+            if ((int) $meta['display_type'] === 5) {
+                $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['include' => ["{$meta['code']}_color_code"]]]];
+            }
+
             // Name of the aggregation is the display name - the actual code should be retrieved from the top hit
-            $aggegrations[$meta['name']] = [
+            $aggegrations[$meta['code']] = [
                 // Aggregate on the special aggregate field
                 'terms' => [
                     'field' => $meta['code'].'_agg',
                     'size'  => (int) $meta['result_limit'] ?: 10000,
                 ],
                 // This part is added to get the actual display name and meta code of the filter value
-                'aggs'  => [
-                    'name'       => ['top_hits' => ['size' => 1, '_source' => ['include' => [$meta['code']]]]],
-                    'color_code' => ['top_hits' => ['size' => 1, '_source' => ['include' => ["{$meta['code']}_color_code"]]]],
-                ],
+                'aggs'  => $aggs,
                 'meta' => [
                     'name'         => $meta['name'],
                     'code'         => $meta['code'],

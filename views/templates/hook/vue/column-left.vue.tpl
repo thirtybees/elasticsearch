@@ -38,9 +38,6 @@
       if (typeof target !== 'undefined') {
         new Vue({
           el: target,
-          components: {
-            ElasticsearchColumn: window.ElasticsearchModule.components.column,
-          },
           template: '<elasticsearch-column position="left"></elasticsearch-column>',
         });
       }

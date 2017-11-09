@@ -195,7 +195,6 @@ class Fetcher
         'price_tax_excl'          => [
             'function' => [__CLASS__, 'getPriceTaxExcl'],
             'default'  => Meta::ELASTIC_TYPE_FLOAT,
-            'visible'  => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_FLOAT,
             ],

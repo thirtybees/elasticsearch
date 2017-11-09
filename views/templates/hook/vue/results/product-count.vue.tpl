@@ -19,11 +19,7 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/product-count.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    // Initialize the ElasticsearchModule and components objects if they do not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.components = window.ElasticsearchModule.components || {ldelim}{rdelim};
-
-    window.ElasticsearchModule.components.productCount = {
+    Vue.component('product-count', {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
       props: ['limit', 'offset', 'total'],
@@ -39,6 +35,6 @@
           return Math.ceil(this.total / this.limit);
         }
       }
-    };
+    });
   }());
 </script>

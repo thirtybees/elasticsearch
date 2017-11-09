@@ -19,11 +19,7 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/pagination.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    // Initialize the ElasticsearchModule and components objects if they do not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.components = window.ElasticsearchModule.components || {ldelim}{rdelim};
-
-    window.ElasticsearchModule.components.pagination = {
+    Vue.component('pagination', {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
       props: ['limit', 'offset', 'total'],
@@ -52,6 +48,6 @@
           this.$store.commit('setPage', page);
         }
       }
-    };
+    });
   }());
 </script>
