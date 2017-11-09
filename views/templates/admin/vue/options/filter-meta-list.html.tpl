@@ -104,7 +104,7 @@
                 <div class="col-lg-8">
                   <select @change="operatorChanged(meta, $event)" class="selectpicker">
                     <option value="0" :selected="parseInt(meta.operator) === 0">{l s='AND (disjunctive)' mod='elasticsearch'}</option>
-                    <option value="1" :selected="parseInt(meta.operator) === 1">{l s='OR (conjunctive)' mod='elasticsearch'}</option>
+                    {*<option value="1" :selected="parseInt(meta.operator) === 1">{l s='OR (conjunctive)' mod='elasticsearch'}</option>*}
                   </select>
                 </div>
               </div>
