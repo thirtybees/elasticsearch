@@ -56,6 +56,7 @@
           if (this.status >= 200 && this.status < 400) {
             // Success!
             if (typeof response !== 'undefined'
+              && response
               && typeof response.indexed !== 'undefined'
               && typeof response.total !== 'undefined'
             ) {
@@ -231,6 +232,7 @@
               if (this.status >= 200 && this.status < 400) {
                 // Success!
                 if (typeof response !== 'undefined'
+                  && response
                   && typeof response.indexed !== 'undefined'
                   && typeof response.total !== 'undefined'
                 ) {
