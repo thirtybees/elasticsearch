@@ -302,12 +302,12 @@ class Elasticsearch extends Module
 
             // Pick the meta value
             $aggs  = [
-                'name' => ['top_hits' => ['size' => 1, '_source' => ['include' => [$meta['code']]]]],
+                'name' => ['top_hits' => ['size' => 1, '_source' => ['includes' => [$meta['code']]]]],
             ];
 
             // If meta is a color (display_type = color/5), then pick the color code as well
             if ((int) $meta['display_type'] === 5) {
-                $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['include' => ["{$meta['code']}_color_code"]]]];
+                $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['code']}_color_code"]]]];
             }
 
             // Name of the aggregation is the display name - the actual code should be retrieved from the top hit
