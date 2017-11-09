@@ -61,6 +61,14 @@ trait ModuleAjaxTrait
                 if ($setting === static::METAS) {
                     Meta::saveMetas($value);
                     continue;
+                } elseif ($setting === static::SERVERS) {
+                    // If proxied, force read and write to 'yes'
+                    if ($settings[static::PROXY]) {
+                        foreach ($value as $server) {
+                            $server['read'] = 1;
+                            $server['write'] = 1;
+                        }
+                    }
                 } elseif (is_array($value)) {
                     $value = json_encode($value);
                 }
