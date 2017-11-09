@@ -38,9 +38,9 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
      *
      * @return void
      */
-    public function initContent()
+    public function init()
     {
-        if ($this->ajax) {
+        if (!empty($_SERVER['HTTP_X_ELASTICSEARCH_PROXY']) && strtolower($_SERVER['HTTP_X_ELASTICSEARCH_PROXY']) == 'magic') {
             // Set the content type and access control headers of the response
             header('Content-Type: application/json; charset=UTF-8');
             header('access-control-allow-headers: Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization');
@@ -56,20 +56,17 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
                 ]));
             }
 
-            $action = Tools::getValue('action');
             // no need to use displayConf() here
-            if (!empty($action) && method_exists($this, 'ajaxProcess'.Tools::toCamelCase($action))) {
-                Hook::exec('actionAdmin'.ucfirst($action).'Before', ['controller' => $this]);
-                Hook::exec('action'.get_class($this).ucfirst($action).'Before', ['controller' => $this]);
+            $action = 'elasticsearch';
+            Hook::exec('actionAdmin'.ucfirst($action).'Before', ['controller' => $this]);
+            Hook::exec('action'.get_class($this).ucfirst($action).'Before', ['controller' => $this]);
 
-                $return = $this->{'ajaxProcess'.Tools::toCamelCase($action)}();
+            $return = $this->{'ajaxProcess'.Tools::toCamelCase($action)}();
 
-                Hook::exec('actionAdmin'.ucfirst($action).'After', ['controller' => $this, 'return' => $return]);
-                Hook::exec('action'.get_class($this).ucfirst($action).'After', ['controller' => $this, 'return' => $return]);
+            Hook::exec('actionAdmin'.ucfirst($action).'After', ['controller' => $this, 'return' => $return]);
+            Hook::exec('action'.get_class($this).ucfirst($action).'After', ['controller' => $this, 'return' => $return]);
 
-                die(json_encode($return, JSON_UNESCAPED_SLASHES));
-            }
-
+            die(json_encode($return, JSON_UNESCAPED_SLASHES));
         }
 
         die();
@@ -84,34 +81,16 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
      *
      * @return array Results or errors
      */
-    public function ajaxProcessSearch()
+    public function ajaxProcessElasticsearch()
     {
         $idShop = (int) Context::getContext()->shop->id;
         $idLang = (int) Context::getContext()->language->id;
-        $query = Tools::getValue('query');
-        $matches = (string) Tools::getValue('matches');
-        // TODO: figure out a good default value
-        $size = (int) (Tools::getValue('size') ? Tools::getValue('size') : 12);
-        $from = (int) Tools::getValue('from');
-        // FIXME: make it dynamic
-        $fields = ['name', 'reference', 'description'];
-
-        $baseJson = Configuration::get(ElasticSearch::QUERY_JSON);
-        $baseJson = str_replace('||QUERY||', '"query": "'.$query.'"', $baseJson);
-        $baseJson = str_replace('||FIELDS||', '"fields": ["'.implode('","', $fields).'"]', $baseJson);
-        $baseJson = str_replace('||MATCHES_APPEND||', ($matches ? ','.$matches : ''), $baseJson);
-        $baseJson = str_replace('||MATCHES_PREPEND||', ($matches ? $matches.',' : ''), $baseJson);
-        $baseJson = str_replace('||MATCHES_STANDALONE||', ($matches ? $matches : ''), $baseJson);
 
         // FIXME: base this on the advanced query config
         $results = $this->client->search([
             'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
             'type'  => 'product',
-            'body'  => [
-                'size'  => (int) $size,
-                'from'  => (int) $from,
-                'query' => json_decode($baseJson, true),
-            ],
+            'body'  => json_decode(file_get_contents('php://input')),
         ]);
 
         return $results;

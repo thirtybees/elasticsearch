@@ -53,9 +53,7 @@
 
     // Initialize the ElasticsearchModule object if it does not exist
     window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.client = new elasticsearch.Client({
-      hosts: {Elasticsearch::getReadHosts()|json_encode}
-    });
+    window.ElasticsearchModule.hosts = {Elasticsearch::getFrontendHosts()|json_encode};
 
     {literal}
 //      function setFiltersInUrl(properties) {
@@ -145,73 +143,102 @@
     {/literal}
 
     function updateResults(state, query, elasticQuery, showSuggestions) {
-      window.ElasticsearchModule.client.search({
-        index: '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}',
-        body: {
-          size: state.limit,
-          from: state.offset,
-          query: elasticQuery,
-          {if !empty($aggregations)}aggs: {$aggregations|json_encode}{/if}
+      var proxied = {if Configuration::get(Elasticsearch::PROXY)}true{else}false{/if};
+
+      var parser = document.createElement('a');
+      parser.href = rr(window.ElasticsearchModule.hosts);
+
+      var url = parser.protocol + '//' + parser.host + parser.pathname;
+      if (!proxied) {
+        url += '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}/_search';
+      }
+
+      var request = new XMLHttpRequest();
+      request.open('POST', url, true);
+      request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+      request.setRequestHeader('X-Elasticsearch-Proxy', 'magic');
+      if (parser.username && parser.password) {
+        request.setRequestHeader("Authorization", "Basic " + btoa(parser.username + ':' + parser.password));
+      }
+
+      request.onreadystatechange = function() {
+        if (this.readyState === 4) {
+          var response;
+          try {
+            response = JSON.parse(this.responseText);
+          } catch (e) {
+            response = null;
+          }
+
+          if (this.status >= 200 && this.status < 400) {
+            // Success!
+            if (response.hits && response.hits.hits) {
+              // Set the results
+              state.results = response.hits.hits;
+
+              // Handle the suggestions
+              if (showSuggestions) {
+                state.suggestions = _.cloneDeep(_.take(response.hits.hits, 5));
+              } else {
+                state.suggestions = [];
+              }
+
+              // Set the total and max score
+              state.total = response.hits.total;
+              state.maxScore = response.hits.max_score;
+
+              // Handle the aggregations
+              if (response.aggregations) {
+                state.aggregations = response.aggregations;
+              } else {
+                state.aggregations = [];
+              }
+
+              // Handle the selected filters
+              var selectedFilters = _.cloneDeep(state.selectedFilters);
+              if (!_.isEmpty(selectedFilters)) {
+                _.forEach(state.selectedFilters, function (filters, filterName) {
+                  _.forEach(filters, function (filter) {
+                    var position = -1;
+                    var finger = 0;
+                    _.forEach(filter.values, function (item) {
+                      if (item.code === bucket.key) {
+                        position = finger;
+
+                        return false;
+                      }
+                      finger++;
+                    });
+
+                    if (position > -1) {
+                      selectedFilters[filterName] = _.pullAt(selectedFilters[filterName], position);
+                    }
+                  });
+                });
+              }
+
+              Vue.set(state, 'selectedFilters', selectedFilters);
+            }
+          } else {
+            // Error :(
+          }
+
+          // Finally
+        }
+      };
+
+      request.send(JSON.stringify({
+        size: state.limit,
+        from: state.offset,
+        query: elasticQuery,
+        {if !empty($aggregations)}aggs: {$aggregations|json_encode}{/if}
 //          _source: [
 //            "name",
 //            "description_short",
 //            "link"
 //          ]
-        }
-      }, function (error, response) {
-        if (response.hits && response.hits.hits) {
-          // Set the results
-          state.results = response.hits.hits;
-
-          // Handle the suggestions
-          if (showSuggestions) {
-            state.suggestions = _.cloneDeep(_.take(response.hits.hits, 5));
-          } else {
-            state.suggestions = [];
-          }
-
-          // Set the total and max score
-          state.total = response.hits.total;
-          state.maxScore = response.hits.max_score;
-
-          // Handle the aggregations
-          if (response.aggregations) {
-            state.aggregations = response.aggregations;
-          } else {
-            state.aggregations = [];
-          }
-
-          // Handle the selected filters
-          var selectedFilters = _.cloneDeep(state.selectedFilters);
-          if (!_.isEmpty(selectedFilters)) {
-            _.forEach(state.selectedFilters, function (filters, filterName) {
-              _.forEach(filters, function (filter) {
-                var position = -1;
-                var finger = 0;
-                _.forEach(filter.values, function (item) {
-                  if (item.code === bucket.key) {
-                    position = finger;
-
-                    return false;
-                  }
-                  finger++;
-                });
-
-                if (position > -1) {
-                  selectedFilters[filterName] = _.pullAt(selectedFilters[filterName], position);
-                }
-              });
-            });
-          }
-
-          Vue.set(state, 'selectedFilters', selectedFilters);
-
-//          setFiltersInUrl({
-//            query: state.query,
-//            selectedFilters: selectedFilters
-//          });
-        }
-      });
+      }));
+      request = null;
     }
 
     window.ElasticsearchModule.store = new Vuex.Store({

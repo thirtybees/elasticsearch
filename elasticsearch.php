@@ -467,6 +467,20 @@ class Elasticsearch extends Module
     }
 
     /**
+     * Get frontend hosts
+     *
+     * @return array
+     */
+    public static function getFrontendHosts()
+    {
+        if (Configuration::get(static::PROXY)) {
+            return [Context::getContext()->link->getModuleLink('elasticsearch', 'proxy', [], Tools::usingSecureMode())];
+        }
+
+        return static::getReadHosts();
+    }
+
+    /**
      * Return the location of a template file
      * Search order is as follows for front office and hook templates:
      * - theme-specific templates in current theme dir
