@@ -113,7 +113,7 @@ trait ModuleAjaxTrait
         $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
         $idShop = Context::getContext()->shop->id;
         $idLang = Context::getContext()->language->id;
-        $metas = Meta::getAllMetas($idLang);
+        $metas = Meta::getAllMetas([$idLang]);
         if (isset($metas[$idLang])) {
             $metas = $metas[$idLang];
         }

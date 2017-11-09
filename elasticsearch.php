@@ -257,7 +257,7 @@ class Elasticsearch extends Module
             'currencyConversion' => (float) $conversion,
         ]);
 
-        $metas = Meta::getAllMetas($this->context->language->id);
+        $metas = Meta::getAllMetas([$this->context->language->id]);
         if (isset($metas[$this->context->language->id])) {
             $metas = $metas[$this->context->language->id];
         }
