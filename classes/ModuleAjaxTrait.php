@@ -69,6 +69,7 @@ trait ModuleAjaxTrait
                             $server['write'] = 1;
                         }
                     }
+                    $value = json_encode($value);
                 } elseif (is_array($value)) {
                     $value = json_encode($value);
                 }
