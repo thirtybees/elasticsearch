@@ -64,9 +64,6 @@ trait MetaAttributesTrait
         $attributes = [];
         $deferredAttributes = [];
         $metas = static::getAllMetas();
-        if (isset($metas[$idLang])) {
-            $metas = $metas[$idLang];
-        }
 
         $type = 'property';
         foreach (array_keys(Fetcher::$attributes) as $defaultAttribute) {
@@ -83,10 +80,10 @@ trait MetaAttributesTrait
                 'name'              => $name,
                 'position'          => $position,
                 'weight'            => (float) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['weight']) ? $metas[$idLang][$id]['weight'] : 1),
-                'searchable'        => (bool) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['searchable']) ? $metas[$idLang][$id]['searchable'] : false),
-                'aggregatable'      => (bool) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
-                'operator'          => (bool) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
-                'display_type'      => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
+                'searchable'        => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['searchable']) ? $metas[$idLang][$id]['searchable'] : false),
+                'aggregatable'      => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
+                'operator'          => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
+                'display_type'      => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
                 'elastic_type'      => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['elastic_type']) ? $metas[$idLang][$id]['elastic_type'] : 'text',
                 'result_limit'      => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['result_limit']) ? $metas[$idLang][$id]['result_limit'] : 0,
                 'type_configurable' => isset(Fetcher::$attributes[$defaultAttribute]['type_configurable']) ? Fetcher::$attributes[$defaultAttribute]['type_configurable'] : false,
@@ -117,10 +114,10 @@ trait MetaAttributesTrait
                 'name'         => $name,
                 'position'     => $position,
                 'weight'       => (float) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['weight']) ? $metas[$idLang][$id]['weight'] : 1),
-                'searchable'   => (bool) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['searchable']) ? $metas[$idLang][$id]['searchable'] : false),
-                'aggregatable' => (bool) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
-                'operator'     => (bool) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
-                'display_type' => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
+                'searchable'   => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['searchable']) ? $metas[$idLang][$id]['searchable'] : false),
+                'aggregatable' => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
+                'operator'     => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
+                'display_type' => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
                 'elastic_type' => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['elastic_type']) ? $metas[$idLang][$id]['elastic_type'] : 'text',
                 'result_limit' => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['result_limit']) ? $metas[$idLang][$id]['result_limit'] : 0,
                 'type_configurable' => isset(Fetcher::$attributes[$code]['type_configurable']) ? Fetcher::$attributes[$code]['type_configurable'] : false,
@@ -151,10 +148,10 @@ trait MetaAttributesTrait
                 'name'              => $name,
                 'position'          => $position,
                 'weight'            => (float) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['weight']) ? $metas[$idLang][$id]['weight'] : 1),
-                'searchable'        => (bool) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['searchable']) ? $metas[$idLang][$id]['searchable'] : false),
-                'aggregatable'      => (bool) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
-                'operator'          => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
-                'display_type'      => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
+                'searchable'        => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['searchable']) ? $metas[$idLang][$id]['searchable'] : false),
+                'aggregatable'      => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
+                'operator'          => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
+                'display_type'      => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
                 'elastic_type'      => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['elastic_type']) ? $metas[$idLang][$id]['elastic_type'] : 'text',
                 'result_limit'      => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['result_limit']) ? $metas[$idLang][$id]['result_limit'] : 0,
                 'type_configurable' => isset(Fetcher::$attributes[$code]['type_configurable']) ? Fetcher::$attributes[$code]['type_configurable'] : false,

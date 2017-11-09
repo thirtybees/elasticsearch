@@ -124,6 +124,16 @@ class Meta extends ObjectModel
      */
     public static function saveMetas($metas)
     {
+        // Make metas unique before saving
+        $processedKeys = [];
+        foreach ($metas as $index => $meta) {
+            if (!in_array($meta['code'], $processedKeys)) {
+                $processedKeys[] = $meta['code'];
+            } else {
+                unset($metas[$index]);
+            }
+        }
+
         $metaPrimary = bqSQL(Meta::$definition['primary']);
         $metaTable = bqSQL(Meta::$definition['table']);
         $idLang = Context::getContext()->language->id;
@@ -145,7 +155,11 @@ class Meta extends ObjectModel
                         continue;
                     }
 
-                    $update[$key] = $value;
+                    if (in_array(static::$definition['fields'][$key]['type'], [static::TYPE_BOOL, static::TYPE_INT])) {
+                        $update[$key] = (int) $value;
+                    } else {
+                        $update[$key] = $value;
+                    }
                 }
 
                 $update[$metaPrimary] = $existingMetas[$meta['code']][$metaPrimary];
