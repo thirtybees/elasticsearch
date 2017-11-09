@@ -272,26 +272,26 @@ class Elasticsearch extends Module
             if ((int) $meta['display_type'] === 4) {
                 $aggegrations["{$meta['code']}_min"] = [
                     'min'  => [
-                        'field' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                        'field' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                     ],
                     'meta' => [
                         'name'            => $meta['name'],
                         'code'            => "{$meta['code']}_min",
                         'slider_code'     => $meta['code'],
-                        'slider_agg_code' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                        'slider_agg_code' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                         'position'        => $meta['position'],
                         'display_type'    => $meta['display_type'],
                     ],
                 ];
                 $aggegrations["{$meta['code']}_max"] = [
                     'max'  => [
-                        'field' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                        'field' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                     ],
                     'meta' => [
                         'name'            => $meta['name'],
                         'code'            => "{$meta['code']}_max",
                         'slider_code'     => $meta['code'],
-                        'slider_agg_code' => $meta['code'].'_group_'.(int) Group::getCurrent(),
+                        'slider_agg_code' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                         'position'        => $meta['position'],
                         'display_type'    => $meta['display_type'],
                     ],
