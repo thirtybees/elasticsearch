@@ -314,7 +314,7 @@ class Fetcher
                     $elasticProduct->{"{$groupName}_color_code"} = [];
                 }
 
-                if (!in_array($attributeName, $elasticProduct->{"{$groupName}_color_code"})) {
+                if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$groupName}_color_code"})) {
                     $elasticProduct->{"{$groupName}_color_code"}[] = $attribute['attribute_color'];
                 }
             }
@@ -324,6 +324,7 @@ class Fetcher
         foreach ($elasticProduct as $propName => &$value) {
             $value = call_user_func([get_called_class(), 'tryCast'], $value);
         }
+        ddd($elasticProduct);
 
         return $elasticProduct;
     }
