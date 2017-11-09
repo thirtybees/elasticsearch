@@ -2,22 +2,12 @@
   "bool": {
     "must": [
       {
-        "function_score": {
-          "query": {
-            "multi_match": {
-              ||QUERY||,
-              ||FIELDS||,
-              "type": "best_fields",
-              "operator": "OR",
-              "fuzziness": "auto"
-            }
-          },
-          "field_value_factor": {
-            "field": "sales",
-            "factor": 2,
-            "modifier": "ln2p",
-            "missing": 1
-          }
+        "multi_match": {
+          ||QUERY||,
+          ||FIELDS||,
+          "type": "best_fields",
+          "operator": "OR",
+          "fuzziness": "auto"
         }
       }
       ||MATCHES_APPEND||
