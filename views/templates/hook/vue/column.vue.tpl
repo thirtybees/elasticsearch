@@ -120,10 +120,10 @@
           return (parseInt(this.$store.state.metas[code].operator, 10) === 1 ? 'OR' : 'AND');
         },
         findMin: function (code) {
-          return Math.floor(this.$store.state.aggregations[code + '_min'].value);
+          return Math.min(this.findSelectedMin(code), Math.floor(this.$store.state.aggregations[code + '_min'].value));
         },
         findMax: function (code) {
-          return Math.ceil(this.$store.state.aggregations[code + '_max'].value);
+          return Math.max(this.findSelectedMax(code), Math.ceil(this.$store.state.aggregations[code + '_max'].value));
         },
         findSelectedMin: function (code) {
           if (typeof this.selectedFilters[code] !== 'undefined') {
@@ -201,8 +201,8 @@
           return false;
         },
         processRangeSlider: function (aggregationCode, code, event) {
-          var min = Math.floor(parseInt(Math.min(event.val[0], event.val[1]), 10));
-          var max = Math.ceil(parseInt(Math.max(event.val[0], event.val[1]), 10));
+          var min = Math.floor(Math.min(parseInt(event.val[0], 10), parseInt(event.val[1], 10)));
+          var max = Math.ceil(Math.max(parseInt(event.val[0], 10), parseInt(event.val[1], 10)));
 
           // Prevent out of range selections
           if (max <= min) {
