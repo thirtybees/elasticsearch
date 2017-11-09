@@ -173,11 +173,10 @@ class Indexer
             $idShops = Shop::getShops(false, null, true);
         }
 
-
         // Gather the properties and build the mappings
         $searchableMetas = Meta::getAllMetas();
-        if (count($idLangs) > 1) {
-            $searchableMetas = current($searchableMetas);
+        if (isset($searchableMetas[$idLangs[0]])) {
+            $searchableMetas = $searchableMetas[$idLangs[0]];
         }
         $properties = [];
         foreach ($searchableMetas as $meta) {
