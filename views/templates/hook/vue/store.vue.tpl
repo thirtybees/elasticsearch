@@ -156,7 +156,9 @@
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
       request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-      request.setRequestHeader('X-Elasticsearch-Proxy', 'magic');
+      if (proxied) {
+        request.setRequestHeader('X-Elasticsearch-Proxy', 'magic');
+      }
       if (parser.username && parser.password) {
         request.setRequestHeader("Authorization", "Basic " + btoa(parser.username + ':' + parser.password));
       }
