@@ -85,14 +85,14 @@
                     {*<option value="3" :selected="parseInt(meta.display_type) === 3">{l s='Drop-down list' mod='elasticsearch'}</option>*}
                     <option value="4"
                             :selected.once="parseInt(meta.display_type) === 4"
-                            v-if="_.indexOf(meta.elastic_types, 'float') >= 0 || _.indexOf(meta.elastic_types, 'long') >= 0 || _.indexOf(meta.elastic_types, 'integer') >= 0"
+                            v-if="!meta.elastic_types || _.includes(meta.elastic_types, 'float') || _.includes(meta.elastic_types, 'long') || _.includes(meta.elastic_types, 'integer')"
                     >
                       {l s='Slider' mod='elasticsearch'}
                     </option>
                     <option value="5"
                             :selected.once="parseInt(meta.display_type) === 5"
                             data-content="<span>{l s='Color' mod='elasticsearch'}</span> <img src='{$smarty.const.__PS_BASE_URI__|escape:'htmlall':'UTF-8'}img/admin/color_swatch.png' width='16' height='16'>"
-                            v-if="_.indexOf(meta.elastic_types, 'text') >= 0 || _.indexOf(meta.elastic_types, 'keyword') >= 0"
+                            v-if="!meta.elastic_types || _.includes(meta.elastic_types, 'text') || _.includes(meta.elastic_types, 'keyword')"
                     >
                       {l s='Color' mod='elasticsearch'}
                     </option>
