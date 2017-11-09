@@ -17,6 +17,40 @@
  *}
 <script type="text/javascript">
   (function () {
+    // Round robin function
+    // Credits to  JP Richardson (https://github.com/jprichardson/rr)
+    function rr (arr, lastIndex) {
+      if (!Array.isArray(arr)) {
+        throw new Error("Input is not an array.");
+      }
+
+      if (arr.length === 0) {
+        return null;
+      }
+
+      if (arr._rr === null) {
+        arr._rr = 0;
+
+        return arr[0];
+      }
+
+      if (arr.length === 1) {
+        return arr[0];
+      }
+
+      if (typeof lastIndex === 'number')
+        arr._rr = lastIndex;
+
+      //is outside of range?
+      if (arr._rr >= arr.length - 1 || arr._rr < 0) {
+        arr._rr = 0;
+        return arr[0]
+      } else {
+        arr._rr += 1;
+        return arr[arr._rr]
+      }
+    }
+
     // Initialize the ElasticsearchModule object if it does not exist
     window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
     window.ElasticsearchModule.client = new elasticsearch.Client({
