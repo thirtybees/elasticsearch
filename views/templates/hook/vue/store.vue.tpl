@@ -111,7 +111,6 @@
     {/literal}
 
     function updateResults(state, query, elasticQuery, showSuggestions) {
-      {* TODO: build the search query via the stored settings *}
       window.ElasticsearchModule.client.search({
         index: '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}',
         body: {
