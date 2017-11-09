@@ -176,7 +176,9 @@ class Indexer
 
         // Gather the properties and build the mappings
         $searchableMetas = Meta::getAllMetas();
-        $searchableMetas = current($searchableMetas);
+        if (count($idLangs) > 1) {
+            $searchableMetas = current($searchableMetas);
+        }
         $properties = [];
         foreach ($searchableMetas as $meta) {
             // Searchable fields can have both text and keyword fields

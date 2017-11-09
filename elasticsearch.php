@@ -258,7 +258,9 @@ class Elasticsearch extends Module
         ]);
 
         $metas = Meta::getAllMetas($this->context->language->id);
-        $metas = $metas[$this->context->language->id];
+        if (isset($metas[$this->context->language->id])) {
+            $metas = $metas[$this->context->language->id];
+        }
 
         $aggegrations = [];
         foreach ($metas as $meta) {
