@@ -17,6 +17,9 @@
  *}
 <script type="text/javascript">
   (function () {
+    // Pending ajax search requests - cancel these with every new search
+    var pendingRequests = {ldelim}{rdelim};
+
     // Round robin function
     // Credits to  JP Richardson (https://github.com/jprichardson/rr)
     function rr (arr, lastIndex) {
@@ -49,6 +52,12 @@
         arr._rr += 1;
         return arr[arr._rr]
       }
+    }
+
+    function uniqueAggregations(aggs) {
+      var aggregations = _.cloneDeep(aggs);
+
+      return aggregations;
     }
 
     // Initialize the ElasticsearchModule object if it does not exist
@@ -143,28 +152,52 @@
     {/literal}
 
     function updateResults(state, query, elasticQuery, showSuggestions) {
+      // Check if this request should be proxied
       var proxied = {if Configuration::get(Elasticsearch::PROXY)}true{else}false{/if};
 
+      // Create a virtual `<a>` element to parse the URL
       var parser = document.createElement('a');
+      // Assign a host (using Round Robin load balancing)
       parser.href = rr(window.ElasticsearchModule.hosts);
 
+      // Build the URL
       var url = parser.protocol + '//' + parser.host + parser.pathname;
       if (!proxied) {
         url += '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}/_search';
       }
 
+      // Cancel pending requests and remove references to them, so the browser can start cleaning up
+      _.forEach(pendingRequests, function (request) {
+        request.abort();
+      });
+      pendingRequests = {ldelim}{rdelim};
+
+      // Get a timestamp for the request
+      var timestamp = + new Date();
+
+      // Create a new POST request
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
+      // Data type is JSON
       request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+      // Set the proxy header if proxy is enabled
       if (proxied) {
         request.setRequestHeader('X-Elasticsearch-Proxy', 'magic');
       }
+
+      // Set the Basic Auth header if authorization is required
       if (parser.username && parser.password) {
         request.setRequestHeader("Authorization", "Basic " + btoa(parser.username + ':' + parser.password));
       }
 
+      // Ready state = 4 => the request is finished
       request.onreadystatechange = function() {
         if (this.readyState === 4) {
+          // Remove references to this request
+          delete pendingRequests[timestamp];
+
+          // Response should be JSON
           var response;
           try {
             response = JSON.parse(this.responseText);
@@ -172,8 +205,11 @@
             response = null;
           }
 
+          // These statuses mean a successful request
           if (this.status >= 200 && this.status < 400) {
             // Success!
+
+            // Process response
             if (response.hits && response.hits.hits) {
               // Set the results
               state.results = response.hits.hits;
@@ -191,35 +227,39 @@
 
               // Handle the aggregations
               if (response.aggregations) {
-                state.aggregations = response.aggregations;
+                state.aggregations = uniqueAggregations(response.aggregations);
               } else {
                 state.aggregations = [];
               }
 
-              // Handle the selected filters
-              var selectedFilters = _.cloneDeep(state.selectedFilters);
-              if (!_.isEmpty(selectedFilters)) {
-                _.forEach(state.selectedFilters, function (filters, filterName) {
-                  _.forEach(filters, function (filter) {
-                    var position = -1;
-                    var finger = 0;
-                    _.forEach(filter.values, function (item) {
-                      if (item.code === bucket.key) {
-                        position = finger;
+              // Handle the selected filters - remove anything that is not aggregatable
+              // Start with a clone, do not alter the array directly
+              // FIXME: is not workss!
+//              var selectedFilters = _.cloneDeep(state.selectedFilters);
+//              if (!_.isEmpty(selectedFilters)) {
+//
+//                _.forEach(state.selectedFilters, function (filters, filterName) {
+//                  _.forEach(filters, function (filter) {
+//                    var position = -1;
+//                    var finger = 0;
+//
+//                    _.forEach(filter.values, function (item) {
+//                      if (item.code === bucket.key) {
+//                        position = finger;
+//
+//                        return false;
+//                      }
+//                      finger++;
+//                    });
+//
+//                    if (position > -1) {
+//                      selectedFilters[filterName] = _.pullAt(selectedFilters[filterName], position);
+//                    }
+//                  });
+//                });
+//              }
 
-                        return false;
-                      }
-                      finger++;
-                    });
-
-                    if (position > -1) {
-                      selectedFilters[filterName] = _.pullAt(selectedFilters[filterName], position);
-                    }
-                  });
-                });
-              }
-
-              Vue.set(state, 'selectedFilters', selectedFilters);
+//              Vue.set(state, 'selectedFilters', selectedFilters);
             }
           } else {
             // Error :(
@@ -240,7 +280,9 @@
 //            "link"
 //          ]
       }));
-      request = null;
+
+      // Save these in the pending requests array
+      pendingRequests[timestamp] = request;
     }
 
     window.ElasticsearchModule.store = new Vuex.Store({
