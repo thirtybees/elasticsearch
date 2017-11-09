@@ -19,11 +19,7 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/product-list-item.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    // Initialize the ElasticsearchModule and components objects if they do not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.components = window.ElasticsearchModule.components || {ldelim}{rdelim};
-
-    window.ElasticsearchModule.components.productListItem = {
+    Vue.component('product-list-item', {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
       props: ['item'],
@@ -45,10 +41,10 @@
           return taxes[this.item['_source'].id_tax_rules_group];
         },
         basePriceTaxIncl: function () {
-          return parseFloat(this.item['_source'].price_tax_excl['group_0']) * this.tax * this.currencyConversion;
+          return parseFloat(this.item['_source']['price_tax_excl_group_0']) * this.tax * this.currencyConversion;
         },
         priceTaxIncl: function () {
-          return parseFloat(this.item['_source'].price_tax_excl['group_' + this.idGroup]) * this.tax * this.currencyConversion;
+          return parseFloat(this.item['_source']['price_tax_excl_group_' + this.idGroup]) * this.tax * this.currencyConversion;
         }
       },
       methods: {
@@ -56,6 +52,6 @@
           return window.formatCurrency(price, window.currencyFormat, window.currencySign, window.currencyBlank);
         },
       }
-    };
+    });
   }());
 </script>

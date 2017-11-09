@@ -121,7 +121,6 @@
           checkConfigChange(state);
         },
         setMetaAggregatable: function(state, payload) {
-          console.log(payload);
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {
             target.aggregatable = payload.value

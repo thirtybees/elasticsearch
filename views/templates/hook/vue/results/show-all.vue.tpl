@@ -19,11 +19,7 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/show-all.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    // Initialize the ElasticsearchModule and components objects if they do not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.components = window.ElasticsearchModule.components || {ldelim}{rdelim};
-
-    window.ElasticsearchModule.components.showAll = {
+    Vue.component('show-all', {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
       methods: {
@@ -31,6 +27,6 @@
           this.$store.commit('setLimit', 10000);
         }
       }
-    };
+    });
   }());
 </script>

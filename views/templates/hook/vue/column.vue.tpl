@@ -15,21 +15,21 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
+{* Include rangeslider component *}
+{include file=ElasticSearch::tpl('hook/vue/results/rangeslider.vue.tpl')}
+
 {* Template file *}
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/column.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    // Initialize the ElasticsearchModule and components objects if they do not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-    window.ElasticsearchModule.components = window.ElasticsearchModule.components || {ldelim}{rdelim};
-
-    window.ElasticsearchModule.components.column = {
+    Vue.component('elasticsearch-column', {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
       store: window.ElasticsearchModule.store,
       data: function () {
         return {
-          availableAggregations: {$aggregations|json_encode}
+          availableAggregations: {$aggregations|json_encode},
+          value: 0
         };
       },
       computed: {
@@ -43,6 +43,9 @@
         }
       },
       methods: {
+        formatCurrency: function (price) {
+          return window.formatCurrency(price, window.currencyFormat, window.currencySign, window.currencyBlank);
+        },
         findName: function (bucket) {
           if (typeof bucket['name'] !== 'undefined'
             && typeof bucket['name']['hits'] !== 'undefined'
@@ -116,6 +119,26 @@
 
           return (parseInt(this.$store.state.metas[code].operator, 10) === 1 ? 'OR' : 'AND');
         },
+        findMin: function (code) {
+          return Math.floor(this.$store.state.aggregations[code + '_min'].value);
+        },
+        findMax: function (code) {
+          return Math.ceil(this.$store.state.aggregations[code + '_max'].value);
+        },
+        findSelectedMin: function (code) {
+          if (typeof this.selectedFilters[code] !== 'undefined') {
+            return this.selectedFilters[code].values.min;
+          }
+
+          return Math.floor(this.$store.state.aggregations[code + '_min'].value);
+        },
+        findSelectedMax: function (code) {
+          if (typeof this.selectedFilters[code] !== 'undefined') {
+            return this.selectedFilters[code].values.max;
+          }
+
+          return Math.ceil(this.$store.state.aggregations[code + '_max'].value);
+        },
         toggleFilter: function (bucket) {
           var aggregationCode = this.findCode(bucket);
           var filterName = this.findName(bucket);
@@ -141,6 +164,21 @@
             checked: false
           });
         },
+        addOrUpdateRangeFilter: function (aggregation_code, code, min, max) {
+          this.$store.commit('addOrUpdateSelectedRangeFilter', {
+            name: this.$store.state.aggregations[code + '_min'].meta.name,
+            code: code,
+            aggregation_code: aggregation_code,
+            display_type: this.$store.state.aggregations[code + '_min'].meta.display_type,
+            min: min,
+            max: max,
+          });
+        },
+        removeRangeFilter: function (code) {
+          this.$store.commit('removeSelectedRangeFilter', {
+            code: code,
+          });
+        },
         isFilterChecked: function (bucket) {
           var code = this.findCode(bucket);
 
@@ -161,8 +199,11 @@
           }
 
           return false;
+        },
+        processRangeSlider: function (aggregationCode, code, event) {
+          this.addOrUpdateRangeFilter(aggregationCode, code, parseInt(event.val[0], 10), parseInt(event.val[1], 10));
         }
       }
-    };
+    });
   }());
 </script>

@@ -140,6 +140,12 @@ trait ModuleAjaxTrait
                 ],
             ];
 
+            // Process prices for customer groups
+            foreach ($product->price_tax_excl as $group => $value) {
+                $product->{"price_tax_excl_{$group}"} = $value;
+            }
+            unset($product->price_tax_excl);
+
             // Make aggregatable copies of the properties
             // These need to be `link_rewrite`d to make sure they can fit a the friendly URL
             foreach (get_object_vars($product) as $name => $var) {

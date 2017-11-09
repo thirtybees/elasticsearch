@@ -8,7 +8,16 @@
         {l s='Enabled filters:' mod='elasticsearch'}
         </span>
           <ul v-for="(filter, filterName) in selectedFilters">
-            <li v-for="value in filter.values"
+            <li v-if="filter.display_type == 4"
+                style="cursor: pointer"
+                @click="removeRangeFilter(filter.code)"
+            >
+              <a title="{l s='Cancel' mod='elasticsearch'}">
+                <i class="icon icon-remove"></i>
+              </a>
+              %% filter.name %%: %% formatCurrency(filter.values.min) %% - %% formatCurrency(filter.values.max) %%
+            </li>
+            <li v-if="filter.display_type != 4" v-for="value in filter.values"
                 style="cursor: pointer"
                 @click="removeFilter(filter.code, filter.name, value.code, value.name)"
             >
@@ -19,8 +28,7 @@
             </li>
           </ul>
         </div>
-
-        <div v-for="aggregation in aggregations" v-if="aggregation.buckets.length" class="layered_filter" :key="aggregation.meta.code">
+        <div v-for="(aggregation, aggregationName) in aggregations" v-if="aggregation.meta.code.slice(-3) === 'min' && aggregation.value !== null || aggregation.buckets && aggregation.buckets.length" class="layered_filter" :key="aggregation.meta.code">
           <div class="layered_subtitle_heading">
             <span class="layered_subtitle">%% aggregation.meta.name %%</span>
           </div>
@@ -37,6 +45,19 @@
                 </label>
               </div>
             </li>
+          </ul>
+          <ul v-if="aggregation.meta.display_type == 4 && aggregation.value !== null" class="layered_filter_ul">
+            <br />
+            <br />
+            <range-slider style="margin-left: auto; margin-right: auto"
+                          width="88%"
+                          :value.once="[findSelectedMin(aggregation.meta.slider_code), findSelectedMax(aggregation.meta.slider_code)]"
+                          :min.once="findMin(aggregation.meta.slider_code)"
+                          :max.once="findMax(aggregation.meta.slider_code)"
+                          :tooltip-style.once="{ backgroundColor: '#fad629', border: '1px solid #fad629', color: '#000', fontWeight: '700'}"
+                          :process-style.once=" { backgroundColor: '#fad629' }"
+                          @drag-end="processRangeSlider(aggregation.meta.slider_agg_code, aggregation.meta.slider_code, $event)"
+            ></range-slider>
           </ul>
           <ul v-if="aggregation.meta.display_type == 5" class="layered_filter_ul color-group">
             <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable pointer" :key="index" @click="toggleFilter(bucket)">

@@ -38,6 +38,10 @@
     }
 
     var matches = function(el, selector) {
+      if (typeof el === 'undefined' || !el || typeof selector === 'undefined') {
+        return false;
+      }
+
       var _matches = (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector);
 
       if (_matches) {
@@ -72,10 +76,7 @@
     {* If dev mode, enable Vue dev mode as well *}
     {if $smarty.const._PS_MODE_DEV_}Vue.config.devtools = true;{/if}
 
-    // Initialize the ElasticsearchModule object if it does not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
-
-    window.ElasticsearchModule.mainSearch = new Vue({
+    new Vue({
       created: function() {
         this.$store.commit('setQuery', {
           query: getHashValue('q'),
@@ -86,11 +87,6 @@
       el: '#es-searchbox',
       template: '{$smarty.capture.template|escape:'javascript':'UTF-8'}',
       store: window.ElasticsearchModule.store,
-      components: {
-        ElasticsearchColumn: window.ElasticsearchModule.components.column,
-        ElasticsearchResults: window.ElasticsearchModule.components.results,
-        {if $autocomplete}ElasticsearchAutocomplete: window.ElasticsearchModule.components.autocomplete,{/if}
-      },
       computed: {
         query: function () {
           return this.$store.state.query;
@@ -186,6 +182,6 @@
           return 0;
         }
       }
-    })
+    });
   }());
 </script>
