@@ -324,7 +324,6 @@ class Fetcher
         foreach ($elasticProduct as $propName => &$value) {
             $value = call_user_func([get_called_class(), 'tryCast'], $value);
         }
-        ddd($elasticProduct);
 
         return $elasticProduct;
     }
