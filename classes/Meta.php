@@ -135,12 +135,13 @@ class Meta extends ObjectModel
         $inserts = [];
         $langInserts = [];
         $position = 1;
+        $fields = array_keys(static::$definition['fields']);
         foreach ($metas as $meta) {
             if (isset($existingMetas[$meta['code']])) {
                 // Update
                 $update = [];
                 foreach ($meta as $key => $value) {
-                    if ($key === 'name') {
+                    if ($key === 'name' || !in_array($key, $fields)) {
                         continue;
                     }
 
@@ -154,12 +155,11 @@ class Meta extends ObjectModel
                     $update,
                     "`$metaPrimary` = {$existingMetas[$meta['code']][$metaPrimary]}"
                 );
-
             } else {
                 // Insert
                 $insert = [];
                 foreach ($meta as $key => $value) {
-                    if ($key === 'name') {
+                    if ($key === 'name' || !in_array($key, $fields)) {
                         continue;
                     }
 
