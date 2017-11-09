@@ -77,7 +77,7 @@
 
           // Finally
           if ((parseInt(this.status, 10) !== 200 && ajaxAttempts > 0)
-            || (!self.$store.state.cancelingIndexing && typeof response !== 'undefined' && response.indexed !== response.total)
+            || (!self.$store.state.cancelingIndexing && typeof response !== 'undefined' && response && response.indexed !== response.total)
           ) {
             if (this.status < 200 || this.status >= 400) {
               // Decrement if failure...
