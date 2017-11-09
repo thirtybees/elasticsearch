@@ -201,7 +201,19 @@
           return false;
         },
         processRangeSlider: function (aggregationCode, code, event) {
-          this.addOrUpdateRangeFilter(aggregationCode, code, parseInt(event.val[0], 10), parseInt(event.val[1], 10));
+          var min = Math.floor(parseInt(Math.min(event.val[0], event.val[1]), 10));
+          var max = Math.ceil(parseInt(Math.max(event.val[0], event.val[1]), 10));
+
+          // Prevent out of range selections
+          if (max <= min) {
+            if (min > this.findMin(code)) {
+              min = parseInt(this.findMin(code), 10);
+            }
+
+            max = min + 1;
+          }
+
+          this.addOrUpdateRangeFilter(aggregationCode, code, min, max);
         }
       }
     });
