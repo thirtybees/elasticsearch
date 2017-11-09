@@ -112,7 +112,11 @@ trait ModuleAjaxTrait
         }
         $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
         $idShop = Context::getContext()->shop->id;
-        $metas = Meta::getAllMetas(Context::getContext()->language->id);
+        $idLang = Context::getContext()->language->id;
+        $metas = Meta::getAllMetas($idLang);
+        if (isset($metas[$idLang])) {
+            $metas = $metas[$idLang];
+        }
 
         // Check which products are available for indexing
         $products = IndexStatus::getProductsToIndex($amount, 0, null, $this->context->shop->id);

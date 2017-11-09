@@ -124,16 +124,19 @@ class Meta extends ObjectModel
      */
     public static function saveMetas($metas)
     {
-        $existingMetas = static::getAllMetas();
         $metaPrimary = bqSQL(Meta::$definition['primary']);
         $metaTable = bqSQL(Meta::$definition['table']);
         $idLang = Context::getContext()->language->id;
+        $existingMetas = static::getAllMetas();
+        if (isset($existingMetas[$idLang])) {
+            $existingMetas = $existingMetas[$idLang];
+        }
 
         $inserts = [];
         $langInserts = [];
         $position = 1;
         foreach ($metas as $meta) {
-            if (isset($existingMetas[$idLang][$meta['code']])) {
+            if (isset($existingMetas[$meta['code']])) {
                 // Update
                 $update = [];
                 foreach ($meta as $key => $value) {
@@ -144,12 +147,12 @@ class Meta extends ObjectModel
                     $update[$key] = $value;
                 }
 
-                $update[$metaPrimary] = $existingMetas[$idLang][$meta['code']][$metaPrimary];
+                $update[$metaPrimary] = $existingMetas[$meta['code']][$metaPrimary];
                 $update['position'] = $position;
                 Db::getInstance()->update(
                     $metaTable,
                     $update,
-                    "`$metaPrimary` = {$existingMetas[$idLang][$meta['code']][$metaPrimary]}"
+                    "`$metaPrimary` = {$existingMetas[$meta['code']][$metaPrimary]}"
                 );
 
             } else {
@@ -193,7 +196,7 @@ class Meta extends ObjectModel
                     continue;
                 }
 
-                if (isset($existingMetas[$idLang][$meta['code']])) {
+                if (isset($existingMetas[$meta['code']])) {
                     // Update
                     Db::getInstance()->update("{$metaTable}_lang", [
                         $metaPrimary => $primary,

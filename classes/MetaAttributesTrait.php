@@ -64,6 +64,9 @@ trait MetaAttributesTrait
         $attributes = [];
         $deferredAttributes = [];
         $metas = static::getAllMetas();
+        if (isset($metas[$idLang])) {
+            $metas = $metas[$idLang];
+        }
 
         $type = 'property';
         foreach (array_keys(Fetcher::$attributes) as $defaultAttribute) {
