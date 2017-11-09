@@ -270,7 +270,7 @@ class Fetcher
         $elasticProduct->id = (int) $idProduct;
         $product = new Product($idProduct, true, $idLang);
 
-        /** Default Attribute **/
+        /** Default properties **/
         foreach (static::$attributes as $propName => $propItems) {
             if ($propItems['function'] != null && method_exists($propItems['function'][0], $propItems['function'][1])) {
                 $elasticProduct->$propName = call_user_func($propItems['function'], $product, $idLang);
