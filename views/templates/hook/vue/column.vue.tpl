@@ -35,124 +35,51 @@
       computed: {
         aggregations: function () {
           return _.sortBy(_.values(this.$store.state.aggregations), function (agg) {
-            return parseInt(agg.meta.position, 10);
+            return parseInt(agg.position, 10);
           });
         },
         selectedFilters: function () {
           return this.$store.state.selectedFilters;
+        },
+        total: function () {
+          return this.$store.state.total;
         }
       },
       methods: {
         formatCurrency: function (price) {
           return window.formatCurrency(price, window.currencyFormat, window.currencySign, window.currencyBlank);
         },
-        findName: function (bucket) {
-          if (typeof bucket['name'] !== 'undefined'
-            && typeof bucket['name']['hits'] !== 'undefined'
-            && typeof bucket['name']['hits']['hits'] !== 'undefined'
-            && typeof bucket['name']['hits']['hits'][0] !== 'undefined'
-            && typeof bucket['name']['hits']['hits'][0]['_source'] !== 'undefined') {
-            var name = Object.values(bucket['name']['hits']['hits'][0]['_source'])[0];
-            // If it's an array we might be dealing with a color
-            if (_.isArray(name)) {
-              return name[0];
-            }
-
-            return name;
-          }
-
-          throw JSON.stringify(bucket);
-        },
-        findCode: function (bucket) {
-          if (typeof bucket.name !== 'undefined'
-            && typeof bucket.name.hits !== 'undefined'
-            && typeof bucket.name.hits.hits !== 'undefined'
-            && typeof bucket.name.hits.hits[0] !== 'undefined'
-            && typeof bucket.name.hits.hits[0]._source !== 'undefined') {
-            return Object.keys(bucket.name.hits.hits[0]._source)[0];
-          }
-
-          return false;
-        },
-        findColorCode: function (bucket) {
-          if (typeof bucket['color_code'] !== 'undefined'
-            && typeof bucket['color_code']['hits'] !== 'undefined'
-            && typeof bucket['color_code']['hits']['hits'] !== 'undefined'
-            && typeof bucket['color_code']['hits']['hits'][0] !== 'undefined'
-            && typeof bucket['color_code']['hits']['hits'][0]['_source'] !== 'undefined') {
-            var name = Object.values(bucket['color_code']['hits']['hits'][0]['_source'])[0];
-            // If it's an array we might be dealing with a color
-            if (_.isArray(name)) {
-              return name[0];
-            }
-
-            return name;
-          }
-
-          return '#000000';
-        },
-        findDisplayType: function (bucket) {
-          var code = this.findCode(bucket);
-
-          if (typeof this.$store.state.metas[code] !== 'undefined') {
-            return this.$store.state.metas[code].display_type;
-          }
-
-          return 0;
-        },
-        findPosition: function (bucket) {
-          var code = this.findCode(bucket);
-
-          if (typeof this.$store.state.metas[code] !== 'undefined') {
-            return this.$store.state.metas[code].position;
-          }
-
-          return Infinity;
-        },
-        findAggregationName: function (bucket) {
-          var code = this.findCode(bucket);
-
-          return this.$store.state.metas[code].name;
-        },
-        findOperator: function (bucket) {
-          var code = this.findCode(bucket);
-
-          return (parseInt(this.$store.state.metas[code].operator, 10) === 1 ? 'OR' : 'AND');
+        findOperator: function (aggregationCode) {
+          return (parseInt(this.$store.state.metas[aggregationCode].operator, 10) === 1 ? 'OR' : 'AND');
         },
         findMin: function (code) {
-          return Math.min(this.findSelectedMin(code), Math.floor(this.$store.state.aggregations[code + '_min'].value));
+          return Math.min(this.findSelectedMin(code), Math.floor(this.$store.state.aggregations[code].buckets[0].min));
         },
         findMax: function (code) {
-          return Math.max(this.findSelectedMax(code), Math.ceil(this.$store.state.aggregations[code + '_max'].value));
+          return Math.max(this.findSelectedMax(code), Math.ceil(this.$store.state.aggregations[code].buckets[0].max));
         },
         findSelectedMin: function (code) {
           if (typeof this.selectedFilters[code] !== 'undefined') {
             return this.selectedFilters[code].values.min;
           }
 
-          return Math.floor(this.$store.state.aggregations[code + '_min'].value);
+          return Math.floor(this.$store.state.aggregations[code].buckets[0].min);
         },
         findSelectedMax: function (code) {
           if (typeof this.selectedFilters[code] !== 'undefined') {
             return this.selectedFilters[code].values.max;
           }
 
-          return Math.ceil(this.$store.state.aggregations[code + '_max'].value);
+          return Math.ceil(this.$store.state.aggregations[code].buckets[0].max);
         },
-        toggleFilter: function (bucket) {
-          var aggregationCode = this.findCode(bucket);
-          var filterName = this.findName(bucket);
-          var aggregationName = this.findAggregationName(bucket);
-          var operator = this.findOperator(bucket);
-          var checked = this.isFilterChecked(bucket);
-
+        toggleFilter: function (aggregationCode, aggregationName, filterCode, filterName) {
           this.$store.commit('toggleSelectedFilter', {
+            filterCode: filterCode,
             filterName: filterName,
-            filterCode: bucket.key,
-            aggregationName: aggregationName,
             aggregationCode: aggregationCode,
-            operator: operator,
-            checked: !checked
+            aggregationName: aggregationName,
+            operator: this.findOperator(aggregationCode),
+            checked: !this.isFilterChecked(aggregationCode, filterCode)
           });
         },
         removeFilter: function (aggregationCode, aggregationName, filterCode, filterName) {
@@ -164,56 +91,41 @@
             checked: false
           });
         },
-        addOrUpdateRangeFilter: function (aggregation_code, code, min, max) {
+        addOrUpdateRangeFilter: function (aggregationCode, aggregationName, min, max) {
           this.$store.commit('addOrUpdateSelectedRangeFilter', {
-            name: this.$store.state.aggregations[code + '_min'].meta.name,
-            code: code,
-            aggregation_code: aggregation_code,
-            display_type: this.$store.state.aggregations[code + '_min'].meta.display_type,
+            code: aggregationCode,
+            name: aggregationName,
             min: min,
             max: max,
           });
         },
-        removeRangeFilter: function (code) {
+        removeRangeFilter: function (aggregationCode) {
           this.$store.commit('removeSelectedRangeFilter', {
-            code: code,
+            code: aggregationCode,
           });
         },
-        isFilterChecked: function (bucket) {
-          var code = this.findCode(bucket);
-
-          if (typeof this.selectedFilters[code] !== 'undefined'
-            && typeof this.selectedFilters[code].values !== 'undefined') {
-            var position = -1;
-            var finger = 0;
-            _.forEach(this.selectedFilters[code].values, function (filter) {
-              if (filter.code === bucket.key) {
-                position = finger;
-
-                return false;
-              }
-              finger++;
-            });
-
-            return position > -1;
+        isFilterChecked: function (aggregationCode, filterCode) {
+          if (typeof this.selectedFilters[aggregationCode] !== 'undefined'
+            && typeof this.selectedFilters[aggregationCode].values !== 'undefined') {
+            return _.findIndex(this.selectedFilters[aggregationCode].values, ['code', filterCode]) > -1;
           }
 
           return false;
         },
-        processRangeSlider: function (aggregationCode, code, event) {
+        processRangeSlider: function (aggregationCode, aggregationName, event) {
           var min = Math.floor(Math.min(parseInt(event.val[0], 10), parseInt(event.val[1], 10)));
           var max = Math.ceil(Math.max(parseInt(event.val[0], 10), parseInt(event.val[1], 10)));
 
           // Prevent out of range selections
           if (max <= min) {
-            if (min > this.findMin(code)) {
-              min = parseInt(this.findMin(code), 10);
+            if (min > this.findMin(aggregationCode)) {
+              min = parseInt(this.findMin(aggregationCode), 10);
             }
 
             max = min + 1;
           }
 
-          this.addOrUpdateRangeFilter(aggregationCode, code, min, max);
+          this.addOrUpdateRangeFilter(aggregationCode, aggregationName, min, max);
         }
       }
     });
