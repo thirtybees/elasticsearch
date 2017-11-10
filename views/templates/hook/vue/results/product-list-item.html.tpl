@@ -101,9 +101,7 @@
       {*{if isset($product.is_virtual) && !$product.is_virtual}{hook h="displayProductDeliveryTime" product=$product}{/if}*}
       {*{hook h="displayProductPriceBlock" product=$product type="weight"}*}
 
-      <p class="product-desc hide-if-product-grid">
-        %% item['_source'].description_short %%
-      </p>
+      <p class="product-desc hide-if-product-grid" v-html="item._source.description_short"></p>
     </div>
 
     <div class="product-actions-container">
