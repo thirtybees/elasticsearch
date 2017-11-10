@@ -510,6 +510,8 @@
             selectedFilters = {ldelim}{rdelim};
           }
 
+          state.offset = 0;
+
           Vue.set(state, 'selectedFilters', selectedFilters);
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
@@ -526,6 +528,8 @@
             }
           };
 
+          state.offset = 0;
+
           Vue.set(state, 'selectedFilters', selectedFilters);
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
@@ -534,6 +538,8 @@
           var selectedFilters = _.cloneDeep(state.selectedFilters);
 
           delete selectedFilters[payload.code];
+
+          state.offset = 0;
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 
