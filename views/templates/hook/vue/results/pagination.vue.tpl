@@ -38,7 +38,7 @@
           if (_.indexOf([1, 2], this.page) > -1) {
             return _.range(1, Math.min(6, this.nbPages + 1));
           } else if (_.indexOf([this.nbPages - 1, this.nbPages], this.page) > -1) {
-            return _.range(this.nbPages - 4, this.nbPages + 1);
+            return _.range(this.nbPages - (Math.min(5, this.nbPages) - 1), this.nbPages + 1);
           }
 
           return _.range(this.page - 2, this.page + 3);
