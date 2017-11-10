@@ -401,3 +401,6 @@ ul.layered_filter_ul {
     overflow: hidden;
     position: absolute !important;
 }
+.es-highlight {
+    font-weight: 700;
+}
