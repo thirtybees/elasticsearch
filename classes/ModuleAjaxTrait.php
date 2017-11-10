@@ -167,7 +167,7 @@ trait ModuleAjaxTrait
                     continue;
                 }
 
-                if (isset($metas[Context::getContext()->language->id][$name]) && in_array($metas[Context::getContext()->language->id][$name]['elastic_type'], ['string', 'text'])) {
+                if (isset($metas[$name]) && in_array($metas[$name]['elastic_type'], ['string', 'text'])) {
                     if (is_array($var)) {
                         foreach ($var as &$item) {
                             $item = Tools::link_rewrite($item);
