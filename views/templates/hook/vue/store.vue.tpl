@@ -54,8 +54,136 @@
       }
     }
 
-    function uniqueAggregations(aggs) {
-      var aggregations = _.cloneDeep(aggs);
+    function normalizeAggregations(aggs) {
+      // The main list
+      var aggregations = {ldelim}{rdelim};
+
+      // Iterating the aggregations returned by Elasticsearch and starting the normalization process
+      _.forEach(aggs, function (agg, aggCode) {
+        // Check if this aggregation should be processed
+        if (typeof agg.buckets !== 'undefined' && !agg.buckets.length) {
+          return;
+        }
+
+        // Handle the aggregation according to the display type
+        var displayType = parseInt(agg.meta.display_type, 10);
+
+        var actualAggCode = aggCode;
+        if (displayType === 4) {
+          actualAggCode = aggCode.substring(0, aggCode.length - 4); // Aggregation name minus the _min or _max part at the end
+        }
+
+        //The normalized aggregations
+        var aggregation = {
+          code: actualAggCode,
+          name: agg.meta.name,
+          position: agg.meta.position,
+          display_type: displayType,
+          buckets: []
+        };
+
+        if (displayType === 4) {
+          // Slider
+          var aggType = aggCode.substring(aggCode.length - 3); // Aggregation type
+
+          // If the slider aggregation already exists, we only need to add the current min/max
+          if (typeof aggregations[actualAggCode] !== 'undefined') {
+            aggregations[actualAggCode].buckets[0][aggType] = agg.value;
+
+            return;
+          }
+
+          // Create the slider buckets
+          var newBucket = {ldelim}{rdelim};
+          newBucket[aggType] = agg.value;
+          aggregation.buckets.push(newBucket);
+        } else if (displayType === 5) {
+          // Color
+          _.forEach(agg.buckets, function (bucket) {
+            // Ensure we have a names array
+            var position = 0;
+            var key = bucket.key;
+
+            var codes = bucket.code.hits.hits[0]._source[aggCode + '_agg'];
+            if (!_.isArray(codes)) {
+              codes = [codes];
+            } else {
+              // Search the position we will have to use
+              position = _.indexOf(codes, key);
+              if (position < 0) {
+                position = 0;
+              }
+            }
+
+            var names = bucket.name.hits.hits[0]._source[aggCode];
+            if (!_.isArray(names)) {
+              names = [names];
+            }
+
+            var colorCodes = bucket.color_code.hits.hits[0]._source[aggCode + '_color_code'];
+            if (!_.isArray(colorCodes)) {
+              colorCodes = [colorCodes];
+            }
+
+            var code = codes[position];
+            var name = names[position];
+            var colorCode = colorCodes[position];
+
+            // Check if bucket already exists
+            var newBucket = _.find(aggregation.buckets, ['code', code]);
+            if (typeof newBucket === 'object') {
+              newBucket.total += bucket.doc_count;
+            } else {
+              aggregation.buckets.push({
+                code: code,
+                name: name,
+                color_code: colorCode,
+                total: bucket.doc_count
+              });
+            }
+          });
+        } else {
+          // Checkbox
+          _.forEach(agg.buckets, function (bucket) {
+            // Ensure we have a names array
+            var position = 0;
+            var key = bucket.key;
+
+            var codes = bucket.code.hits.hits[0]._source[aggCode + '_agg'];
+            if (!_.isArray(codes)) {
+              codes = [codes];
+            } else {
+              // Search the position we will have to use
+              position = _.indexOf(codes, key);
+              if (position < 0) {
+                position = 0;
+              }
+            }
+
+            var names = bucket.name.hits.hits[0]._source[aggCode];
+            if (!_.isArray(names)) {
+              names = [names];
+            }
+
+            var code = codes[position];
+            var name = names[position];
+
+            // Check if bucket already exists
+            var newBucket = _.find(aggregation.buckets, ['code', code]);
+            if (typeof newBucket === 'object') {
+              newBucket.total += bucket.doc_count;
+            } else {
+              aggregation.buckets.push({
+                code: code,
+                name: name,
+                total: bucket.doc_count
+              });
+            }
+          });
+        }
+
+        aggregations[actualAggCode] = aggregation;
+      });
 
       return aggregations;
     }
@@ -107,6 +235,8 @@
 
     /**
      * Find filters that have been applied in the query
+     *
+     * @fixme: use normalized format
      */
     function findAggregatedFilters(aggregations) {
       var foundFilters = {};
@@ -139,7 +269,12 @@
       var matches = '';
       _.forEach(selectedFilters, function (filters, filterName) {
         if (parseInt(filters.display_type, 10) === 4) {
-          matches += ', { "range": {"' + filters.aggregation_code + '_agg" : { "gte": ' + filters.values.min + ', "lte": ' + filters.values.max + ' } } }';
+          var aggregationCode = filters.code;
+          if (aggregationCode === 'price_tax_excl') {
+            aggregationCode += '_group_{/literal}{Context::getContext()->customer->id_default_group|intval}{literal}';
+          }
+
+          matches += ', { "range": {"' + aggregationCode + '_agg" : { "gte": ' + filters.values.min + ', "lte": ' + filters.values.max + ' } } }';
         } else {
           _.forEach(filters.values, function (filter) {
             matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code + '", "operator": "' + (filters.operator ? filters.operator : 'AND') + '" } } }';
@@ -147,6 +282,7 @@
         }
       });
 
+      // Remove ` ,`
       return matches.substring(2);
     }
     {/literal}
@@ -227,7 +363,7 @@
 
               // Handle the aggregations
               if (response.aggregations) {
-                state.aggregations = uniqueAggregations(response.aggregations);
+                state.aggregations = normalizeAggregations(response.aggregations);
               } else {
                 state.aggregations = [];
               }
@@ -375,9 +511,8 @@
           var selectedFilters = _.cloneDeep(state.selectedFilters);
           selectedFilters[payload.code] = {
             code: payload.code,
-            aggregation_code: payload.aggregation_code,
             name: payload.name,
-            display_type: payload.display_type,
+            display_type: 4,
             values: {
               min: payload.min,
               max: payload.max

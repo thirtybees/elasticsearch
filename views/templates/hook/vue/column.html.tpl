@@ -5,9 +5,9 @@
       <div class="block_content">
         <div id="enabled_filters" v-if="_.values(selectedFilters).length">
         <span class="layered_subtitle" style="float: none;">
-        {l s='Enabled filters:' mod='elasticsearch'}
+          {l s='Enabled filters:' mod='elasticsearch'}
         </span>
-          <ul v-for="(filter, filterName) in selectedFilters">
+          <ul v-for="filter in selectedFilters">
             <li v-if="filter.display_type == 4"
                 style="cursor: pointer"
                 @click="removeRangeFilter(filter.code)"
@@ -28,50 +28,57 @@
             </li>
           </ul>
         </div>
-        <div v-for="(aggregation, aggregationName) in aggregations" v-if="aggregation.meta.code.slice(-3) === 'min' && aggregation.value !== null || aggregation.buckets && aggregation.buckets.length" class="layered_filter" :key="aggregation.meta.code">
+        <div v-for="(aggregation, aggregationCode) in aggregations" v-if="total" class="layered_filter" :key="aggregation.code">
           <div class="layered_subtitle_heading">
-            <span class="layered_subtitle">%% aggregation.meta.name %%</span>
+            <span class="layered_subtitle">%% aggregation.name %%</span>
           </div>
-          <ul v-if="aggregation.meta.display_type == 0" class="layered_filter_ul">
-            <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable" :key="index">
+          <ul v-if="aggregation.display_type == 0" class="layered_filter_ul">
+            <li v-for="bucket in aggregation.buckets" class="nomargin hiddable" :key="aggregation.code + bucket.code">
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" :checked="isFilterChecked(bucket)" @click="toggleFilter(bucket)">
+                  <input type="checkbox"
+                         :checked="isFilterChecked(aggregation.code, bucket.code)"
+                         @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
+                  >
                   <a class="pointer"
                      data-rel="nofollow"
                   >
-                    %% findName(bucket) %%<span> (%% bucket.doc_count %%)</span>
+                    %% bucket.name %%<span> (%% bucket.total %%)</span>
                   </a>
                 </label>
               </div>
             </li>
           </ul>
-          <ul v-if="aggregation.meta.display_type == 4 && aggregation.value !== null" class="layered_filter_ul">
+          <ul v-if="aggregation.display_type == 4" class="layered_filter_ul">
             <br />
             <br />
             <range-slider style="margin-left: auto; margin-right: auto"
                           width="88%"
-                          :value.once="[findSelectedMin(aggregation.meta.slider_code), findSelectedMax(aggregation.meta.slider_code)]"
-                          :min.once="findMin(aggregation.meta.slider_code)"
-                          :max.once="findMax(aggregation.meta.slider_code)"
+                          :value.once="[findSelectedMin(aggregation.code), findSelectedMax(aggregation.code)]"
+                          :min.once="findMin(aggregation.code)"
+                          :max.once="findMax(aggregation.code)"
                           :tooltip-style.once="{ backgroundColor: '#fad629', border: '1px solid #fad629', color: '#000', fontWeight: '700'}"
                           :process-style.once=" { backgroundColor: '#fad629' }"
-                          @drag-end="processRangeSlider(aggregation.meta.slider_agg_code, aggregation.meta.slider_code, $event)"
+                          @drag-end="processRangeSlider(aggregation.code, aggregation.name, $event)"
             ></range-slider>
           </ul>
-          <ul v-if="aggregation.meta.display_type == 5" class="layered_filter_ul color-group">
-            <li v-for="(bucket, index) in aggregation.buckets" class="nomargin hiddable pointer" :key="index" @click="toggleFilter(bucket)">
-              <input :class="'color-option' + (isFilterChecked(bucket) ? ' on' : '')"
+          <ul v-if="aggregation.display_type == 5" class="layered_filter_ul color-group">
+            <li v-for="bucket in aggregation.buckets"
+                class="nomargin hiddable pointer"
+                :key="aggregation.code + bucket.code"
+                @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
+            >
+              <input :class="'color-option' + (isFilterChecked(aggregation.code, bucket.code) ? ' on' : '')"
                      type="button"
-                     :aria-label.once="findName(bucket)"
-                     :style.once="'background: ' + findColorCode(bucket)"
+                     :aria-label.once="bucket.name"
+                     :style.once="'background: ' + bucket.color_code"
               >
               <label class="layered_color"
-                     :aria-label="findName(bucket)"
+                     :aria-label="bucket.name"
                      style="cursor: pointer"
               >
                 <a data-rel="nofollow" style="cursor: pointer">
-                  %% findName(bucket) %% <span style="cursor: pointer"> (%% bucket.doc_count %%)</span>
+                  %% bucket.name %% <span style="cursor: pointer"> (%% bucket.total %%)</span>
                 </a>
               </label>
             </li>
