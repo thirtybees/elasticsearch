@@ -409,6 +409,13 @@
         size: state.limit,
         from: state.offset,
         query: elasticQuery,
+        highlight: {
+          fields: {
+            name: {ldelim}{rdelim}
+          },
+          pre_tags: ['<span class="es-highlight">'],
+          post_tags: ['</span>']
+        },
         {if !empty($aggregations)}aggs: {$aggregations|json_encode}{/if}
 //          _source: [
 //            "name",

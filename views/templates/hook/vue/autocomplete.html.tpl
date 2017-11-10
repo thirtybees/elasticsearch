@@ -16,9 +16,12 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
 <div id="elasticsearch-results" v-if="results.length">
-  <span :class="'elastic-suggestion clearfix ' + ((result['_id'] == selected) ? 'active' : '')"
+  <span :class="'elastic-suggestion clearfix ' + ((result._id == selected) ? 'active' : '')"
         v-for="result in results"
-        :key="result['_id']"
+        :key="result._id"
         @click="suggestionClicked(result, $event)"
-  ><a :href="result['_source'].link">%% result['_source'].name %%</a></span>
+  >
+    <a :href="result._source.link" v-if="result.highlight" v-html="result.highlight.name[0]"></a>
+    <a :href="result._source.link" v-else="result.highlight">%% result._source.name %%</a>
+  </span>
 </div>
