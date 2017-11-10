@@ -300,9 +300,10 @@ class Elasticsearch extends Module
                 continue;
             }
 
-            // Pick the meta value
+            // Pick the meta value and code (via _agg)
             $aggs  = [
                 'name' => ['top_hits' => ['size' => 1, '_source' => ['includes' => [$meta['code']]]]],
+                'code' => ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['code']}_agg"]]]],
             ];
 
             // If meta is a color (display_type = color/5), then pick the color code as well
