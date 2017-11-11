@@ -17,13 +17,13 @@
  *}
 <div id="es-module-page" class="row" v-cloak>
     {include file=ElasticSearch::tpl('admin/config/status.tpl')}
-    <div id="tab-list" class="list-group col-md-2">
-        {include file=ElasticSearch::tpl('admin/config/tabs.tpl')}
-    </div>
-    {foreach $tabs as $tab}
-        <div class="col-md-10" v-show="'{$tab['key']}' === currentTab">
-            {include file=ElasticSearch::tpl("admin/config/{$tab.key}.tpl")}
-        </div>
+    {include file=ElasticSearch::tpl('admin/config/tabs.tpl')}
+    {foreach $tabGroups as $tabGroup}
+        {foreach $tabGroup as $tab}
+            <div class="col-md-10" v-show="'{$tab['key']}' === currentTab">
+                {include file=ElasticSearch::tpl("admin/config/{$tab.key}.tpl")}
+            </div>
+        {/foreach}
     {/foreach}
 </div>
 {include file=ElasticSearch::tpl('admin/vue/loadcomponents.tpl')}

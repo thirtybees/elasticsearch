@@ -176,31 +176,35 @@ class Elasticsearch extends Module
             ],
             'totalProducts'  => IndexStatus::countProducts($this->context->language->id, $this->context->shop->id),
             'languages'      => Language::getLanguages(false, false, false),
-            'tabs'           => [
+            'tabGroups' => [
                 [
-                    'name' => 'Configuration',
-                    'key'  => 'config',
-                    'icon' => 'cogs',
+                    [
+                        'name' => 'Configuration',
+                        'key'  => 'config',
+                        'icon' => 'cogs',
+                    ],
+                    [
+                        'name' => 'Connection',
+                        'key'  => 'connection',
+                        'icon' => 'plug',
+                    ],
                 ],
                 [
-                    'name' => 'Connection',
-                    'key'  => 'connection',
-                    'icon' => 'plug',
-                ],
-                [
-                    'name' => 'Indexing',
-                    'key'  => 'indexing',
-                    'icon' => 'sort',
-                ],
-                [
-                    'name' => 'Search',
-                    'key'  => 'search',
-                    'icon' => 'search',
-                ],
-                [
-                    'name' => 'Filter',
-                    'key'  => 'filter',
-                    'icon' => 'filter',
+                    [
+                        'name' => 'Indexing',
+                        'key'  => 'indexing',
+                        'icon' => 'sort',
+                    ],
+                    [
+                        'name' => 'Search',
+                        'key'  => 'search',
+                        'icon' => 'search',
+                    ],
+                    [
+                        'name' => 'Filter',
+                        'key'  => 'filter',
+                        'icon' => 'filter',
+                    ],
                 ],
             ],
             'elastic_types' => Meta::getElasticTypes(),

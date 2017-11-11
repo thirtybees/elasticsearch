@@ -156,8 +156,8 @@
         currentTab: function () {
           return this.$store.state.tab;
         },
-        tabs: function () {
-          return {$tabs|json_encode};
+        tabGroups: function () {
+          return {$tabGroups|json_encode};
         },
         canSubmit: function () {
           return this.$store.state.configChanged && !this.loading;
