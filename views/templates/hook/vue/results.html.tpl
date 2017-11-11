@@ -1,4 +1,4 @@
-<main>
+<main v-if="_.indexOf(['list', 'grid'], layoutType) > -1">
   <section id="category-info">
     <h1 class="page-heading product-listing">
       <span v-if="!query" class="cat-name">
@@ -24,11 +24,23 @@
         <div id="product-list-switcher" class="form-group display">
           <label class="visible-xs">{l s='Display product list as:' mod='elasticsearch'}</label>
           <div class="btn-group" role="group" aria-label="Product list display type">
-            <a id="grid" class="btn btn-default selected active" rel="nofollow" href="#" title="Grid">
+            <a id="es-grid"
+               :class="'btn btn-default' + (layoutType === 'grid' ? ' selected active' : '')"
+               rel="nofollow"
+               @click="setLayoutType('grid')"
+               title="{l s='Grid' mod='elasticsearch'}"
+               style="cursor: pointer"
+            >
               <i class="icon icon-fw icon-th"></i>
               <span class="visible-xs">{l s='Grid' mod='elasticsearch'}</span>
             </a>
-            <a id="list" class="btn btn-default" rel="nofollow" href="#" title="List">
+            <a id="es-list"
+               :class="'btn btn-default'  + (layoutType === 'list' ? ' selected active' : '')"
+               rel="nofollow"
+               @click="setLayoutType('list')"
+               title="{l s='List' mod='elasticsearch'}"
+               style="cursor: pointer"
+            >
               <i class="icon icon-fw icon-bars"></i>
               <span class="visible-xs">{l s='List' mod='elasticsearch'}</span>
             </a>
@@ -82,7 +94,7 @@
       {*</div>*}
     </div>
 
-    <ul class="product_list grid list-grid row">
+    <ul :class="'product_list list-grid row ' + layoutType">
       <li v-for="result in results" class="ajax_block_product col-xs-12 col-sm-6 col-md-4" :key="result['_id']">
         <product-list-item :item="result"></product-list-item>
       </li>
