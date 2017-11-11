@@ -21,7 +21,7 @@
     {foreach $tabGroups as $tabGroup}
         {foreach $tabGroup as $tab}
             <div class="col-md-10" v-show="'{$tab['key']}' === currentTab">
-                {include file=ElasticSearch::tpl("admin/config/{$tab.key}.tpl")}
+                {include file=ElasticSearch::tpl("admin/config/tabs/{$tab.key}.tpl")}
             </div>
         {/foreach}
     {/foreach}
