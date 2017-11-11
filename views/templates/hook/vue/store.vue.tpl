@@ -439,7 +439,8 @@
         limit: 12,
         offset: 0,
         selectedFilters: {ldelim}{rdelim},
-        metas: {$metas|json_encode}
+        metas: {$metas|json_encode},
+        layoutType: null
       },
       mutations: {
         setQuery: function (state, payload) {
@@ -470,6 +471,9 @@
           state.offset = state.limit * (page - 1);
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
+        },
+        setLayoutType: function (state, layoutType) {
+          state.layoutType = layoutType;
         },
         toggleSelectedFilter: function (state, payload) {
           var shouldEnable = payload.checked;

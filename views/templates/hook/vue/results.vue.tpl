@@ -31,7 +31,7 @@
       } else if (document.addEventListener) {
         document.addEventListener('DOMContentLoaded', fn);
       } else {
-        document.attachEvent('onreadystatechange', function() {
+        document.attachEvent('onreadystatechange', function () {
           if (document.readyState !== 'loading') {
             fn();
           }
@@ -43,6 +43,17 @@
       var target = document.getElementById('elasticsearch-results');
       if (typeof target !== 'undefined') {
         new Vue({
+          created: function () {
+            var view = '{if Configuration::get(Elasticsearch::PRODUCT_LIST)}list{else}grid{/if}';
+            if (typeof window.localStorage !== 'undefined') {
+              var localView = window.localStorage.getItem('es-display');
+              if (_.indexOf(['grid', 'list'], localView) > -1) {
+                view = localView;
+              }
+            }
+
+            this.$store.commit('setLayoutType', view);
+          },
           delimiters: ['%%', '%%'],
           el: target,
           template: '{$smarty.capture.template|escape:'javascript':'UTF-8'}',
@@ -71,6 +82,9 @@
             },
             offset: function () {
               return this.$store.state.offset;
+            },
+            layoutType: function () {
+              return this.$store.state.layoutType;
             }
           },
           methods: {
@@ -79,6 +93,13 @@
             },
             itemsPerPageHandler: function (event) {
               this.$store.commit('setLimit', parseInt(event.target.value, 10));
+            },
+            setLayoutType: function (layoutType) {
+              if (typeof window.localStorage !== 'undefined'  && _.indexOf(['grid', 'list'], layoutType) > -1) {
+                window.localStorage.setItem('es-display', layoutType);
+
+                this.$store.commit('setLayoutType', layoutType);
+              }
             }
           }
         });

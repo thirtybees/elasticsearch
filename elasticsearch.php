@@ -46,6 +46,7 @@ class Elasticsearch extends Module
     const QUERY_JSON = 'ELASTICSEARCH_QUERY_JSON';
     const OVERLAY_DIV = 'ELASTICSEARCH_OVERLAY_DIV';
     const CATEGORY_DIV = 'ELASTICSEARCH_CATEGORY_DIV';
+    const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
 
     /** @var \Elasticsearch\Client $readClient */
     protected static $readClient;
@@ -204,6 +205,13 @@ class Elasticsearch extends Module
                         'name' => 'Filter',
                         'key'  => 'filter',
                         'icon' => 'filter',
+                    ],
+                ],
+                [
+                    [
+                        'name' => 'Display',
+                        'key'  => 'display',
+                        'icon' => 'desktop',
                     ],
                 ],
             ],
@@ -579,6 +587,7 @@ class Elasticsearch extends Module
             static::QUERY_JSON      => Configuration::get(static::QUERY_JSON),
             static::OVERLAY_DIV     => Configuration::get(static::OVERLAY_DIV),
             static::CATEGORY_DIV    => Configuration::get(static::CATEGORY_DIV),
+            static::PRODUCT_LIST    => Configuration::get(static::PRODUCT_LIST),
         ];
     }
 
