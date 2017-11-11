@@ -25,7 +25,7 @@
       props: ['selected', 'results'],
       methods: {
         suggestionClicked: function (result, event) {
-          window.location.href = result['_source'].link;
+          window.location.href = result._source.link;
           this.$store.commit('eraseSuggestions');
         }
       }

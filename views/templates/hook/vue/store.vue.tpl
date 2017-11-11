@@ -245,7 +245,7 @@
         var category = null;
         _.forEach(aggregation.buckets, function (bucket) {
           if (!category) {
-            category = Object.keys(bucket.name.hits.hits[0]['_source'])[0];
+            category = Object.keys(bucket.name.hits.hits[0]._source)[0];
             foundFilters[category] = {};
           }
           foundFilters[category][bucket.key] = true;

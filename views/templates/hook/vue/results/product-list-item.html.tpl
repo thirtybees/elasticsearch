@@ -2,22 +2,22 @@
   <div class="product-container">
     <div class="product-image-container">
       <a class="product_img_link"
-         :href.once="item['_source'].link"
-         :title.once="item['_source'].name"
+         :href.once="item._source.link"
+         :title.once="item._source.name"
       >
         <img class="replace-2x img-responsive center-block"
-             :src.once="'//' + item['_source'].image_link_large.replace('search_default', 'large_default')"
+             :src.once="'//' + item._source.image_link_large.replace('search_default', 'large_default')"
                 {* TODO: restore responsive images *}
                 {*srcset=""*}
                 {*sizes="(min-width: 1200px) 250px, (min-width: 992px) 218px, (min-width: 768px) 211px, 250px"*}
-             :alt.once="item['_source'].name"
-             :title.once="item['_source'].name"
+             :alt.once="item._source.name"
+             :title.once="item._source.name"
         >
       </a>
 
       {if isset($quick_view) && $quick_view}
         <a class="quick-view show-if-product-item-hover" :href="item.link"
-           title="{l s='Open quick view window' mod='elasticsearch'}" :rel="item['_source'].link">
+           title="{l s='Open quick view window' mod='elasticsearch'}" :rel="item._source.link">
           <i class="icon icon-eye-open"></i>
         </a>
       {/if}
@@ -34,7 +34,7 @@
           {* TODO: find a way to handle discounts *}
           {*{if $product.price_without_reduction > 0 && isset($product.specific_prices) && $product.specific_prices && isset($product.specific_prices.reduction) && $product.specific_prices.reduction > 0}*}
             {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
-            {*<span class="old-price product-price">%% item['_source'].price_tax_incl %%*}
+            {*<span class="old-price product-price">%% item._source.price_tax_incl %%*}
             {*{displayWtPrice p=$product.price_without_reduction}*}
             {*</span>*}
             {*{if $product.specific_prices.reduction_type == 'percentage'}*}
@@ -83,9 +83,9 @@
       <h3 class="h4 product-name">
         {*{if isset($product.pack_quantity) && $product.pack_quantity}{$product.pack_quantity|intval|cat:' x '}{/if}*}
         <a class="product-name"
-           :href="item['_source'].link"
-           :title="item['_source'].name">
-          %% item['_source'].name %%
+           :href="item._source.link"
+           :title="item._source.name">
+          %% item._source.name %%
         </a>
       </h3>
 
@@ -154,7 +154,7 @@
           {*</span>*}
           {*{/if}*}
           {*{/if}*}
-          <a class="btn btn-default" :href="item['_source'].link" title="{l s='View' mod='elasticsearch'}">
+          <a class="btn btn-default" :href="item._source.link" title="{l s='View' mod='elasticsearch'}">
             {* TODO: handle customizations *}
             <span>
               {*{if (isset($product.customization_required) && $product.customization_required)}*}
@@ -177,8 +177,8 @@
             {*{if ($product.allow_oosp || $product.quantity > 0)}*}
               {*<span class="label {if $product.quantity <= 0 && isset($product.allow_oosp) && !$product.allow_oosp} label-danger{elseif $product.quantity <= 0} label-warning{else} label-success{/if}">*}
 
-              <span v-if="item['_source'].quantity <= 0 && item['_source'].available_later" class="label label-danger">%% item['_source'].available_later</span>
-              <span v-else-if="item['_source'].quantity <= 0" class="label label-danger">{l s='Out of stock' mod='elasticsearch'}</span>
+              <span v-if="item._source.quantity <= 0 && item._source.available_later" class="label label-danger">%% item._source.available_later</span>
+              <span v-else-if="item._source.quantity <= 0" class="label label-danger">{l s='Out of stock' mod='elasticsearch'}</span>
               <span v-else class="label label-success">{l s='In stock' mod='elasticsearch'}</span>
 
               {* TODO: handle backorders *}
@@ -218,7 +218,7 @@
           {*{if isset($comparator_max_item) && $comparator_max_item}*}
             {*<div class="compare">*}
               {*<a class="add_to_compare"*}
-                 {*:href="item['_source'].link"*}
+                 {*:href="item._source.link"*}
                  {*:data-id-product="item['_id']">*}
                 {*<i class="icon icon-plus"></i> {l s='Add to Compare' mod='elasticsearch'}*}
               {*</a>*}

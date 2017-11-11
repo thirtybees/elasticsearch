@@ -33,18 +33,18 @@
         tax: function () {
           var taxes = {$taxes|json_encode};
 
-          if (typeof this.item['_source'].id_tax_rules_group === 'undefined'
-            || typeof taxes[this.item['_source'].id_tax_rules_group]) {
+          if (typeof this.item._source.id_tax_rules_group === 'undefined'
+            || typeof taxes[this.item._source.id_tax_rules_group]) {
             return 1.000;
           }
 
-          return taxes[this.item['_source'].id_tax_rules_group];
+          return taxes[this.item._source.id_tax_rules_group];
         },
         basePriceTaxIncl: function () {
-          return parseFloat(this.item['_source']['price_tax_excl_group_0']) * this.tax * this.currencyConversion;
+          return parseFloat(this.item._source.price_tax_excl_group_0) * this.tax * this.currencyConversion;
         },
         priceTaxIncl: function () {
-          return parseFloat(this.item['_source']['price_tax_excl_group_' + this.idGroup]) * this.tax * this.currencyConversion;
+          return parseFloat(this.item._source['price_tax_excl_group_' + this.idGroup]) * this.tax * this.currencyConversion;
         }
       },
       methods: {
