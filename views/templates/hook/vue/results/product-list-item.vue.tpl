@@ -26,7 +26,7 @@
       data: function () {
         return {
           idGroup: {$idGroup|intval},
-          currencyConversion: parseFloat({$currencyConversion|floatval}, 10)
+          currencyConversion: {$currencyConversion|floatval}
         }
       },
       computed: {
@@ -34,11 +34,14 @@
           var taxes = {$taxes|json_encode};
 
           if (typeof this.item._source.id_tax_rules_group === 'undefined'
-            || typeof taxes[this.item._source.id_tax_rules_group]) {
+            || typeof taxes[this.item._source.id_tax_rules_group] === 'undefined') {
             return 1.000;
           }
 
-          return taxes[this.item._source.id_tax_rules_group];
+          return 1 + parseFloat(taxes[this.item._source.id_tax_rules_group]) / 100;
+        },
+        priceWithTaxAndConversion: function (price) {
+          return parseFloat(price) * this.tax * this.currencyConversion;
         },
         basePriceTaxIncl: function () {
           return parseFloat(this.item._source.price_tax_excl_group_0) * this.tax * this.currencyConversion;

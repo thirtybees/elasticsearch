@@ -53,7 +53,9 @@
             @click="cancelIndexing"
             :disabled="cancelingIndexing"
             >
-      <i :class="cancelingIndexing ? 'process-icon-loading' : 'process-icon-cancel'"></i> <span v-if="!cancelingIndexing">{l s='Cancel' mod='elasticsearch'}</span><span v-else>{l s='Canceling...' mod='elasticsearch'}</span>
+      <i :class="cancelingIndexing ? 'process-icon-loading' : 'process-icon-cancel'"></i>&nbsp;
+      <span v-if="!cancelingIndexing">{l s='Cancel' mod='elasticsearch'}</span>
+      <span v-else>{l s='Canceling...' mod='elasticsearch'}</span>
     </button>
   </div>
 </div>

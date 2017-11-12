@@ -47,6 +47,7 @@ class Elasticsearch extends Module
     const OVERLAY_DIV = 'ELASTICSEARCH_OVERLAY_DIV';
     const CATEGORY_DIV = 'ELASTICSEARCH_CATEGORY_DIV';
     const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
+    const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
 
     /** @var \Elasticsearch\Client $readClient */
     protected static $readClient;
@@ -108,6 +109,12 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::OVERLAY_DIV, '#columns > .row');
         Configuration::updateGlobalValue(static::CATEGORY_DIV, '#main_column');
+        $defaultTaxGroup = 0;
+        $taxes = TaxRulesGroup::getTaxRulesGroups(true);
+        if (!empty($taxes)) {
+            $defaultTaxGroup = $taxes[0][TaxRulesGroup::$definition['primary']];
+        }
+        Configuration::updateGlobalValue(static::DEFAULT_TAX_RULES_GROUP, $defaultTaxGroup);
 
         return true;
     }
@@ -128,6 +135,9 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::SHARDS);
         Configuration::deleteByName(static::OVERLAY_DIV);
         Configuration::deleteByName(static::CATEGORY_DIV);
+        Configuration::deleteByName(static::OVERLAY_DIV);
+        Configuration::deleteByName(static::CATEGORY_DIV);
+        Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
 
         return parent::uninstall();
     }
@@ -257,14 +267,20 @@ class Elasticsearch extends Module
         $conversion = $defaultCurrency->conversion_rate * $currentCurrency->conversion_rate;
 
         $taxes = TaxRulesGroup::getAssociatedTaxRatesByIdCountry(Context::getContext()->country->id);
-        if (!Tax::excludeTaxeOption() && (int) Group::getPriceDisplayMethod($this->context->customer->id_default_group) == PS_TAX_EXC) {
-            foreach ($taxes as $tax) {
+        if (!Tax::excludeTaxeOption() && (int) Group::getPriceDisplayMethod($this->context->customer->id_default_group) === PS_TAX_EXC) {
+            foreach ($taxes as &$tax) {
                 $tax['rate'] = 1.000;
             }
         }
 
+        $defaultTax = 1.0000;
+        if (isset($taxes[Configuration::get(static::DEFAULT_TAX_RULES_GROUP)])) {
+            $defaultTax = 1 + (float) $taxes[Configuration::get(static::DEFAULT_TAX_RULES_GROUP)] / 100;
+        }
+
         $this->context->smarty->assign([
             'idGroup'            => (int) $this->context->customer->id_default_group ?: 1,
+            'defaultTax'         => $defaultTax,
             'taxes'              => $taxes,
             'currencyConversion' => (float) $conversion,
         ]);
@@ -577,17 +593,18 @@ class Elasticsearch extends Module
     protected function getConfigFormValues()
     {
         return [
-            static::LOGGING_ENABLED => (int) Configuration::get(static::LOGGING_ENABLED),
-            static::PROXY           => (int) Configuration::get(static::PROXY),
-            static::SERVERS         => (array) json_decode(Configuration::get(static::SERVERS), true),
-            static::SHARDS          => (int) Configuration::get(static::SHARDS),
-            static::REPLICAS        => (int) Configuration::get(static::REPLICAS),
-            static::METAS           => Meta::getAllAttributes(),
-            static::INDEX_PREFIX    => Configuration::get(static::INDEX_PREFIX),
-            static::QUERY_JSON      => Configuration::get(static::QUERY_JSON),
-            static::OVERLAY_DIV     => Configuration::get(static::OVERLAY_DIV),
-            static::CATEGORY_DIV    => Configuration::get(static::CATEGORY_DIV),
-            static::PRODUCT_LIST    => Configuration::get(static::PRODUCT_LIST),
+            static::LOGGING_ENABLED         => (int) Configuration::get(static::LOGGING_ENABLED),
+            static::PROXY                   => (int) Configuration::get(static::PROXY),
+            static::SERVERS                 => (array) json_decode(Configuration::get(static::SERVERS), true),
+            static::SHARDS                  => (int) Configuration::get(static::SHARDS),
+            static::REPLICAS                => (int) Configuration::get(static::REPLICAS),
+            static::METAS                   => Meta::getAllAttributes(),
+            static::INDEX_PREFIX            => Configuration::get(static::INDEX_PREFIX),
+            static::QUERY_JSON              => Configuration::get(static::QUERY_JSON),
+            static::OVERLAY_DIV             => Configuration::get(static::OVERLAY_DIV),
+            static::CATEGORY_DIV            => Configuration::get(static::CATEGORY_DIV),
+            static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),
+            static::DEFAULT_TAX_RULES_GROUP => Configuration::get(static::DEFAULT_TAX_RULES_GROUP),
         ];
     }
 
