@@ -61,6 +61,10 @@ trait ModuleAjaxTrait
                 if ($setting === static::METAS) {
                     Meta::saveMetas($value);
                     continue;
+                } elseif ($setting == static::STOP_WORDS) {
+                    Configuration::updateValue($setting, $value);
+
+                    continue;
                 } elseif ($setting == static::SERVERS) {
                     if ($settings[static::PROXY]) {
                         foreach ($value as &$server) {

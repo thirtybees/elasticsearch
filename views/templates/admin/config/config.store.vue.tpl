@@ -41,6 +41,11 @@
 
           checkConfigChange(state);
         },
+        setLangConfig: function (state, props) {
+          state.config[props.key][props.idLang] = props.value;
+
+          checkConfigChange(state);
+        },
         setInitialConfig: function (state, config) {
           state.initialConfig = config;
 
