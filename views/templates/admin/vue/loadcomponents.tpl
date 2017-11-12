@@ -23,5 +23,6 @@
 {include file=ElasticSearch::tpl('admin/vue/options/filter-meta-list.vue.tpl')}
 {include file=ElasticSearch::tpl('admin/vue/options/switch.vue.tpl')}
 {include file=ElasticSearch::tpl('admin/vue/options/textinput.vue.tpl')}
+{include file=ElasticSearch::tpl('admin/vue/options/tax-selector.vue.tpl')}
 {include file=ElasticSearch::tpl('admin/vue/options/numberinput.vue.tpl')}
 {include file=ElasticSearch::tpl('admin/vue/options/query-json.vue.tpl')}

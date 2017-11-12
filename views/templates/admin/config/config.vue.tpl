@@ -150,7 +150,8 @@
         IndexMetaList: VueIndexMetaList,
         SearchMetaList: VueSearchMetaList,
         FilterMetaList: VueFilterMetaList,
-        QueryJson: VueQueryJson
+        QueryJson: VueQueryJson,
+        TaxSelector: VueTaxSelector
       },
       computed: {
         currentTab: function () {

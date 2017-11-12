@@ -29,7 +29,9 @@
       data: function () {
         return {
           availableAggregations: {$aggregations|json_encode},
-          value: 0
+          value: 0,
+          tax: {$defaultTax|floatval},
+          currencyConversion: {$currencyConversion|floatval}
         };
       },
       computed: {
@@ -126,6 +128,9 @@
           }
 
           this.addOrUpdateRangeFilter(aggregationCode, aggregationName, min, max);
+        },
+        getPriceInclTax: function (price) {
+          return Math.round(price * this.tax * this.currencyConversion);
         }
       }
     });

@@ -103,11 +103,8 @@
     <div class="content_sortPagiBar">
       <div class="bottom-pagination-content form-inline clearfix">
         <pagination :limit="limit" :offset="offset" :total="total"></pagination>
-
         <show-all></show-all>
-
         <product-count :limit="limit" :offset="offset" :total="total"></product-count>
-
       </div>
       {* TODO: restore compare functionality *}
       {*<div class="form-group compare-form">*}

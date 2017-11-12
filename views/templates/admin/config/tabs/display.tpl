@@ -22,6 +22,9 @@
             config-key="{Elasticsearch::PRODUCT_LIST}"
             description="{l s='Show a product list instead of a grid by default' mod='elasticsearch'}"
     ></toggle>
+    <tax-selector display-name="{l s='Price slider tax rules group' mod='elasticsearch'}"
+                  config-key="{Elasticsearch::DEFAULT_TAX_RULES_GROUP}"
+                  help="{l s='Apply this tax rules group to the slider. Note that if you have mixed taxes in your store, the shown product selection might no longer be accurate.' mod='elasticsearch'}"></tax-selector>
   </div>
   <div class="panel-footer">
     <button type="submit" class="btn btn-default pull-right ajax-save-btn" :disabled="!canSubmit"
