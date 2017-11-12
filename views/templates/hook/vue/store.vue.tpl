@@ -210,6 +210,17 @@
       var selectedFilters = properties.selectedFilters;
       var query = properties.query;
 
+      if (!query) {
+        // Remove hash
+        if (typeof history.replaceState === 'function') {
+          history.replaceState('', document.title, window.location.pathname + window.location.search);
+        } else {
+          window.location.hash = '';
+        }
+
+        return;
+      }
+
       var hash = '#q=' + query;
       if (properties.page) {
         hash += '/p=' + properties.page;
@@ -554,6 +565,9 @@
           var properties = filtersFromUrl(state);
           state.selectedFilters = properties.selectedFilters;
           state.query = properties.query;
+          if (!state.query) {
+            return;
+          }
 
           updateResults(state, properties.query, this.getters.elasticQuery, false);
         },
