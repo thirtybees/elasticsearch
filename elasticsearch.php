@@ -91,6 +91,10 @@ class Elasticsearch extends Module
      */
     public function install()
     {
+        if (version_compare(phpversion(), '5.6', '<')) {
+            Context::getContext()->controller->errors[] = sprintf($this->l('The Elasticsearch module requires at least PHP version 5.6. Your current version is: %s'), phpversion());
+        }
+
         if (!parent::install()) {
             return false;
         }
