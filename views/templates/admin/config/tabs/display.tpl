@@ -24,7 +24,7 @@
     ></toggle>
     <toggle display-name="{l s='Infinite scroll' mod='elasticsearch' js=1}"
             config-key="{Elasticsearch::INFINITE_SCROLL}"
-            description="{l s='Load more products when the bottom of the page is reached. Note: visitors might have a hard time reaching your footer!' mod='elasticsearch'}"
+            help="{l s='Load more products when the bottom of the page is reached. Note: visitors might have a hard time reaching your footer!' mod='elasticsearch'}"
     ></toggle>
     <tax-selector display-name="{l s='Price slider tax rules group' mod='elasticsearch'}"
                   config-key="{Elasticsearch::DEFAULT_TAX_RULES_GROUP}"
