@@ -1,4 +1,4 @@
-<main v-if="_.indexOf(['list', 'grid'], layoutType) > -1">
+<main v-if="_.indexOf(['list', 'grid'], layoutType) > -1" id="es-results" :class="classList">
   <section id="category-info">
     <h1 class="page-heading product-listing">
       <span v-if="!query" class="cat-name">
@@ -13,7 +13,6 @@
   <section id="category-products" v-if="query && total">
     <h2 class="page-heading">
       {l s='Products' mod='elasticsearch'}
-
       <span class="pull-right">
         <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
         <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>

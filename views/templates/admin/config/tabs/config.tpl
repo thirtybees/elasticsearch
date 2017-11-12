@@ -37,10 +37,6 @@
                   config-key="{Elasticsearch::OVERLAY_DIV}"
                   max-width="200"
       ></text-input>
-      <text-input :display-name="'{l s='Category (manufacturers, etc.) jQuery selector' mod='elasticsearch' js=1}'"
-                  config-key="{Elasticsearch::CATEGORY_DIV}"
-                  max-width="200"
-      ></text-input>
       <toggle :display-name="'{l s='Enable logging' mod='elasticsearch' js=1}'"
               config-key="{Elasticsearch::LOGGING_ENABLED}"
       ></toggle>

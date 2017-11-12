@@ -16,6 +16,7 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
 {* Include dependencies *}
+{capture name="resultsTemplate"}{include file=ElasticSearch::tpl('front/search.tpl')}{/capture}
 {include file=ElasticSearch::tpl('hook/vue/results/product-count.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/show-all.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/pagination.vue.tpl')}
@@ -41,8 +42,41 @@
 
     ready(function () {
       var target = document.getElementById('elasticsearch-results');
-      if (typeof target !== 'undefined') {
+      if (typeof target === 'undefined' || !target) {
+        mainColumn = document.querySelectorAll('{Configuration::get(Elasticsearch::OVERLAY_DIV)|escape:'javascript':'UTF-8'}');
+        if (!mainColumn.length) {
+          return;
+        }
+
+        // Take the first element
+        mainColumn = mainColumn[0];
+        mainColumn.insertAdjacentHTML('beforebegin', '{$smarty.capture.resultsTemplate|escape:'javascript':'UTF-8'}');
+        target = document.getElementById('elasticsearch-results');
+        // Apply the same classlist
+        window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
+        window.ElasticsearchModule.classList = mainColumn.classList.value;
+      }
+
+      if (typeof target !== 'undefined' || !target) {
         new Vue({
+          beforeUpdate: function () {
+            // Not `undefined` means we're dealing with instant search
+            if (typeof mainColumn !== 'undefined') {
+              var instantSearchBlock = document.getElementById('es-results');
+
+              if (this.$store.state.query) {
+                mainColumn.style.display = 'none';
+                if (instantSearchBlock) {
+                  instantSearchBlock.style.display = '';
+                }
+              } else {
+                mainColumn.style.display = '';
+                if (instantSearchBlock) {
+                  instantSearchBlock.style.display = 'none';
+                }
+              }
+            }
+          },
           created: function () {
             var view = '{if Configuration::get(Elasticsearch::PRODUCT_LIST)}list{else}grid{/if}';
             if (typeof window.localStorage !== 'undefined') {
@@ -85,6 +119,9 @@
             },
             layoutType: function () {
               return this.$store.state.layoutType;
+            },
+            classList: function () {
+              return window.ElasticsearchModule.classList;
             }
           },
           methods: {
