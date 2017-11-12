@@ -576,7 +576,8 @@
         metas: {$metas|json_encode},
         layoutType: null,
         tax: {$defaultTax|floatval},
-        currencyConversion: {$currencyConversion|floatval}
+        currencyConversion: {$currencyConversion|floatval},
+        infiniteScroll: {if Configuration::get(Elasticsearch::INFINITE_SCROLL)}true{else}false{/if}
       },
       mutations: {
         initQuery: function (state) {
@@ -714,6 +715,11 @@
           state.offset = 0;
 
           Vue.set(state, 'selectedFilters', selectedFilters);
+
+          updateResults(state, state.query, this.getters.elasticQuery, false);
+        },
+        loadMoreProducts: function (state) {
+          state.limit += 12;
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
         }

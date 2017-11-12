@@ -88,12 +88,18 @@
 
             this.$store.commit('setLayoutType', view);
           },
+          directives: {
+            InfiniteScroll: window.infiniteScroll
+          },
           delimiters: ['%%', '%%'],
           el: target,
           template: '{$smarty.capture.template|escape:'javascript':'UTF-8'}',
           store: window.ElasticsearchModule.store,
-          data: {
-            itemsPerPageOptions: [12, 24, 36]
+          data: function () {
+            return {
+              itemsPerPageOptions: [12, 24, 36],
+              busy: false
+            }
           },
           computed: {
             query: function () {
@@ -122,6 +128,9 @@
             },
             classList: function () {
               return window.ElasticsearchModule.classList;
+            },
+            infiniteScroll: function () {
+              return this.$store.state.infiniteScroll;
             }
           },
           methods: {
@@ -137,6 +146,11 @@
 
                 this.$store.commit('setLayoutType', layoutType);
               }
+            },
+            loadMoreProducts: function ($state) {
+              this.$store.commit('loadMoreProducts');
+
+              setTimeout($state.loaded, 200);
             }
           }
         });

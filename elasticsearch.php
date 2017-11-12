@@ -47,6 +47,7 @@ class Elasticsearch extends Module
     const OVERLAY_DIV = 'ELASTICSEARCH_OVERLAY_DIV';
     const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
     const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
+    const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
 
     /** @var \Elasticsearch\Client $readClient */
     protected static $readClient;
@@ -243,6 +244,10 @@ class Elasticsearch extends Module
         // Vue.js
         $this->context->controller->addJS('https://unpkg.com/vue@2.4.4');
 //        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
+
+        if (Configuration::get(static::INFINITE_SCROLL)) {
+            $this->context->controller->addJS('https://unpkg.com/vue-infinite-loading');
+        }
 
         // Vuex
         $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
