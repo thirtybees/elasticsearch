@@ -115,7 +115,7 @@
         {*</form>*}
       {*</div>*}
     </div>
-    <infinite-loading @infinite="loadMoreProducts">
+    <infinite-loading @infinite="loadMoreProducts" v-if="infiniteScroll">
       <span slot="no-more">
         {l s='You\'ve reached the end of the list' mod='elasticsearch'}
       </span>
