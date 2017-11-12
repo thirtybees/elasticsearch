@@ -17,10 +17,20 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+
 if (!defined('_TB_VERSION_')) {
     if (php_sapi_name() !== 'cli') {
         exit;
     } else {
+        foreach ($argv as $arg) {
+            $e = explode('=', $arg);
+            if (count($e) == 2) {
+                $_GET[$e[0]] = $e[1];
+            } else {
+                $_GET[$e[0]] = 0;
+            }
+        }
+
         require_once __DIR__.'/../../../../config/config.inc.php';
     }
 }
@@ -45,6 +55,26 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
                 ->where('`id_profile` = 1')
         ));
 
+        if (isset($_GET['id_shop'])) {
+            $idShop = (int) $_GET['id_shop'];
+        } else {
+            $idShop = Context::getContext()->shop->id;
+        }
+
+        if (isset($_GET['clear'])) {
+            try {
+                // Delete the indices first
+                ElasticsearchModule\Indexer::eraseIndices(null, [$idShop]);
+
+                // Reset the mappings
+                ElasticsearchModule\Indexer::createMappings(null, [$idShop]);
+
+                // Erase the index status for the current store
+                ElasticsearchModule\IndexStatus::erase($idShop);
+            } catch (Exception $e) {
+            }
+        }
+
         $chunks = INF;
         if (isset($_GET['chunks'])) {
             $chunks = (int) $_GET['chunks'];
@@ -52,7 +82,7 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
 
         /** @var Elasticsearch $module */
         $module = Module::getInstanceByName('elasticsearch');
-        $module->cronProcessRemainingProducts($chunks);
+        $module->cronProcessRemainingProducts($chunks, $idShop);
     }
 }
 

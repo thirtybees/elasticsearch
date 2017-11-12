@@ -572,8 +572,9 @@ class Elasticsearch extends Module
      * Index remaining products
      *
      * @param int $chunks
+     * @param int $idShop
      */
-    public function cronProcessRemainingProducts($chunks)
+    public function cronProcessRemainingProducts($chunks, $idShop)
     {
         /** @var Client $client */
         $client = static::getWriteClient();
@@ -587,7 +588,6 @@ class Elasticsearch extends Module
             $amount = 100;
         }
         $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
-        $idShop = Context::getContext()->shop->id;
         $idLang = Context::getContext()->language->id;
         $metas = Meta::getAllMetas([$idLang]);
         if (isset($metas[$idLang])) {
@@ -596,7 +596,7 @@ class Elasticsearch extends Module
 
         while ($chunks > 0) {
             // Check which products are available for indexing
-            $products = IndexStatus::getProductsToIndex($amount, 0, null, $this->context->shop->id);
+            $products = IndexStatus::getProductsToIndex($amount, 0, null, $idShop);
 
             if (empty($products)) {
                 // Nothing to index -- cron job done
