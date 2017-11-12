@@ -56,32 +56,12 @@
       }
     };
 
-    function getHashValue(key) {
-      if (typeof key !== 'string') {
-        key = '';
-      } else {
-        key = key.toLowerCase();
-      }
-
-      var keyAndHash = location.hash.toLowerCase().match(new RegExp(key + '=([^&]*)'));
-      var value = '';
-
-      if (keyAndHash) {
-        value = keyAndHash[1];
-      }
-
-      return value;
-    }
-
     {* If dev mode, enable Vue dev mode as well *}
     {if $smarty.const._PS_MODE_DEV_}Vue.config.devtools = true;{/if}
 
     new Vue({
       created: function() {
-        this.$store.commit('setQuery', {
-          query: getHashValue('q'),
-          showSuggestions: false
-        });
+        this.$store.commit('initQuery');
       },
       delimiters: ['%%', '%%'],
       el: '#es-searchbox',

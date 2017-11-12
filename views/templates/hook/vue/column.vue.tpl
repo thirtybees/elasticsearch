@@ -29,9 +29,7 @@
       data: function () {
         return {
           availableAggregations: {$aggregations|json_encode},
-          value: 0,
-          tax: {$defaultTax|floatval},
-          currencyConversion: {$currencyConversion|floatval}
+          value: 0
         };
       },
       computed: {
@@ -45,11 +43,20 @@
         },
         total: function () {
           return this.$store.state.total;
+        },
+        tax: function () {
+          return this.$store.state.tax;
+        },
+        currencyConversion: function () {
+          return this.$store.state.currencyConversion;
         }
       },
       methods: {
         formatCurrency: function (price) {
           return window.formatCurrency(price, window.currencyFormat, window.currencySign, window.currencyBlank);
+        },
+        findDisplayType: function (aggregationCode) {
+          return parseInt(this.$store.state.metas[aggregationCode].display_type, 10);
         },
         findOperator: function (aggregationCode) {
           return (parseInt(this.$store.state.metas[aggregationCode].operator, 10) === 1 ? 'OR' : 'AND');
@@ -80,6 +87,7 @@
             filterName: filterName,
             aggregationCode: aggregationCode,
             aggregationName: aggregationName,
+            displayType: this.findDisplayType(aggregationCode),
             operator: this.findOperator(aggregationCode),
             checked: !this.isFilterChecked(aggregationCode, filterCode)
           });
