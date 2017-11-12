@@ -17,6 +17,7 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
+use Elasticsearch\Client;
 use Elasticsearch\ClientBuilder;
 use ElasticsearchModule\IndexStatus;
 use ElasticsearchModule\Meta;
@@ -565,6 +566,133 @@ class Elasticsearch extends Module
     public static function jsonEncodeQuery($query)
     {
         return str_replace("\n", '', $query);
+    }
+
+    /**
+     * Index remaining products
+     *
+     * @param int $chunks
+     */
+    public function cronProcessRemainingProducts($chunks)
+    {
+        /** @var Client $client */
+        $client = static::getWriteClient();
+        if (!$client) {
+            die(json_encode([
+                'success' => false,
+            ]));
+        }
+        $amount = (int) (Configuration::get(static::INDEX_CHUNK_SIZE) ?: 100);
+        if (!$amount) {
+            $amount = 100;
+        }
+        $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
+        $idShop = Context::getContext()->shop->id;
+        $idLang = Context::getContext()->language->id;
+        $metas = Meta::getAllMetas([$idLang]);
+        if (isset($metas[$idLang])) {
+            $metas = $metas[$idLang];
+        }
+
+        while ($chunks > 0) {
+            // Check which products are available for indexing
+            $products = IndexStatus::getProductsToIndex($amount, 0, null, $this->context->shop->id);
+
+            if (empty($products)) {
+                // Nothing to index -- cron job done
+                exit(0);
+            }
+
+            $params = [
+                'body' => [],
+            ];
+            foreach ($products as &$product) {
+                $params['body'][] = [
+                    'index' => [
+                        '_index' => "{$index}_{$idShop}_{$product->id_lang}",
+                        '_type'  => 'product',
+                        '_id'    => $product->id,
+                    ],
+                ];
+
+                // Process prices for customer groups
+                foreach ($product->price_tax_excl as $group => $value) {
+                    $product->{"price_tax_excl_{$group}"} = $value;
+                }
+                unset($product->price_tax_excl);
+
+                // Make aggregatable copies of the properties
+                // These need to be `link_rewrite`d to make sure they can fit a the friendly URL
+                foreach (get_object_vars($product) as $name => $var) {
+                    // Do not create an aggregatable copy for color codes
+                    // Color codes are meta data for aggregations
+                    if (substr($name, -11) === '_color_code') {
+                        continue;
+                    }
+
+                    if (isset($metas[$name]) && in_array($metas[$name]['elastic_type'], ['string', 'text'])) {
+                        if (is_array($var)) {
+                            foreach ($var as &$item) {
+                                $item = Tools::link_rewrite($item);
+                            }
+                        } else {
+                            $var = Tools::link_rewrite($var);
+                        }
+                    }
+
+                    $product->{$name.'_agg'} = $var;
+                }
+
+                $params['body'][] = $product;
+            }
+
+            // Push to Elasticsearch
+            try {
+                $results = $client->bulk($params);
+            } catch (Exception $exception) {
+                exit(1);
+            }
+            $failed = [];
+            foreach ($results['items'] as $result) {
+                if ((int) substr($result['index']['status'], 0, 1) !== 2) {
+                    preg_match('/(?P<index>[a-zA-Z]+)\_(?P<id_shop>\d+)\_(?P<id_lang>\d+)/', $result['index']['_index'], $details);
+                    $failed[] = [
+                        'id_lang'    => (int) $details['id_lang'],
+                        'id_shop'    => (int) $details['id_shop'],
+                        'id_product' => (int) $result['index']['_id'],
+                        'error'      => isset($result['index']['error']['reason']) ? $result['index']['error']['reason'].(isset($result['index']['error']['caused_by']['reason']) ? ' '.$result['index']['error']['caused_by']['reason'] : '') : 'Unknown error',
+                    ];
+                }
+            }
+            if (!empty($failed)) {
+                foreach ($failed as $failure) {
+                    foreach ($products as $index => $product) {
+                        if ((int) $product->id === (int) $failure['id_product']
+                            && (int) $product->id_shop === (int) $failure['id_shop']
+                            && (int) $product->id_lang === (int) $failure['id_lang']
+                        ) {
+                            Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
+
+                            unset($products[$index]);
+                        }
+                    }
+                }
+            }
+
+            // Insert index status into database
+            $values = '';
+            foreach ($products as &$product) {
+                $values .= "('{$product->id}', '{$product->id_lang}', '{$this->context->shop->id}', '{$product->date_upd}', ''),";
+            }
+            $values = rtrim($values, ',');
+            if ($values) {
+                Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
+            }
+
+            $chunks--;
+        }
+
+        exit(0);
     }
 
     /**
