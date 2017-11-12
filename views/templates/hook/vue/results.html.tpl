@@ -10,7 +10,7 @@
     </h1>
   </section>
 
-  <section id="category-products" v-if="query && total">
+  <section id="category-products" v-if="query && total" v-infinite-scroll="loadMoreProducts" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
     <h2 class="page-heading">
       {l s='Products' mod='elasticsearch'}
       <span class="pull-right">
@@ -61,7 +61,7 @@
           {*</select>*}
         {*</div>*}
 
-        <div class="js-per-page form-group">
+        <div class="js-per-page form-group" v-if="!infiniteScroll">
           <label for="nb_item">{l s='Items per page:' mod='elasticsearch'}</label>
           <select @input="itemsPerPageHandler" class="form-control">
             <option v-for="itemsPerPage in itemsPerPageOptions"
@@ -71,10 +71,9 @@
             >%% itemsPerPage %%</option>
           </select>
         </div>
-
-
       </div>
-      <div class="top-pagination-content form-inline clearfix">
+
+      <div class="top-pagination-content form-inline clearfix" v-if="!infiniteScroll">
         <pagination :limit="limit" :offset="offset" :total="total"></pagination>
 
         <show-all></show-all>
@@ -99,7 +98,7 @@
       </li>
     </ul>
 
-    <div class="content_sortPagiBar">
+    <div class="content_sortPagiBar" v-if="!infiniteScroll">
       <div class="bottom-pagination-content form-inline clearfix">
         <pagination :limit="limit" :offset="offset" :total="total"></pagination>
         <show-all></show-all>
@@ -116,6 +115,7 @@
         {*</form>*}
       {*</div>*}
     </div>
+    <infinite-loading @infinite="loadMoreProducts"></infinite-loading>
   </section>
   <section id="category-products" v-else-if="!query">
     <div class="alert alert-warning">
@@ -127,5 +127,4 @@
       {l s='No results found' mod='elasticsearch'}
     </div>
   </section>
-
 </main>

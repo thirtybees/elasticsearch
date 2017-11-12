@@ -22,6 +22,10 @@
             config-key="{Elasticsearch::PRODUCT_LIST}"
             description="{l s='Show a product list instead of a grid by default' mod='elasticsearch'}"
     ></toggle>
+    <toggle display-name="{l s='Infinite scroll' mod='elasticsearch' js=1}"
+            config-key="{Elasticsearch::INFINITE_SCROLL}"
+            description="{l s='Load more products when the bottom of the page is reached. Note: visitors might have a hard time reaching your footer!' mod='elasticsearch'}"
+    ></toggle>
     <tax-selector display-name="{l s='Price slider tax rules group' mod='elasticsearch'}"
                   config-key="{Elasticsearch::DEFAULT_TAX_RULES_GROUP}"
                   help="{l s='Apply this tax rules group to the slider. Note that if you have mixed taxes in your store, the shown product selection might no longer be accurate.' mod='elasticsearch'}"></tax-selector>
