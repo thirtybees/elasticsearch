@@ -55,24 +55,24 @@
           return (parseInt(this.$store.state.metas[aggregationCode].operator, 10) === 1 ? 'OR' : 'AND');
         },
         findMin: function (code) {
-          return Math.min(this.findSelectedMin(code), Math.floor(this.$store.state.aggregations[code].buckets[0].min));
+          return Math.min(this.findSelectedMin(code), Math.floor(this.getPriceInclTax(this.$store.state.aggregations[code].buckets[0].min)));
         },
         findMax: function (code) {
-          return Math.max(this.findSelectedMax(code), Math.ceil(this.$store.state.aggregations[code].buckets[0].max));
+          return Math.max(this.findSelectedMax(code), Math.ceil(this.getPriceInclTax(this.$store.state.aggregations[code].buckets[0].max)));
         },
         findSelectedMin: function (code) {
           if (typeof this.selectedFilters[code] !== 'undefined') {
             return this.selectedFilters[code].values.min;
           }
 
-          return Math.floor(this.$store.state.aggregations[code].buckets[0].min);
+          return Math.floor(this.getPriceInclTax(this.$store.state.aggregations[code].buckets[0].min));
         },
         findSelectedMax: function (code) {
           if (typeof this.selectedFilters[code] !== 'undefined') {
             return this.selectedFilters[code].values.max;
           }
 
-          return Math.ceil(this.$store.state.aggregations[code].buckets[0].max);
+          return Math.ceil(this.getPriceInclTax(this.$store.state.aggregations[code].buckets[0].max));
         },
         toggleFilter: function (aggregationCode, aggregationName, filterCode, filterName) {
           this.$store.commit('toggleSelectedFilter', {
@@ -98,7 +98,9 @@
             code: aggregationCode,
             name: aggregationName,
             min: min,
+            min_tax_excl: min / (this.tax * this.currencyConversion),
             max: max,
+            max_tax_excl: max / (this.tax * this.currencyConversion)
           });
         },
         removeRangeFilter: function (aggregationCode) {

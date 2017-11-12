@@ -15,7 +15,7 @@
               <a title="{l s='Cancel' mod='elasticsearch'}">
                 <i class="icon icon-remove"></i>
               </a>
-              %% filter.name %%: %% formatCurrency(getPriceInclTax(filter.values.min)) %% - %% formatCurrency(getPriceInclTax(filter.values.max)) %%
+              %% filter.name %%: %% formatCurrency(filter.values.min) %% - %% formatCurrency(filter.values.max) %%
             </li>
             <li v-if="filter.display_type != 4" v-for="value in filter.values"
                 style="cursor: pointer"
@@ -59,7 +59,6 @@
                           :max.once="findMax(aggregation.code)"
                           :tooltip-style.once="{ backgroundColor: '#fad629', border: '1px solid #fad629', color: '#000', fontWeight: '700'}"
                           :process-style.once=" { backgroundColor: '#fad629' }"
-                          :formatter="getPriceInclTax"
                           @drag-end="processRangeSlider(aggregation.code, aggregation.name, $event)"
             ></range-slider>
           </ul>

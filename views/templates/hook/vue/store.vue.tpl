@@ -274,7 +274,7 @@
             aggregationCode += '_group_{/literal}{Context::getContext()->customer->id_default_group|intval}{literal}';
           }
 
-          matches += ', { "range": {"' + aggregationCode + '_agg" : { "gte": ' + filters.values.min + ', "lte": ' + filters.values.max + ' } } }';
+          matches += ', { "range": {"' + aggregationCode + '_agg" : { "gte": ' + filters.values.min_tax_excl + ', "lte": ' + filters.values.max_tax_excl + ' } } }';
         } else {
           _.forEach(filters.values, function (filter) {
             matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter.code + '", "operator": "' + (filters.operator ? filters.operator : 'AND') + '" } } }';
@@ -528,7 +528,9 @@
             display_type: 4,
             values: {
               min: payload.min,
-              max: payload.max
+              min_tax_excl: payload.min_tax_excl,
+              max: payload.max,
+              max_tax_excl: payload.max_tax_excl
             }
           };
 
