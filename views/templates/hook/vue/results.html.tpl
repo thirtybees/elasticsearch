@@ -115,7 +115,11 @@
         {*</form>*}
       {*</div>*}
     </div>
-    <infinite-loading @infinite="loadMoreProducts"></infinite-loading>
+    <infinite-loading @infinite="loadMoreProducts">
+      <span slot="no-more">
+        {l s='You\'ve reached the end of the list' mod='elasticsearch'}
+      </span>
+    </infinite-loading>
   </section>
   <section id="category-products" v-else-if="!query">
     <div class="alert alert-warning">
