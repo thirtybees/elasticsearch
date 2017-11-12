@@ -188,38 +188,136 @@
       return aggregations;
     }
 
+    function fixMissingFilterInfo(state) {
+      _.forEach(state.selectedFilters, function (selectedFilter) {
+        if (parseInt(selectedFilter, 10) !== 4) {
+          _.forEach(selectedFilter.values, function (value) {
+            var fullAggregation = _.find(state.aggregations[selectedFilter.code].buckets, ['code', value.code]);
+            if (fullAggregation) {
+              value.name = fullAggregation.name;
+            }
+          });
+        }
+      });
+    }
+
     // Initialize the ElasticsearchModule object if it does not exist
     window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
     window.ElasticsearchModule.hosts = {Elasticsearch::getFrontendHosts()|json_encode};
 
     {literal}
-//      function setFiltersInUrl(properties) {
-//        var selectedFilters = properties.selectedFilters;
-//        var query = properties.query;
-//
-//        var hash = '#q=' + query;
-//
-//        _.forEach(selectedFilters, function (filters, filterName) {
-//          hash += '/' + filterName + '=';
-//          _.forEach(filters, function (filter, index) {
-//            if (index > 1) {
-//              hash += '+';
-//            }
-//
-//            hash += filter;
-//          });
-//        });
-//
-//        window.location.hash = hash;
-//    }
+    function filtersToUrl(properties) {
+      var selectedFilters = properties.selectedFilters;
+      var query = properties.query;
 
-//    function getFiltersFromUrl() {
-//      _.forEach(selectedFilters, function (filters, filterName) {
-//        _.forEach(filters, function (filter, index) {
-//          matches += ', { "match": {"' + filterName + '_agg" : { "query": "' + filter +'", "operator": "and" } } }';
-//        });
-//      });
-//    }
+      var hash = '#q=' + query;
+      if (properties.page) {
+        hash += '/p=' + properties.page;
+      }
+      if (properties.limit) {
+        hash += '/n=' + properties.limit;
+      }
+
+      _.forEach(selectedFilters, function (aggregation) {
+        // Rename price_tax_excl to just price
+        var aggregationCode = aggregation.code;
+        if (aggregationCode === 'price_tax_excl') {
+          aggregationCode = 'price';
+        }
+
+        hash += '/' + aggregationCode + '=';
+        if (parseInt(aggregation.display_type, 10) !== 4) {
+          _.forEach(aggregation.values, function (filter, index) {
+            if (index > 1) {
+              hash += '+';
+            }
+
+            hash += filter.code;
+          });
+        } else {
+          hash += aggregation.values.min + '-' + aggregation.values.max
+        }
+      });
+
+      window.location.hash = hash;
+    }
+
+    function filtersFromUrl(state) {
+      var properties = {
+        query: '',
+        selectedFilters: {}
+      };
+      _.forEach(window.location.hash.replace('#', '').split('/'), function (filterInUrl) {
+        var filterElems = filterInUrl.split(/[=+]/);
+        if (filterElems.length < 2) {
+          return;
+        }
+
+        var aggregationCode = filterElems[0];
+        switch (aggregationCode) {
+          case 'q':
+            properties.query = filterElems[1];
+
+            return;
+          case 'p':
+            properties.page = parseInt(filterElems[1]);
+
+            return;
+          case 'n':
+            properties.limit = parseInt(filterElems[1]);
+
+            return;
+          case 'price':
+            aggregationCode = 'price_tax_excl';
+
+            break;
+        }
+
+        if (typeof state.metas[aggregationCode] === 'undefined') {
+          return;
+        }
+
+        var meta = state.metas[aggregationCode];
+
+        if (parseInt(meta.display_type, 10) === 4) {
+          var range = filterElems[1].split('-');
+
+          if (range.length !== 2) {
+            return;
+          }
+
+          properties.selectedFilters[aggregationCode] = {
+            code: aggregationCode,
+            name: meta.name,
+            display_type: meta.display_type,
+            values: {
+              min: range[0],
+              min_tax_excl: parseFloat(range[0]) / state.tax / state.currencyConversion,
+              max: range[1],
+              max_tax_excl: parseFloat(range[1]) / state.tax / state.currencyConversion
+            }
+          }
+        } else {
+          var values = [];
+          _.forEach(filterElems.splice(1), function (filterCode) {
+            values.push({
+              code: filterCode
+            });
+          });
+
+          properties.selectedFilters[aggregationCode] = {
+            code: aggregationCode,
+            name: meta.name,
+            display_type: meta.display_type,
+            operator: parseInt(meta.operator, 10) ? 'OR' : 'AND',
+            values: values
+          }
+        }
+
+      });
+
+      return properties;
+    }
 
     /**
      * Removes empty properties from an object
@@ -368,6 +466,13 @@
                 state.aggregations = [];
               }
 
+              fixMissingFilterInfo(state);
+
+              filtersToUrl({
+                selectedFilters: state.selectedFilters,
+                query: query
+              });
+
               // Handle the selected filters - remove anything that is not aggregatable
               // Start with a clone, do not alter the array directly
               // FIXME: is not workss!
@@ -440,9 +545,18 @@
         offset: 0,
         selectedFilters: {ldelim}{rdelim},
         metas: {$metas|json_encode},
-        layoutType: null
+        layoutType: null,
+        tax: {$defaultTax|floatval},
+        currencyConversion: {$currencyConversion|floatval}
       },
       mutations: {
+        initQuery: function (state) {
+          var properties = filtersFromUrl(state);
+          state.selectedFilters = properties.selectedFilters;
+          state.query = properties.query;
+
+          updateResults(state, properties.query, this.getters.elasticQuery, false);
+        },
         setQuery: function (state, payload) {
           state.query = payload.query;
           state.offset = 0;
@@ -482,6 +596,7 @@
             selectedFilters[payload.aggregationCode] = {
               name: payload.aggregationName,
               code: payload.aggregationCode,
+              display_type: payload.displayType,
               operator: payload.operator,
               values: []
             };
