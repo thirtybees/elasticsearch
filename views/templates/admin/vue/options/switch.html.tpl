@@ -53,4 +53,7 @@
         <a class="slide-button btn"></a>
     </span>
   </div>
+  <div v-if="help" class="col-lg-9 col-lg-offset-3">
+    <div class="help-block" v-html="help"></div>
+  </div>
 </div>

@@ -21,7 +21,7 @@
     window.VueOptionSwitch = {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
-      props: ['displayName', 'configKey', 'description'],
+      props: ['displayName', 'configKey', 'description', 'help'],
       methods: {
         setChecked: function (value) {
           this.$store.commit('setConfig', {
