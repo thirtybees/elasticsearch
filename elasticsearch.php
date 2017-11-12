@@ -49,6 +49,42 @@ class Elasticsearch extends Module
     const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
     const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
     const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
+    const STOP_WORDS = 'ELASTICSEARCH_STOP_WORDS';
+
+    /** @var array $stopWordLangs */
+    public static $stopWordLangs = [
+        'ar' => '_arabic_',
+        'am' => '_armenian_',
+        'eu' => '_basque_',
+        'br' => '_brazilian_',
+        'bg' => '_bulgarian_',
+        'ca' => '_catalan_',
+        'cs' => '_czech_',
+        'da' => '_danish_',
+        'nl' => '_dutch_',
+        'en' => '_english_',
+        'gb' => '_english_',
+        'fi' => '_finnish_',
+        'fr' => '_french_',
+        'gl' => '_galician_',
+        'de' => '_german_',
+        'el' => '_greek_',
+        'hi' => '_hindi_',
+        'hu' => '_hungarian_',
+        'id' => '_indonesian_',
+        'ga' => '_irish_',
+        'it' => '_italian_',
+        'lv' => '_latvian_',
+        'no' => '_norwegian_',
+        'fa' => '_persian_',
+        'pt' => '_portuguese_',
+        'ro' => '_romanian_',
+        'ru' => '_russian_',
+        'es' => '_spanish_',
+        'se' => '_swedish_',
+        'th' => '_thai_',
+        'tr' => '_turkish_',
+    ];
 
     /** @var \Elasticsearch\Client $readClient */
     protected static $readClient;
@@ -119,6 +155,16 @@ class Elasticsearch extends Module
             $defaultTaxGroup = $taxes[0][TaxRulesGroup::$definition['primary']];
         }
         Configuration::updateGlobalValue(static::DEFAULT_TAX_RULES_GROUP, $defaultTaxGroup);
+
+        foreach (Shop::getShops(false) as $shop) {
+            $stopWords = [];
+
+            foreach (Language::getLanguages(false) as $language) {
+                $stopWords[(int) $language['id_lang']] = static::getStopWordLang(strtolower($language['iso_code']));
+            }
+
+            Configuration::updateValue(static::STOP_WORDS, $stopWords, false, (int) $shop['id_shop_group'], (int) $shop['id_shop']);
+        }
 
         return true;
     }
@@ -559,6 +605,22 @@ class Elasticsearch extends Module
     }
 
     /**
+     * Get stop word lang array for the given iso code
+     *
+     * @param string $isoCode
+     *
+     * @return mixed
+     */
+    public static function getStopWordLang($isoCode)
+    {
+        if (isset(static::$stopWordLangs[$isoCode])) {
+            return static::$stopWordLangs[$isoCode];
+        }
+
+        return static::$stopWordLangs['en'];
+    }
+
+    /**
      * @param string $query
      *
      * @return string
@@ -724,6 +786,12 @@ class Elasticsearch extends Module
      */
     protected function getConfigFormValues()
     {
+        $stopWords = [];
+        foreach (Language::getLanguages(true) as $language) {
+            $idLang = (int) $language['id_lang'];
+            $stopWords[$idLang] = (string) Configuration::get(static::STOP_WORDS, $idLang);
+        }
+
         return [
             static::LOGGING_ENABLED         => (int) Configuration::get(static::LOGGING_ENABLED),
             static::PROXY                   => (int) Configuration::get(static::PROXY),
@@ -736,6 +804,7 @@ class Elasticsearch extends Module
             static::OVERLAY_DIV             => Configuration::get(static::OVERLAY_DIV),
             static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),
             static::DEFAULT_TAX_RULES_GROUP => Configuration::get(static::DEFAULT_TAX_RULES_GROUP),
+            static::STOP_WORDS              => $stopWords,
         ];
     }
 

@@ -143,6 +143,7 @@
       store: window.config,
       components: {
         Toggle: VueOptionSwitch,
+        LangTextInput: VueLangTextInput,
         TextInput: VueTextInput,
         NumberInput: VueNumberInput,
         ServerList: VueOptionServerList,
