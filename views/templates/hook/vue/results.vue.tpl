@@ -148,9 +148,15 @@
               }
             },
             loadMoreProducts: function ($state) {
-              this.$store.commit('loadMoreProducts');
+              var currentLimit = this.$store.state.limit;
 
-              setTimeout($state.loaded, 200);
+              this.$store.commit('loadMoreProducts', function (state) {
+                if (state.results.length >= currentLimit) {
+                  $state.loaded();
+                } else {
+                  $state.complete();
+                }
+              });
             }
           }
         });

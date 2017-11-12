@@ -401,7 +401,7 @@
     }
     {/literal}
 
-    function updateResults(state, query, elasticQuery, showSuggestions) {
+    function updateResults(state, query, elasticQuery, showSuggestions, callback) {
       // Check if this request should be proxied
       var proxied = {if Configuration::get(Elasticsearch::PROXY)}true{else}false{/if};
 
@@ -536,6 +536,9 @@
           }
 
           // Finally
+          if (typeof callback === 'function') {
+            callback(state);
+          }
         }
       };
 
@@ -718,10 +721,10 @@
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
         },
-        loadMoreProducts: function (state) {
+        loadMoreProducts: function (state, callback) {
           state.limit += 12;
 
-          updateResults(state, state.query, this.getters.elasticQuery, false);
+          updateResults(state, state.query, this.getters.elasticQuery, false, callback);
         }
       },
       getters: {
