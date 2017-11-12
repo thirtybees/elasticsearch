@@ -222,10 +222,10 @@
       }
 
       var hash = '#q=' + query;
-      if (properties.page) {
+      if (properties.page && properties.page > 1) {
         hash += '/p=' + properties.page;
       }
-      if (properties.limit) {
+      if (properties.limit && _.indexOf([24, 36, 'all'], properties.limit) > -1) {
         hash += '/n=' + properties.limit;
       }
 
@@ -275,7 +275,12 @@
 
             return;
           case 'n':
-            properties.limit = parseInt(filterElems[1]);
+            properties.limit = filterElems[1];
+            if (properties.limit === 'all') {
+              properties.limit = 10000;
+            } else {
+              properties.limit = parseInt(properties.limit, 10);
+            }
 
             return;
           case 'price':
@@ -479,9 +484,22 @@
 
               fixMissingFilterInfo(state);
 
+              var page = 1;
+
+              if (state.offset) {
+                page = Math.ceil(state.offset / state.limit) + 1;
+              }
+
+              var limit = state.limit;
+              if (limit === 10000) {
+                limit = 'all';
+              }
+
               filtersToUrl({
                 selectedFilters: state.selectedFilters,
-                query: query
+                query: query,
+                page: page,
+                limit: limit
               });
 
               // Handle the selected filters - remove anything that is not aggregatable
@@ -568,6 +586,25 @@
           if (!state.query) {
             return;
           }
+
+          var limit = properties.limit;
+          if (!limit) {
+            limit = 12;
+          }
+          var offset = properties.page;
+          if (!offset) {
+            offset = 0;
+          } else {
+            offset = parseInt(offset, 10);
+            offset--;
+            if (offset < 0) {
+              offset = 0;
+            }
+          }
+          offset = offset * limit;
+
+          state.offset = offset;
+          state.limit = limit;
 
           updateResults(state, properties.query, this.getters.elasticQuery, false);
         },
