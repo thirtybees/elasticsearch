@@ -192,6 +192,10 @@
       _.forEach(state.selectedFilters, function (selectedFilter) {
         if (parseInt(selectedFilter, 10) !== 4) {
           _.forEach(selectedFilter.values, function (value) {
+            if (typeof state.aggregations[selectedFilter.code] === 'undefined') {
+              return;
+            }
+
             var fullAggregation = _.find(state.aggregations[selectedFilter.code].buckets, ['code', value.code]);
             if (fullAggregation) {
               value.name = fullAggregation.name;
@@ -412,11 +416,11 @@
         } else {
           _.forEach(filters.values, function (filter) {
             // Skip OR queries when building for aggregations
-            if (aggregation && filters.operator) {
+            if (aggregation && filters.operator === 'OR') {
               return;
             }
 
-            if (!filters.operator) {
+            if (filters.operator === 'AND') {
               var term = {};
               term[filterName + '_agg'] = filter.code;
 
