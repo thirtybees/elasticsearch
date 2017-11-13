@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_elasticsearch_index_status` (
 CREATE TABLE IF NOT EXISTS `PREFIX_elasticsearch_meta` (
   `id_elasticsearch_meta` INT(11) UNSIGNED    NOT NULL AUTO_INCREMENT,
   `code`                  VARCHAR(190)        NOT NULL,
+  `enabled`               TINYINT(1) UNSIGNED NOT NULL DEFAULT '1',
   `meta_type`             VARCHAR(255)        NOT NULL DEFAULT 'attribute',
   `elastic_type`          VARCHAR(255)        NOT NULL DEFAULT 'text',
   `searchable`            TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',

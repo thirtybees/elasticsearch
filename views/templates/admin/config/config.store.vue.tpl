@@ -133,6 +133,14 @@
 
           checkConfigChange(state);
         },
+        setMetaEnabled: function(state, payload) {
+          var target = _.find(state.config[payload.configKey], ['code', payload.code]);
+          if (typeof target !== 'undefined') {
+            target.enabled = payload.value
+          }
+
+          checkConfigChange(state);
+        },
         setMetaSearchable: function (state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {

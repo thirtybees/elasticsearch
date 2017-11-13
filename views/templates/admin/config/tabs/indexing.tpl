@@ -18,10 +18,6 @@
 <div class="panel panel-default">
   <h3><i class="icon icon-sort"></i> {l s='Indexing' mod='elasticsearch'}</h3>
   <div class="form-horizontal form-wrapper">
-    <text-input :display-name="'{l s='Blacklisted fields' mod='elasticsearch' js=1}'"
-                config-key="{Elasticsearch::BLACKLISTED_FIELDS}"
-                max-width="200"
-    ></text-input>
     <index-meta-list config-key="{Elasticsearch::METAS}"></index-meta-list>
   </div>
   <div class="panel-footer">

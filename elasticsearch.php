@@ -147,6 +147,7 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::INDEX_PREFIX, 'thirtybees');
         Configuration::updateGlobalValue(static::PROXY, true);
         Configuration::updateGlobalValue(static::SHARDS, 3);
+        Configuration::updateGlobalValue(static::SERVERS, json_encode([['url' => 'http://localhost:9200', 'read' => true, 'write' => true]]));
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::OVERLAY_DIV, '#main_column, #center_column');
@@ -185,6 +186,7 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::INDEX_PREFIX);
         Configuration::deleteByName(static::REPLICAS);
         Configuration::deleteByName(static::SHARDS);
+        Configuration::deleteByName(static::BLACKLISTED_FIELDS);
         Configuration::deleteByName(static::OVERLAY_DIV);
         Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
 
