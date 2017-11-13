@@ -814,16 +814,16 @@
           var filters = buildFilterQuery(state.selectedFilters);
 
           return JSON.parse('{ElasticSearch::jsonEncodeQuery(Configuration::get(ElasticSearch::QUERY_JSON))|escape:'javascript':'UTF-8'}'
-            .replace('||QUERY||', '"query": "' + state.query + '"')
-            .replace('||FIELDS||', '"fields": ["name", "description", "description_short", "reference"]')
+            .replace('||QUERY||', '"' + state.query + '"')
+            .replace('||FIELDS||', '["name", "description", "description_short", "reference"]')
             .replace('||FILTERS||', filters ? filters : '{ldelim}{rdelim}'));
         },
         elasticAggregation: function (state) {
           var filters = buildFilterQuery(state.selectedFilters, true);
 
           return JSON.parse('{ElasticSearch::jsonEncodeQuery(Configuration::get(ElasticSearch::QUERY_JSON))|escape:'javascript':'UTF-8'}'
-            .replace('||QUERY||', '"query": "' + state.query + '"')
-            .replace('||FIELDS||', '"fields": ["name", "description", "description_short", "reference"]')
+            .replace('||QUERY||', '"' + state.query + '"')
+            .replace('||FIELDS||', '["name", "description", "description_short", "reference"]')
             .replace('||FILTERS||', filters ? filters : '{ldelim}{rdelim}'));
         }
       }
