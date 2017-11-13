@@ -243,7 +243,7 @@
         hash += '/' + aggregationCode + '=';
         if (parseInt(aggregation.display_type, 10) !== 4) {
           _.forEach(aggregation.values, function (filter, index) {
-            if (index > 1) {
+            if (index > 0) {
               hash += '+';
             }
 
