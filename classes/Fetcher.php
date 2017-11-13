@@ -270,7 +270,7 @@ class Fetcher
         $elasticProduct->id = (int) $idProduct;
         $product = new Product($idProduct, true, $idLang);
 
-        /** Default properties **/
+        // Default properties
         foreach (static::$attributes as $propName => $propItems) {
             if ($propItems['function'] != null && method_exists($propItems['function'][0], $propItems['function'][1])) {
                 $elasticProduct->$propName = call_user_func($propItems['function'], $product, $idLang);
@@ -285,7 +285,7 @@ class Fetcher
             }
         }
 
-        /** Features **/
+        // Features
         foreach ($product->getFrontFeatures($idLang) as $feature) {
             $name = Tools::link_rewrite($feature['name']);
             $propItems = $feature['value'];
@@ -293,7 +293,7 @@ class Fetcher
             $elasticProduct->$name = $propItems;
         }
 
-        /** Attribute groups **/
+        // Attribute groups
         foreach ($product->getAttributesGroups($idLang) as $attribute) {
             $groupName = Tools::link_rewrite($attribute['group_name']);
             $attributeName = $attribute['attribute_name'];
@@ -320,9 +320,16 @@ class Fetcher
             }
         }
 
-        /** Casting **/
+        // Casting
         foreach ($elasticProduct as $propName => &$value) {
             $value = call_user_func([get_called_class(), 'tryCast'], $value);
+        }
+
+        // Remove blacklisted fields
+        foreach (explode(',', \Configuration::get(\Elasticsearch::BLACKLISTED_FIELDS)) as $blacklistedField) {
+            if (isset($elasticProduct->$blacklistedField)) {
+                unset($elasticProduct->$blacklistedField);
+            }
         }
 
         return $elasticProduct;

@@ -37,6 +37,10 @@
                   config-key="{Elasticsearch::OVERLAY_DIV}"
                   max-width="200"
       ></text-input>
+      <text-input :display-name="'{l s='Blacklisted fields' mod='elasticsearch' js=1}'"
+                  config-key="{Elasticsearch::BLACKLISTED_FIELDS}"
+                  max-width="200"
+      ></text-input>
       <lang-text-input :display-name="'{l s='Stop words' mod='elasticsearch' js=1}'"
                        config-key="{Elasticsearch::STOP_WORDS}"
                        description="{l s='Separate the stop words by a comma. __english__ represents the array with common stop words in English' mod='elasticsearch'}"

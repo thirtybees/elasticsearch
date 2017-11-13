@@ -50,6 +50,7 @@ class Elasticsearch extends Module
     const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
     const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
     const STOP_WORDS = 'ELASTICSEARCH_STOP_WORDS';
+    const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
 
     /** @var array $stopWordLangs */
     public static $stopWordLangs = [
@@ -805,6 +806,7 @@ class Elasticsearch extends Module
             static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),
             static::DEFAULT_TAX_RULES_GROUP => Configuration::get(static::DEFAULT_TAX_RULES_GROUP),
             static::STOP_WORDS              => $stopWords,
+            static::BLACKLISTED_FIELDS      => Configuration::get(static::BLACKLISTED_FIELDS),
         ];
     }
 
