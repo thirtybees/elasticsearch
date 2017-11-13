@@ -447,6 +447,7 @@ class Elasticsearch extends Module
             'aggregations' => $aggegrations,
             'sources'      => $sources,
             'metas'        => $metas,
+            'fixedFilter'  => false,
         ]);
 
         return $this->display(__FILE__, 'displaytop.tpl');

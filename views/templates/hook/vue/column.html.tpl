@@ -18,17 +18,17 @@
               %% filter.name %%: %% formatCurrency(filter.values.min) %% - %% formatCurrency(filter.values.max) %%
             </li>
             <li v-if="filter.display_type != 4" v-for="value in filter.values"
-                style="cursor: pointer"
+                :style.once="!value.fixed ? 'cursor: pointer' : ''"
                 @click="removeFilter(filter.code, filter.name, value.code, value.name)"
             >
-              <a title="{l s='Cancel' mod='elasticsearch'}">
+              <a title="{l s='Cancel' mod='elasticsearch'}" v-if="!value.fixed">
                 <i class="icon icon-remove"></i>
               </a>
               %% filter.name %%: %% value.name %%
             </li>
           </ul>
         </div>
-        <div v-for="(aggregation, aggregationCode) in aggregations" v-if="total" class="layered_filter" :key="aggregation.code">
+        <div v-for="(aggregation, aggregationCode) in aggregations" v-if="total && !hasFixedFilter(aggregation.code)" class="layered_filter" :key="aggregation.code">
           <div class="layered_subtitle_heading">
             <span class="layered_subtitle">%% aggregation.name %%</span>
           </div>
