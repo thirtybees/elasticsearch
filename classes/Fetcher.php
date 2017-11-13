@@ -327,6 +327,7 @@ class Fetcher
 
         // Remove blacklisted fields
         foreach (explode(',', \Configuration::get(\Elasticsearch::BLACKLISTED_FIELDS)) as $blacklistedField) {
+            $blacklistedField = trim($blacklistedField);
             if (isset($elasticProduct->$blacklistedField)) {
                 unset($elasticProduct->$blacklistedField);
             }

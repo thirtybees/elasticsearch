@@ -150,6 +150,7 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::OVERLAY_DIV, '#main_column, #center_column');
+        Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews, sales');
         $defaultTaxGroup = 0;
         $taxes = TaxRulesGroup::getTaxRulesGroups(true);
         if (!empty($taxes)) {
