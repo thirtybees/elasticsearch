@@ -75,22 +75,37 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
     /**
      * Do a search
      *
-     * Params:
-     * - `query`
-     *
-     *
      * @return array Results or errors
      */
     public function ajaxProcessElasticsearch()
     {
+        header('Content-Type: text/html');
         $idShop = (int) Context::getContext()->shop->id;
         $idLang = (int) Context::getContext()->language->id;
 
-        // FIXME: base this on the advanced query config
-        $results = $this->client->search([
-            'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
-            'type'  => 'product',
-            'body'  => json_decode(file_get_contents('php://input')),
+        $request = array_map(function ($item) {
+            return json_decode($item);
+        }, explode("\n", file_get_contents('php://input')));
+        if (count($request) < 4) {
+            die(json_encode([
+                'success' => false,
+                'error' => 'No valid multisearch request',
+            ]));
+        }
+
+        $results = $this->client->msearch([
+            'body' => [
+                [
+                    'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
+                    'type'  => 'product',
+                ],
+                $request[1],
+                [
+                    'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
+                    'type'  => 'product',
+                ],
+                $request[3],
+            ],
         ]);
 
         return $results;

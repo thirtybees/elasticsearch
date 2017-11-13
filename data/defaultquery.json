@@ -9,8 +9,7 @@
           "operator": "OR",
           "fuzziness": "auto"
         }
-      }
-      ||MATCHES_APPEND||
-    ]
+      },
+      "filter": ||FILTERS||
   }
 }
