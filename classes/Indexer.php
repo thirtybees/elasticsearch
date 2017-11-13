@@ -241,6 +241,19 @@ class Indexer
                     ],
                 ];
 
+                if ($stopWords = Configuration::get(Elasticsearch::STOP_WORDS, $idLang, null, $idShop)) {
+                    $analysis = [
+                        'analyzer' => [
+                            'tb_analyzer' => [
+                                'type'      => 'standard',
+                                'stopwords' => explode(',', $stopWords),
+                            ],
+                        ],
+                    ];
+
+                    $params['body']['settings']['analysis'] = $analysis;
+                }
+
                 try {
                     // Create the index with mappings and settings
                     $client->indices()->create($params);
