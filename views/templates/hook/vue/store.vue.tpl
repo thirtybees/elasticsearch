@@ -61,9 +61,22 @@
       // Iterating the aggregations returned by Elasticsearch and starting the normalization process
       _.forEach(aggs, function (agg, aggCode) {
         // Check if this aggregation should be processed
-        if (typeof agg.buckets !== 'undefined' && !agg.buckets.length) {
+        if (typeof agg.code.buckets !== 'undefined' && !agg.code.buckets.length) {
           return;
         }
+
+        var buckets = [];
+        _.forEach(agg.code.buckets, function (b, index) {
+          var bucket = _.cloneDeep(b);
+          if (typeof agg.name !== 'undefined') {
+            bucket.name = agg.name.buckets[index].name;
+          }
+          if (typeof agg.color_code !== 'undefined') {
+            bucket.color_code = agg.color_code.buckets[index].color_code;
+          }
+
+          buckets.push(bucket);
+        });
 
         // Handle the aggregation according to the display type
         var displayType = parseInt(agg.meta.display_type, 10);
@@ -99,7 +112,7 @@
           aggregation.buckets.push(newBucket);
         } else if (displayType === 5) {
           // Color
-          _.forEach(agg.buckets, function (bucket) {
+          _.forEach(buckets, function (bucket) {
             // Ensure we have a names array
             var position = 0;
             var key = bucket.key;
@@ -144,7 +157,7 @@
           });
         } else {
           // Checkbox
-          _.forEach(agg.buckets, function (bucket) {
+          _.forEach(buckets, function (bucket) {
             // Ensure we have a names array
             var position = 0;
             var key = bucket.key;
@@ -377,22 +390,26 @@
      * Builds the matches part of the query
      *
      * @param {array} selectedFilters
-     * @param {bool}  aggregation
-     * @returns {string}
+     * @param {string} exclude
+     * @returns {object}
      */
-    function buildFilterQuery(selectedFilters, aggregation) {
-      if (_.isEmpty(selectedFilters)) {
-        return false;
-      }
-
-      var filterGroups = {};
-
+    function buildFilterQuery(selectedFilters, exclude) {
       var filterQuery = {
         bool: {
           must: []
         }
       };
+      if (_.isEmpty(selectedFilters)) {
+        return filterQuery;
+      }
+
+      var filterGroups = {};
+
       _.forEach(selectedFilters, function (filters, filterName) {
+        if (typeof exclude !== 'undefined' && exclude === filterName) {
+          return;
+        }
+
         if (parseInt(filters.display_type, 10) === 4) {
           var aggregationCode = filters.code;
           if (aggregationCode === 'price_tax_excl') {
@@ -415,11 +432,6 @@
           });
         } else {
           _.forEach(filters.values, function (filter) {
-            // Skip OR queries when building for aggregations
-            if (aggregation && filters.operator === 'OR') {
-              return;
-            }
-
             if (filters.operator === 'AND') {
               var term = {};
               term[filterName + '_agg'] = filter.code;
@@ -461,11 +473,11 @@
         });
       });
 
-      return JSON.stringify(filterQuery);
+      return filterQuery;
     }
     {/literal}
 
-    function updateResults(state, query, queryObject, aggregationObject, showSuggestions, callback) {
+    function updateResults(state, query, queryObject, showSuggestions, callback) {
       // Check if this request should be proxied
       var proxied = {if Configuration::get(Elasticsearch::PROXY)}true{else}false{/if};
 
@@ -477,7 +489,7 @@
       // Build the URL
       var url = parser.protocol + '//' + parser.host + parser.pathname;
       if (!proxied) {
-        url += '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}/_msearch';
+        url += '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}/_search';
       }
 
       // Cancel pending requests and remove references to them, so the browser can start cleaning up
@@ -522,32 +534,28 @@
           // These statuses mean a successful request
           if (this.status >= 200
             && this.status < 400
-            && typeof response.responses !== 'undefined'
-            && response.responses.length >= 2
           ) {
             // Success!
 
             // Process search response
-            var searchResponse = response.responses[0];
-            if (searchResponse.hits && searchResponse.hits.hits) {
+            if (response.hits && response.hits.hits) {
               // Set the results
-              state.results = searchResponse.hits.hits;
+              state.results = response.hits.hits;
 
               // Handle the suggestions
               if (showSuggestions) {
-                state.suggestions = _.cloneDeep(_.take(searchResponse.hits.hits, 5));
+                state.suggestions = _.cloneDeep(_.take(response.hits.hits, 5));
               } else {
                 state.suggestions = [];
               }
 
               // Set the total and max score
-              state.total = searchResponse.hits.total;
-              state.maxScore = searchResponse.hits.max_score;
+              state.total = response.hits.total;
+              state.maxScore = response.hits.max_score;
 
               // Handle the aggregations
-              var aggregationsResponse = response.responses[0];
-              if (aggregationsResponse.aggregations) {
-                state.aggregations = normalizeAggregations(aggregationsResponse.aggregations);
+              if (response.aggregations) {
+                state.aggregations = normalizeAggregations(response.aggregations);
               } else {
                 state.aggregations = [];
               }
@@ -571,35 +579,6 @@
                 page: page,
                 limit: limit
               });
-
-              // Handle the selected filters - remove anything that is not aggregatable
-              // Start with a clone, do not alter the array directly
-              // FIXME: is not workss!
-//              var selectedFilters = _.cloneDeep(state.selectedFilters);
-//              if (!_.isEmpty(selectedFilters)) {
-//
-//                _.forEach(state.selectedFilters, function (filters, filterName) {
-//                  _.forEach(filters, function (filter) {
-//                    var position = -1;
-//                    var finger = 0;
-//
-//                    _.forEach(filter.values, function (item) {
-//                      if (item.code === bucket.key) {
-//                        position = finger;
-//
-//                        return false;
-//                      }
-//                      finger++;
-//                    });
-//
-//                    if (position > -1) {
-//                      selectedFilters[filterName] = _.pullAt(selectedFilters[filterName], position);
-//                    }
-//                  });
-//                });
-//              }
-
-//              Vue.set(state, 'selectedFilters', selectedFilters);
             }
           } else {
             // Error :(
@@ -612,11 +591,22 @@
         }
       };
 
-      var msearchRequest = '{ldelim}{rdelim}\n';
-      msearchRequest += JSON.stringify({
+      var aggs = {if !empty($aggregations)}{$aggregations|json_encode}{else}{ldelim}{rdelim}{/if};
+      _.forEach(aggs, function (agg, aggName) {
+        var filterQuery = buildFilterQuery(state.selectedFilters, aggName);
+        filterQuery.bool.must.push({
+          terms: agg.terms
+        });
+        delete agg.terms;
+
+        agg.filter = filterQuery;
+      });
+
+      var searchRequest = JSON.stringify({
         size: state.limit,
         from: state.offset,
         query: queryObject,
+        post_filter: buildFilterQuery(state.selectedFilters),
         highlight: {
           fields: {
             name: {ldelim}{rdelim}
@@ -624,24 +614,9 @@
           pre_tags: ['<span class="es-highlight">'],
           post_tags: ['</span>']
         },
-        {if !empty($aggregations)}aggs: {$aggregations|json_encode}{/if}
-//          _source: [
-//            "name",
-//            "description_short",
-//            "link"
-//          ]
-      }) + '\n';
-      msearchRequest += '{ldelim}{rdelim}\n';
-      msearchRequest += JSON.stringify({
-        query: aggregationObject,
-        {if !empty($aggregations)}aggs: {$aggregations|json_encode}{/if}
-//          _source: [
-//            "name",
-//            "description_short",
-//            "link"
-//          ]
-      }) + '\n';
-      request.send(msearchRequest);
+        aggs: aggs
+      });
+      request.send(searchRequest);
 
       // Save these in the pending requests array
       pendingRequests[timestamp] = request;
@@ -692,13 +667,13 @@
           state.offset = offset;
           state.limit = limit;
 
-          updateResults(state, properties.query, this.getters.elasticQuery, this.getters.elasticAggregation, false);
+          updateResults(state, properties.query, this.getters.elasticQuery, false);
         },
         setQuery: function (state, payload) {
           state.query = payload.query;
           state.offset = 0;
 
-          updateResults(state, payload.query, this.getters.elasticQuery, this.getters.elasticAggregation, payload.showSuggestions);
+          updateResults(state, payload.query, this.getters.elasticQuery, payload.showSuggestions);
         },
         setResults: function (state, payload) {
           state.results = payload.results;
@@ -713,7 +688,7 @@
           state.limit = limit;
           state.offset = 0;
 
-          updateResults(state, state.query, this.getters.elasticQuery, this.getters.elasticAggregation, false)
+          updateResults(state, state.query, this.getters.elasticQuery, false)
         },
         setOffset: function (state, offset) {
           state.offset = offset;
@@ -721,7 +696,7 @@
         setPage: function (state, page) {
           state.offset = state.limit * (page - 1);
 
-          updateResults(state, state.query, this.getters.elasticQuery, this.getters.elasticAggregation, false);
+          updateResults(state, state.query, this.getters.elasticQuery, false);
         },
         setLayoutType: function (state, layoutType) {
           state.layoutType = layoutType;
@@ -770,7 +745,7 @@
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 
-          updateResults(state, state.query, this.getters.elasticQuery, this.getters.elasticAggregation, false);
+          updateResults(state, state.query, this.getters.elasticQuery, false);
         },
         addOrUpdateSelectedRangeFilter: function (state, payload) {
           var selectedFilters = _.cloneDeep(state.selectedFilters);
@@ -790,7 +765,7 @@
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 
-          updateResults(state, state.query, this.getters.elasticQuery, this.getters.elasticAggregation, false);
+          updateResults(state, state.query, this.getters.elasticQuery, false);
         },
         removeSelectedRangeFilter: function (state, payload) {
           var selectedFilters = _.cloneDeep(state.selectedFilters);
@@ -801,30 +776,19 @@
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 
-          updateResults(state, state.query, this.getters.elasticQuery, this.getters.elasticAggregation, false);
+          updateResults(state, state.query, this.getters.elasticQuery, false);
         },
         loadMoreProducts: function (state, callback) {
           state.limit += 12;
 
-          updateResults(state, state.query, this.getters.elasticQuery, this.getters.elasticAggregation, false, callback);
+          updateResults(state, state.query, this.getters.elasticQuery, false, callback);
         }
       },
       getters: {
         elasticQuery: function (state) {
-          var filters = buildFilterQuery(state.selectedFilters);
-
           return JSON.parse('{ElasticSearch::jsonEncodeQuery(Configuration::get(ElasticSearch::QUERY_JSON))|escape:'javascript':'UTF-8'}'
             .replace('||QUERY||', '"' + state.query + '"')
-            .replace('||FIELDS||', '["name", "description", "description_short", "reference"]')
-            .replace('||FILTERS||', filters ? filters : '{ldelim}{rdelim}'));
-        },
-        elasticAggregation: function (state) {
-          var filters = buildFilterQuery(state.selectedFilters, true);
-
-          return JSON.parse('{ElasticSearch::jsonEncodeQuery(Configuration::get(ElasticSearch::QUERY_JSON))|escape:'javascript':'UTF-8'}'
-            .replace('||QUERY||', '"' + state.query + '"')
-            .replace('||FIELDS||', '["name", "description", "description_short", "reference"]')
-            .replace('||FILTERS||', filters ? filters : '{ldelim}{rdelim}'));
+            .replace('||FIELDS||', '["name", "description", "description_short", "reference"]'));
         }
       }
     });

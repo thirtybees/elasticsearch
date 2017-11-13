@@ -16,11 +16,9 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 if (!defined('_TB_VERSION_')) {
     exit;
 }
-
 /**
  * Class ElasticsearchproxyModuleFrontController
  *
@@ -32,7 +30,6 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
     public $module;
     /** @var \Elasticsearch\Client $client */
     protected $client;
-
     /**
      * It should just process the ajax call, then die
      *
@@ -46,7 +43,6 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
             header('access-control-allow-headers: Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization');
             header('access-control-allow-methods:GET,HEAD,OPTIONS,POST,PUT');
             header('access-control-allow-origin: *');
-
             // Prepare the Elasticsearch client -- every action should be read
             $this->client = Elasticsearch::getWriteClient();
             if (!$this->client) {
@@ -55,57 +51,34 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
                     'messages' => ['Unable to initialize the Elasticsearch client'],
                 ]));
             }
-
             // no need to use displayConf() here
             $action = 'elasticsearch';
             Hook::exec('actionAdmin'.ucfirst($action).'Before', ['controller' => $this]);
             Hook::exec('action'.get_class($this).ucfirst($action).'Before', ['controller' => $this]);
-
             $return = $this->{'ajaxProcess'.Tools::toCamelCase($action)}();
-
             Hook::exec('actionAdmin'.ucfirst($action).'After', ['controller' => $this, 'return' => $return]);
             Hook::exec('action'.get_class($this).ucfirst($action).'After', ['controller' => $this, 'return' => $return]);
-
             die(json_encode($return, JSON_UNESCAPED_SLASHES));
         }
-
         die();
     }
-
     /**
      * Do a search
+     *
+     * Params:
+     * - `query`
+     *
      *
      * @return array Results or errors
      */
     public function ajaxProcessElasticsearch()
     {
-        header('Content-Type: text/html');
         $idShop = (int) Context::getContext()->shop->id;
         $idLang = (int) Context::getContext()->language->id;
-
-        $request = array_map(function ($item) {
-            return json_decode($item);
-        }, explode("\n", file_get_contents('php://input')));
-        if (count($request) < 4) {
-            die(json_encode([
-                'success' => false,
-                'error' => 'No valid multisearch request',
-            ]));
-        }
-
-        $results = $this->client->msearch([
-            'body' => [
-                [
-                    'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
-                    'type'  => 'product',
-                ],
-                $request[1],
-                [
-                    'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
-                    'type'  => 'product',
-                ],
-                $request[3],
-            ],
+        $results = $this->client->search([
+            'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
+            'type'  => 'product',
+            'body'  => json_decode(file_get_contents('php://input')),
         ]);
 
         return $results;

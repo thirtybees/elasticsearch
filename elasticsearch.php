@@ -153,11 +153,13 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::OVERLAY_DIV, '#main_column, #center_column');
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
+
         $defaultTaxGroup = 0;
         $taxes = TaxRulesGroup::getTaxRulesGroups(true);
         if (!empty($taxes)) {
             $defaultTaxGroup = $taxes[0][TaxRulesGroup::$definition['primary']];
         }
+
         Configuration::updateGlobalValue(static::DEFAULT_TAX_RULES_GROUP, $defaultTaxGroup);
 
         foreach (Shop::getShops(false) as $shop) {
@@ -396,13 +398,23 @@ class Elasticsearch extends Module
                 $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['code']}_color_code"]]]];
             }
 
+            foreach ($aggs as $aggName => &$agg) {
+                $subAgg = $agg;
+                $agg = [
+                    'terms' => [
+                        'field' => $meta['code'].'_agg',
+                        'size'  => (int) $meta['result_limit'] ?: 10000,
+                    ],
+                    'aggs' => [
+                        $aggName => $subAgg,
+                    ],
+                ];
+            }
+
             // Name of the aggregation is the display name - the actual code should be retrieved from the top hit
             $aggegrations[$meta['code']] = [
                 // Aggregate on the special aggregate field
-                'terms' => [
-                    'field' => $meta['code'].'_agg',
-                    'size'  => (int) $meta['result_limit'] ?: 10000,
-                ],
+
                 // This part is added to get the actual display name and meta code of the filter value
                 'aggs'  => $aggs,
                 'meta' => [
