@@ -429,7 +429,7 @@ class Elasticsearch extends Module
         // TODO: find the mandatory fields
         $sources = [];
         foreach ($metas as $meta) {
-            if (!$meta['aggregatable'] && !$meta['searchable'] && !in_array($meta['code'], [
+            if (!$meta['enabled'] || !$meta['aggregatable'] && !$meta['searchable'] && !in_array($meta['code'], [
                 'name',
                 'price_tax_excl',
                 'id_tax_rules_group',
