@@ -24,7 +24,6 @@
       <ul>
         <li><code>||QUERY||</code>: {l s='This is the literal query string and will result in e.g.' mod='elasticsearch'} <code>"search query"</code>
         <li><code>||FIELDS||</code>: {l s='This is the fields array of fields to search in. An example is' mod='elasticsearch'} <code>["name", "description"]</code>
-        <li><code>||FILTERS||</code>: {l s='This is the filters object of filters to apply. The structure looks like the following:' mod='elasticsearch'} <code>{literal}{"bool":{"must":[{"bool":{"must":{"term":{"color_agg":"red"}}}}]}}{/literal}</code>
       </ul>
     </div>
     <query-json config-key="{ElasticSearch::QUERY_JSON}"></query-json>
