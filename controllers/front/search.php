@@ -36,7 +36,6 @@ class ElasticsearchsearchModuleFrontController extends ModuleFrontController
                 _THEME_CSS_DIR_.'scenes.css'       => 'all',
                 _THEME_CSS_DIR_.'category.css'     => 'all',
                 _THEME_CSS_DIR_.'product_list.css' => 'all',
-                _THEME_CSS_DIR_.'modules/blocklayered/blocklayered.css' => 'all',
             ]
         );
 

@@ -545,7 +545,7 @@
               state.maxScore = searchResponse.hits.max_score;
 
               // Handle the aggregations
-              var aggregationsResponse = response.responses[1];
+              var aggregationsResponse = response.responses[0];
               if (aggregationsResponse.aggregations) {
                 state.aggregations = normalizeAggregations(aggregationsResponse.aggregations);
               } else {
