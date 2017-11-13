@@ -17,7 +17,7 @@
  *}
 <div class="panel">
   <h3 class="page-heading"><i class="icon icon-server"></i> {l s='Elasticsearch status' mod='elasticsearch'}</h3>
-  <div v-if="configUpdated" class="alert alert-warning">{l s='The configuration has been updated. A full reindex is recommended'}</div>
+  <div v-if="configUpdated" class="alert alert-warning">{l s='The configuration has been updated. A full reindex is recommended.'}</div>
   <div class="alert alert-info"><strong>{l s='Elasticsearch version' mod='elasticsearch'}:</strong> <span>%% elasticsearchVersion %%</span>
   </div>
   <label for="product-progress">{l s='Amount of items indexed' mod='elasticsearch'}: %% productsIndexed %% / %% productsToIndex %%&nbsp;
