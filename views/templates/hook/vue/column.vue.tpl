@@ -41,6 +41,9 @@
         selectedFilters: function () {
           return this.$store.state.selectedFilters;
         },
+        fixedFilter: function () {
+          return this.$store.state.fixedFilter;
+        },
         total: function () {
           return this.$store.state.total;
         },
@@ -82,6 +85,13 @@
           return Math.ceil(this.getPriceInclTax(this.$store.state.aggregations[code].buckets[0].max));
         },
         toggleFilter: function (aggregationCode, aggregationName, filterCode, filterName) {
+          if (this.$store.state.fixedFilter
+            && this.$store.state.fixedFilter.aggregationCode === aggregationCode
+            && this.$store.state.fixedFilter.filterCode === filterCode
+          ) {
+            return;
+          }
+
           this.$store.commit('toggleSelectedFilter', {
             filterCode: filterCode,
             filterName: filterName,
@@ -93,6 +103,13 @@
           });
         },
         removeFilter: function (aggregationCode, aggregationName, filterCode, filterName) {
+          if (this.$store.state.fixedFilter
+            && this.$store.state.fixedFilter.aggregationCode === aggregationCode
+            && this.$store.state.fixedFilter.filterCode === filterCode
+          ) {
+            return;
+          }
+
           this.$store.commit('toggleSelectedFilter', {
             filterName: filterName,
             filterCode: filterCode,
@@ -141,6 +158,23 @@
         },
         getPriceInclTax: function (price) {
           return Math.round(price * this.tax * this.currencyConversion);
+        },
+        hasFixedFilter: function (aggregationCode, filterCode) {
+          if (!this.fixedFilter || typeof this.$store.state.aggregations[aggregationCode] === 'undefined') {
+            return false;
+          }
+
+          var fixed = false;
+          var self = this;
+          _.forEach(this.$store.state.aggregations[aggregationCode].buckets, function (bucket) {
+            if (self.fixedFilter.aggregationCode === aggregationCode && self.fixedFilter.filterCode === bucket.code) {
+              fixed = true;
+
+              return false;
+            }
+          });
+
+          return fixed;
         }
       }
     });

@@ -4,15 +4,17 @@
       <span v-if="!query" class="cat-name">
         {l s='Search' mod='elasticsearch'}
       </span>
-      <span v-else>
+      <span v-else class="cat-name">
         {l s='Search:' mod='elasticsearch'} <strong>%% query %%</strong>
       </span>
     </h1>
   </section>
 
-  <section id="category-products" v-if="query && total" v-infinite-scroll="loadMoreProducts" infinite-scroll-disabled="busy" infinite-scroll-distance="10">
+  <section id="category-products"
+           v-if="query && total || fixedFilter && _.indexOf(['manufacturer', 'supplier'], fixedFilter.aggregationCode) > -1"
+  >
     <h2 class="page-heading">
-      {l s='Products' mod='elasticsearch'}
+      <span>{l s='Products' mod='elasticsearch'}</span>
       <span class="pull-right">
         <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
         <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>

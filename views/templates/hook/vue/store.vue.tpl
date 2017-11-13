@@ -17,6 +17,8 @@
  *}
 <script type="text/javascript">
   (function () {
+    var initialFixedFilter = {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if};
+
     // Pending ajax search requests - cancel these with every new search
     var pendingRequests = {ldelim}{rdelim};
 
@@ -218,6 +220,49 @@
       });
     }
 
+    function checkFixedFilter(sFilters, fixedFilter) {
+      if (!fixedFilter) {
+        return sFilters;
+      }
+
+      var selectedFilters = _.cloneDeep(sFilters);
+
+      var fixedFilterFound = false;
+      _.forEach(selectedFilters, function (selectedFilter, aggregationCode) {
+        // Skip range filters
+        if (parseInt(selectedFilter.display_type, 10) !== 4) {
+          _.forEach(selectedFilter.values, function (value) {
+            if (aggregationCode === fixedFilter.aggregationCode && value.code === fixedFilter.filterCode) {
+              value.fixed = true;
+
+              fixedFilterFound = true;
+              return false;
+            }
+          });
+        }
+      });
+
+      if (!fixedFilterFound) {
+        if (typeof selectedFilters[fixedFilter.aggregationCode] === 'undefined') {
+          selectedFilters[fixedFilter.aggregationCode] = {
+            code: fixedFilter.aggregationCode,
+            name: fixedFilter.aggregationName,
+            operator: 'AND',
+            display_type: fixedFilter.displayType,
+            values: [
+              {
+                code: fixedFilter.filterCode,
+                name: fixedFilter.filterName,
+                fixed: true
+              }
+            ]
+          }
+        }
+      }
+
+      return selectedFilters;
+    }
+
     // Initialize the ElasticsearchModule object if it does not exist
     window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
     window.ElasticsearchModule.hosts = {Elasticsearch::getFrontendHosts()|json_encode};
@@ -238,6 +283,7 @@
         return;
       }
 
+      // Start the URL with the query, page and results per page
       var hash = '#q=' + query;
       if (properties.page && properties.page > 1) {
         hash += '/p=' + properties.page;
@@ -246,6 +292,7 @@
         hash += '/n=' + properties.limit;
       }
 
+      // Add the selected filters to the URL
       _.forEach(selectedFilters, function (aggregation) {
         // Rename price_tax_excl to just price
         var aggregationCode = aggregation.code;
@@ -255,7 +302,9 @@
 
         hash += '/' + aggregationCode + '=';
         if (parseInt(aggregation.display_type, 10) !== 4) {
+          // We're dealing with 'normal' facets
           _.forEach(aggregation.values, function (filter, index) {
+            // In case we have a disjunctive facet, add multiple filter codes with +
             if (index > 0) {
               hash += '+';
             }
@@ -263,6 +312,7 @@
             hash += filter.code;
           });
         } else {
+          // We're dealing with the price facet
           hash += aggregation.values.min + '-' + aggregation.values.max
         }
       });
@@ -275,7 +325,11 @@
         query: '',
         selectedFilters: {}
       };
+
+      // Take the hash and iterate over every section separated by /
       _.forEach(window.location.hash.replace('#', '').split('/'), function (filterInUrl) {
+        // Grab the elements from the section, with disjunctive facets there are multiple values separated by +
+        // The first element is the aggregation code, subsequent elements are filter codes
         var filterElems = filterInUrl.split(/[=+]/);
         if (filterElems.length < 2) {
           return;
@@ -323,6 +377,7 @@
             code: aggregationCode,
             name: meta.name,
             display_type: meta.display_type,
+            fixed: false,
             values: {
               min: range[0],
               min_tax_excl: parseFloat(range[0]) / state.tax / state.currencyConversion,
@@ -334,20 +389,25 @@
           var values = [];
           _.forEach(filterElems.splice(1), function (filterCode) {
             values.push({
-              code: filterCode
+              code: filterCode,
+              fixed: false
             });
           });
+
+          var fixed = false;
 
           properties.selectedFilters[aggregationCode] = {
             code: aggregationCode,
             name: meta.name,
             display_type: meta.display_type,
-            operator: parseInt(meta.operator, 10) ? 'OR' : 'AND',
+            operator: (!fixed && parseInt(meta.operator, 10)) ? 'OR' : 'AND',
             values: values
           }
         }
 
       });
+
+      properties.selectedFilters = checkFixedFilter(properties.selectedFilters, state.fixedFilter);
 
       return properties;
     }
@@ -394,11 +454,14 @@
      * @returns {object}
      */
     function buildFilterQuery(selectedFilters, exclude) {
+      // A filter query consists of a main bool of which the subfilters must all be true
       var filterQuery = {
         bool: {
           must: []
         }
       };
+
+      // If empty, just return the main structure
       if (_.isEmpty(selectedFilters)) {
         return filterQuery;
       }
@@ -406,11 +469,13 @@
       var filterGroups = {};
 
       _.forEach(selectedFilters, function (filters, filterName) {
+        // Skip the excluded filter
         if (typeof exclude !== 'undefined' && exclude === filterName) {
           return;
         }
 
         if (parseInt(filters.display_type, 10) === 4) {
+          // Special case: price slider
           var aggregationCode = filters.code;
           if (aggregationCode === 'price_tax_excl') {
             aggregationCode += '_group_{/literal}{Context::getContext()->customer->id_default_group|intval}{literal}';
@@ -431,6 +496,7 @@
             }
           });
         } else {
+          // If the filter has the AND operator, just add it directly to the subquery...
           _.forEach(filters.values, function (filter) {
             if (filters.operator === 'AND') {
               var term = {};
@@ -444,6 +510,7 @@
                 }
               });
             } else {
+              // ...otherwise group all of these filters first
               if (typeof filterGroups[filterName] === 'undefined') {
                 filterGroups[filterName] = [];
               }
@@ -453,6 +520,7 @@
           });
         }
 
+        // Process the OR filters. This results in another filter of which all the terms should occur
         _.forEach(filterGroups, function (filterCodes, filterName) {
           var subfilterQuery = {
             bool: {
@@ -593,7 +661,12 @@
 
       var aggs = {if !empty($aggregations)}{$aggregations|json_encode}{else}{ldelim}{rdelim}{/if};
       _.forEach(aggs, function (agg, aggName) {
-        var filterQuery = buildFilterQuery(state.selectedFilters, aggName);
+        var filterQuery;
+        if (typeof state.selectedFilters[aggName] !== 'undefined' && state.selectedFilters[aggName].operator !== 'OR') {
+          filterQuery = buildFilterQuery(state.selectedFilters, null);
+        } else {
+          filterQuery = buildFilterQuery(state.selectedFilters, aggName);
+        }
         filterQuery.bool.must.push({
           terms: agg.terms
         });
@@ -602,10 +675,9 @@
         agg.filter = filterQuery;
       });
 
-      var searchRequest = JSON.stringify({
+      var searchRequest = {
         size: state.limit,
         from: state.offset,
-        query: queryObject,
         post_filter: buildFilterQuery(state.selectedFilters),
         highlight: {
           fields: {
@@ -615,8 +687,13 @@
           post_tags: ['</span>']
         },
         aggs: aggs
-      });
-      request.send(searchRequest);
+      };
+
+      if (!state.fixedFilter) {
+        searchRequest.query = queryObject;
+      }
+
+      request.send(JSON.stringify(searchRequest));
 
       // Save these in the pending requests array
       pendingRequests[timestamp] = request;
@@ -632,6 +709,7 @@
         aggregations: {ldelim}{rdelim},
         limit: 12,
         offset: 0,
+        fixedFilter: {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if},
         selectedFilters: {ldelim}{rdelim},
         metas: {$metas|json_encode},
         layoutType: null,
@@ -717,7 +795,8 @@
           if (shouldEnable) {
             selectedFilters[payload.aggregationCode].values.push({
               code: payload.filterCode,
-              name: payload.filterName
+              name: payload.filterName,
+              fixed: false
             });
           } else {
             var position = -1;
@@ -742,6 +821,8 @@
           }
 
           state.offset = 0;
+
+          selectedFilters = checkFixedFilter(selectedFilters, state.fixedFilter);
 
           Vue.set(state, 'selectedFilters', selectedFilters);
 

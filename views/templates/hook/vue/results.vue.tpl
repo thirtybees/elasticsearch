@@ -59,7 +59,7 @@
     ready(function () {
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
-        mainColumn = document.querySelectorAll('{Configuration::get(Elasticsearch::OVERLAY_DIV)|escape:'javascript':'UTF-8'}');
+        mainColumn = document.querySelectorAll('#main_column, #center_column'); {*{Configuration::get(Elasticsearch::OVERLAY_DIV)|escape:'javascript':'UTF-8'}');*}
         if (!mainColumn.length) {
           return;
         }
@@ -78,7 +78,6 @@
           beforeUpdate: function () {
             // Not `undefined` means we're dealing with instant search
             if (typeof mainColumn !== 'undefined') {
-              console.log('tosting');
               manageSearchBlockVisibility(this.$store.state.query);
             }
           },
@@ -141,6 +140,9 @@
             },
             infiniteScroll: function () {
               return this.$store.state.infiniteScroll;
+            },
+            fixedFilter: function () {
+              return this.$store.state.fixedFilter;
             }
           },
           methods: {
