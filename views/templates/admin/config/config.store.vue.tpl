@@ -25,6 +25,7 @@
       state: {
         config: {$config|json_encode},
         configChanged: false,
+        configUpdated: {if $configUpdated}true{else}false{/if},
         initialConfig: JSON.stringify({$config|json_encode}),
         tab: window.location.hash.substr(5) || '{$initialTab|escape:'javascript':'UTF-8'}',
         status: {$status|json_encode},
@@ -40,6 +41,9 @@
           state.config[props.key] = props.value;
 
           checkConfigChange(state);
+        },
+        setConfigUpdated: function (state, updated) {
+          state.configUpdated = updated;
         },
         setLangConfig: function (state, props) {
           state.config[props.key][props.idLang] = props.value;

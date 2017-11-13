@@ -181,6 +181,9 @@
         },
         saving: function () {
           return this.$store.state.saving;
+        },
+        configUpdated: function () {
+          return this.$store.state.configUpdated;
         }
       },
       data: function data() {
@@ -249,6 +252,7 @@
 
               // Finally
               self.$store.commit('setSaving', false);
+              self.$store.commit('setConfigUpdated', false);
             }
           };
 
@@ -280,6 +284,7 @@
 
               // Finally
               self.$store.commit('setSaving', false);
+              self.$store.commit('setConfigUpdated', true);
             }
           };
 

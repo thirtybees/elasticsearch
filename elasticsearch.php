@@ -51,6 +51,7 @@ class Elasticsearch extends Module
     const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
     const STOP_WORDS = 'ELASTICSEARCH_STOP_WORDS';
     const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
+    const CONFIG_UPDATED = 'ELASTICSEARCH_CONFIG_UPDATED';
 
     /** @var array $stopWordLangs */
     public static $stopWordLangs = [
@@ -231,6 +232,7 @@ class Elasticsearch extends Module
         Media::addJsDef(['elasticAjaxUrl' => $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}"]);
         $this->context->smarty->assign([
             'config'         => $this->getConfigFormValues(),
+            'configUpdated'  => (bool) Configuration::get(static::CONFIG_UPDATED),
             'initialTab'     => 'config',
             'status'         => [
                 'indexed' => IndexStatus::getIndexed(null, $this->context->shop->id),

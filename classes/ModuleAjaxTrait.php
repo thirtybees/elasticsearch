@@ -81,20 +81,7 @@ trait ModuleAjaxTrait
             }
         }
 
-        try {
-            // Save settings in Elasticsearch
-
-            // Delete the indices first
-            Indexer::eraseIndices(null, [$idShop]);
-
-            // Reset the mappings
-            Indexer::createMappings(null, [$idShop]);
-
-            // Reset the local index status for the current shop
-            IndexStatus::erase($idShop);
-        } catch (Exception $e) {
-            // Don't crash if we cannot connect
-        }
+        Configuration::updateValue(Elasticsearch::CONFIG_UPDATED, true);
 
         // Reponse status
         die(json_encode([
@@ -261,6 +248,8 @@ trait ModuleAjaxTrait
             IndexStatus::erase($idShop);
         } catch (Exception $e) {
         }
+
+        Configuration::updateValue(Elasticsearch::CONFIG_UPDATED, false);
 
         // Response status
         die(json_encode([
