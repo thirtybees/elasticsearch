@@ -72,6 +72,7 @@ class Meta extends ObjectModel
         'fields' => [
             'meta_type'    => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
             'code'         => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
+            'enabled'      => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
             'elastic_type' => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
             'searchable'   => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
             'weight'       => ['type' => self::TYPE_INT,                    'validate' => 'isUnsignedInt', 'required' => true],

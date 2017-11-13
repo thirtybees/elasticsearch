@@ -76,7 +76,19 @@
             default:
               return '{l s='prop.' mod='elasticsearch' js=1}';
           }
-        }
+        },
+        toggleMetaEnabled: _.debounce(function (meta, event) {
+          this.$store.commit('setMetaEnabled', {
+            configKey: this.configKey,
+            code: meta.code,
+            value: !meta.enabled
+          });
+
+          // Regular switch events
+          toggleDraftWarning(false);
+          showOptions(true);
+          showRedirectProductOptions(false);
+        }, 10)
       },
       computed: {
         metas: function () {

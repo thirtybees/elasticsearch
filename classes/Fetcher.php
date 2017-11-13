@@ -270,6 +270,16 @@ class Fetcher
         $elasticProduct->id = (int) $idProduct;
         $product = new Product($idProduct, true, $idLang);
 
+        $metas = [];
+        foreach (Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            (new DbQuery())
+                ->select('*')
+                ->from(bqSQL(Meta::$definition['table']))
+        ) as $meta) {
+            $metas[$meta['code']] = $meta;
+        }
+
+
         // Default properties
         foreach (static::$attributes as $propName => $propItems) {
             if ($propItems['function'] != null && method_exists($propItems['function'][0], $propItems['function'][1])) {
@@ -320,17 +330,16 @@ class Fetcher
             }
         }
 
+        // Filter metas
+        foreach ($metas as $code => $meta) {
+            if (!$meta['enabled']) {
+                unset($elasticProduct->$code);
+            }
+        }
+
         // Casting
         foreach ($elasticProduct as $propName => &$value) {
             $value = call_user_func([get_called_class(), 'tryCast'], $value);
-        }
-
-        // Remove blacklisted fields
-        foreach (explode(',', \Configuration::get(\Elasticsearch::BLACKLISTED_FIELDS)) as $blacklistedField) {
-            $blacklistedField = trim($blacklistedField);
-            if (isset($elasticProduct->$blacklistedField)) {
-                unset($elasticProduct->$blacklistedField);
-            }
         }
 
         return $elasticProduct;

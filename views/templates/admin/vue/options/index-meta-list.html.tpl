@@ -43,6 +43,32 @@
               <meta-badge :meta="meta" id-lang="idLang"></meta-badge>
             </span>
 
+            <span class="switch prestashop-switch col-lg-2 col-md-3 col-sm-4 col-xs-4"
+                  @click="toggleMetaEnabled(meta, $event)"
+                  style="margin: 0 5px; pointer-events: all"
+            >
+              <input type="radio"
+                     :id="'meta_enabled_' + meta.code + '_on'"
+                     :name="'meta_enabled_' + meta.code"
+                     :value="1"
+                     :checked="meta.enabled"
+              />
+              <label :for="'meta_enabled_' + meta.code + '_on'">
+                <p>{l s='On' mod='elasticsearch'}</p>
+              </label>
+              <input
+                      type="radio"
+                      :id="'meta_enabled_' + meta.code + '_off'"
+                      :name="'meta_enabled_' + meta.code"
+                      :value="0"
+                      :checked="!meta.enabled"
+              />
+              <label :for="'meta_enabled_' + meta.code + '_off'">
+                <p>{l s='Off' mod='elasticsearch'}</p>
+              </label>
+                <a class="slide-button btn"></a>
+            </span>
+
             <div class="translatable-field col-lg-4">
               <div :class="languages.length > 1 ? 'col-lg-9' : 'col-lg-12'">
                 <input type="text"
