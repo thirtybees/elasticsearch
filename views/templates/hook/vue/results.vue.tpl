@@ -40,6 +40,22 @@
       }
     }
 
+    function manageSearchBlockVisibility(query) {
+      var instantSearchBlock = document.getElementById('es-results');
+
+      if (query) {
+        mainColumn.style.display = 'none';
+        if (instantSearchBlock) {
+          instantSearchBlock.style.display = '';
+        }
+      } else {
+        mainColumn.style.display = '';
+        if (instantSearchBlock) {
+          instantSearchBlock.style.display = 'none';
+        }
+      }
+    }
+
     ready(function () {
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
@@ -62,19 +78,8 @@
           beforeUpdate: function () {
             // Not `undefined` means we're dealing with instant search
             if (typeof mainColumn !== 'undefined') {
-              var instantSearchBlock = document.getElementById('es-results');
-
-              if (this.$store.state.query) {
-                mainColumn.style.display = 'none';
-                if (instantSearchBlock) {
-                  instantSearchBlock.style.display = '';
-                }
-              } else {
-                mainColumn.style.display = '';
-                if (instantSearchBlock) {
-                  instantSearchBlock.style.display = 'none';
-                }
-              }
+              console.log('tosting');
+              manageSearchBlockVisibility(this.$store.state.query);
             }
           },
           created: function () {
@@ -87,6 +92,11 @@
             }
 
             this.$store.commit('setLayoutType', view);
+          },
+          mounted: function () {
+            if (typeof mainColumn !== 'undefined') {
+              manageSearchBlockVisibility(this.$store.state.query);
+            }
           },
           directives: {
             InfiniteScroll: window.infiniteScroll
