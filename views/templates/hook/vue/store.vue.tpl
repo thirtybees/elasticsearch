@@ -660,7 +660,7 @@
               }
 
               filtersToUrl({
-                fixedFilter: state.fixedFilter,
+                fixedFilter: initialFixedFilter,
                 selectedFilters: state.selectedFilters,
                 query: query,
                 page: page,
