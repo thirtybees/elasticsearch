@@ -1,4 +1,4 @@
-<section v-if="selectedFilters || query">
+<section v-if="!_.isEmpty(selectedFilters) || query">
   <nav>
     <div id="layered_block_left" class="block">
       <h2 class="title_block section-title-column">{l s='Catalog' mod='elasticsearch'}</h2>
