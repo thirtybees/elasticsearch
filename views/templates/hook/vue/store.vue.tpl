@@ -270,7 +270,7 @@
       var selectedFilters = properties.selectedFilters;
       var query = properties.query;
 
-      if (!query) {
+      if (!query && !properties.fixedFilter) {
         // Remove hash
         if (typeof history.replaceState === 'function') {
           history.replaceState('', document.title, window.location.pathname + window.location.search);
@@ -282,7 +282,7 @@
       }
 
       // Start the URL with the query, page and results per page
-      var hash = '#q=' + query;
+      var hash = query ? '#q=' + query : '#';
       if (properties.page && properties.page > 1) {
         hash += '/p=' + properties.page;
       }
@@ -292,6 +292,10 @@
 
       // Add the selected filters to the URL
       _.forEach(selectedFilters, function (aggregation) {
+        if (properties.fixedFilter && properties.fixedFilter.aggregationCode === aggregation.code) {
+          return;
+        }
+
         // Rename price_tax_excl to just price
         var aggregationCode = aggregation.code;
         if (aggregationCode === 'price_tax_excl') {
@@ -314,6 +318,10 @@
           hash += aggregation.values.min + '-' + aggregation.values.max
         }
       });
+
+      if (!query) {
+        hash = hash.slice(0, 1) + hash.slice(2);
+      }
 
       window.location.hash = hash;
     }
@@ -641,6 +649,7 @@
               }
 
               filtersToUrl({
+                fixedFilter: state.fixedFilter,
                 selectedFilters: state.selectedFilters,
                 query: query,
                 page: page,
