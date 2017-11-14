@@ -221,10 +221,6 @@
     }
 
     function checkFixedFilter(sFilters, fixedFilter) {
-      if (!fixedFilter) {
-        return sFilters;
-      }
-
       var selectedFilters = _.cloneDeep(sFilters);
 
       var fixedFilterFound = false;
@@ -232,17 +228,19 @@
         // Skip range filters
         if (parseInt(selectedFilter.display_type, 10) !== 4) {
           _.forEach(selectedFilter.values, function (value) {
-            if (aggregationCode === fixedFilter.aggregationCode && value.code === fixedFilter.filterCode) {
+            if (fixedFilter && aggregationCode === fixedFilter.aggregationCode && value.code === fixedFilter.filterCode) {
               value.fixed = true;
 
               fixedFilterFound = true;
               return false;
+            } else {
+              value.fixed = false;
             }
           });
         }
       });
 
-      if (!fixedFilterFound) {
+      if (fixedFilter && !fixedFilterFound) {
         if (typeof selectedFilters[fixedFilter.aggregationCode] === 'undefined') {
           selectedFilters[fixedFilter.aggregationCode] = {
             code: fixedFilter.aggregationCode,
@@ -629,6 +627,7 @@
               }
 
               fixMissingFilterInfo(state);
+              state.selectedFilters = checkFixedFilter(state.selectedFilters, state.fixedFilter);
 
               var page = 1;
 
@@ -720,9 +719,9 @@
       mutations: {
         initQuery: function (state) {
           var properties = filtersFromUrl(state);
-          state.selectedFilters = properties.selectedFilters;
+          Vue.set(state, 'selectedFilters', properties.selectedFilters);
           state.query = properties.query;
-          if (!state.query) {
+          if (!state.query && !state.fixedFilter) {
             return;
           }
 
@@ -750,6 +749,12 @@
         setQuery: function (state, payload) {
           state.query = payload.query;
           state.offset = 0;
+
+          if (state.query) {
+            state.fixedFilter = null;
+          } else {
+            state.fixedFilter = initialFixedFilter;
+          }
 
           updateResults(state, payload.query, this.getters.elasticQuery, payload.showSuggestions);
         },

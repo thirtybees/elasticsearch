@@ -40,10 +40,10 @@
       }
     }
 
-    function manageSearchBlockVisibility(query) {
+    function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('es-results');
 
-      if (query) {
+      if (state.query || state.fixedFilter) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
@@ -78,7 +78,7 @@
           beforeUpdate: function () {
             // Not `undefined` means we're dealing with instant search
             if (typeof mainColumn !== 'undefined') {
-              manageSearchBlockVisibility(this.$store.state.query);
+              manageSearchBlockVisibility(this.$store.state);
             }
           },
           created: function () {
@@ -94,7 +94,7 @@
           },
           mounted: function () {
             if (typeof mainColumn !== 'undefined') {
-              manageSearchBlockVisibility(this.$store.state.query);
+              manageSearchBlockVisibility(this.$store.state);
             }
           },
           directives: {
