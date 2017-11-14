@@ -1,4 +1,4 @@
-<main v-if="_.indexOf(['list', 'grid'], layoutType) > -1" id="es-results" :class="classList">
+<main v-if="_.indexOf(['list', 'grid'], layoutType) > -1" id="elasticsearch-results" :class="classList">
   <section id="category-info">
     <h1 class="page-heading product-listing">
       <span v-if="!query && fixedFilter && _.indexOf(['manufacturer', 'supplier'], fixedFilter.aggregationCode) > -1" class="cat-name">

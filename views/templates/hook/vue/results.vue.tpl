@@ -42,7 +42,7 @@
     }
 
     function manageSearchBlockVisibility(state) {
-      var instantSearchBlock = document.getElementById('es-results');
+      var instantSearchBlock = document.getElementById('elasticsearch-results');
 
       if (state.query || state.fixedFilter) {
         mainColumn.style.display = 'none';

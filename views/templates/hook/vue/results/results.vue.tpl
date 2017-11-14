@@ -44,14 +44,14 @@
     }
 
     function manageSearchBlockVisibility(state) {
-      var instantSearchBlock = document.getElementById('es-results');
+      var instantSearchBlock = document.getElementById('elasticsearch-results');
 
       if (state.query) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
         }
-      } else {
+      } else if (!state.fixedFilter || state.fixedFilter.aggregationCode === 'category') {
         mainColumn.style.display = '';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = 'none';
