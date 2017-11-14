@@ -341,11 +341,6 @@ class Fetcher
             }
         }
 
-        // Casting
-        foreach ($elasticProduct as $propName => &$value) {
-            $value = call_user_func([get_called_class(), 'tryCast'], $value);
-        }
-
         return $elasticProduct;
     }
 
@@ -381,26 +376,6 @@ class Fetcher
         $sales = ProductSale::getNbrSales($product->id);
 
         return $sales > 0 ? $sales : 0;
-    }
-
-    /**
-     * Try to cast to either a float or int
-     *
-     * @param mixed $value
-     *
-     * @return float|int
-     */
-    protected static function tryCast($value)
-    {
-        if (is_numeric($value) && floatval($value) == floatval(intval($value))) {
-            return (int) $value;
-        }
-
-        if (is_numeric($value)) {
-            return (float) $value;
-        }
-
-        return $value;
     }
 
     /**
