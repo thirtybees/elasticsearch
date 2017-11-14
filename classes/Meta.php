@@ -284,4 +284,47 @@ class Meta extends ObjectModel
                 ->where('m.`code` = \''.pSQL($code).'\'')
         );
     }
+
+    /**
+     * Get searchable metas (for the field section of the ES query)
+     *
+     * @param bool $withWeights
+     *
+     * @return array|false|null|\PDOStatement
+     */
+    public static function getSearchableMetas($withWeights = true)
+    {
+        $metas = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            (new DbQuery())
+                ->select('m.`code`')
+                ->select($withWeights ? 'm.`weight`' : '')
+                ->from(bqSQL(static::$definition['table']), 'm')
+                ->where('m.`searchable` = 1')
+                ->where('m.`elastic_type` = \'text\'')
+        );
+
+        $newMetas = [];
+        $requiredMetas = ['name'];
+        foreach ($metas as $meta) {
+            $newMeta = $meta['code'];
+            if ($withWeights) {
+                $newMeta .= '^'.$meta['weight'];
+            }
+
+            $newMetas[] = $newMeta;
+
+            // Check if a requirement has been met, remove it from the required array if that is the case
+            $pos = array_search($meta['code'], $requiredMetas);
+            if ($pos > -1) {
+                unset($requiredMetas[$pos]);
+            }
+        }
+
+        // Add all required fields
+        foreach ($requiredMetas as $requiredMeta) {
+            $newMetas[] = $requiredMeta;
+        }
+
+        return $newMetas;
+    }
 }

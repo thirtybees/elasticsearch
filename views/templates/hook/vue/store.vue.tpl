@@ -899,7 +899,7 @@
         elasticQuery: function (state) {
           return JSON.parse('{ElasticSearch::jsonEncodeQuery(Configuration::get(ElasticSearch::QUERY_JSON))|escape:'javascript':'UTF-8'}'
             .replace('||QUERY||', '"' + state.query + '"')
-            .replace('||FIELDS||', '["name", "description", "description_short", "reference"]'));
+            .replace('||FIELDS||', JSON.stringify({$fields|json_encode})));
         }
       }
     });
