@@ -23,43 +23,37 @@
         </a>
       {/if}
 
-
-        {* TODO: add show_price and available_for_order properties to indexed product and add this constraint *}
-        {* Original smarty logic: {if (!$PS_CATALOG_MODE && ((isset($product.show_price) && $product.show_price && !isset($restricted_country_mode)) || (isset($product.available_for_order) && $product.available_for_order)))} *}
-        <div v-if="{if !$PS_CATALOG_MODE}true{else}false{/if}" class="content_price show-if-product-grid-hover">
-          <span class="price product-price">
-            {* TODO: find a way to restore dynamic hooks *}
-            {*{hook h="displayProductPriceBlock" product=$product type="before_price"}*}
-            %% formatCurrency(priceTaxIncl) %%
-          </span>
-          {* TODO: find a way to handle discounts *}
-          {*{if $product.price_without_reduction > 0 && isset($product.specific_prices) && $product.specific_prices && isset($product.specific_prices.reduction) && $product.specific_prices.reduction > 0}*}
-            {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
-            {*<span class="old-price product-price">%% item._source.price_tax_incl %%*}
-            {*{displayWtPrice p=$product.price_without_reduction}*}
-            {*</span>*}
-            {*{if $product.specific_prices.reduction_type == 'percentage'}*}
-              {*<span class="price-percent-reduction">-{$product.specific_prices.reduction * 100}*}
-                {*%</span>*}
-            {*{/if}*}
-          {*{/if}*}
-          {* TODO: restore available_for_order property *}
-          {* Original Smarty logic: {if $PS_STOCK_MANAGEMENT && isset($product.available_for_order) && $product.available_for_order && !isset($restricted_country_mode)} *}
-          {*<span v-if="{if $PS_STOCK_MANAGEMENT}true{else}false{/if} " class="unvisible">*}
-          {*{if ($product.allow_oosp || $product.quantity > 0)}*}
-              {*{if $product.quantity <= 0}{if $product.allow_oosp}{if isset($product.available_later) && $product.available_later}{$product.available_later}{else}{l s='In Stock'}{/if}{/if}{else}{if isset($product.available_now) && $product.available_now}{$product.available_now}{else}{l s='In Stock'}{/if}{/if}*}
-          {* TODO: check if product combinations functionality should be removed *}
-          {*{elseif (isset($product.quantity_all_versions) && $product.quantity_all_versions > 0)}*}
-              {*{l s='Product available with different options'}*}
-          {*{else}*}
-            {*{l s='Out of stock'}*}
-          {*{/if}*}
-          {*</span>*}
+      {* TODO: add show_price and available_for_order properties to indexed product and add this constraint *}
+      {* Original smarty logic: {if (!$PS_CATALOG_MODE && ((isset($product.show_price) && $product.show_price && !isset($restricted_country_mode)) || (isset($product.available_for_order) && $product.available_for_order)))} *}
+      <div v-if="{if !$PS_CATALOG_MODE}true{else}false{/if}" class="content_price show-if-product-grid-hover">
+        <span class="price product-price">
           {* TODO: find a way to restore dynamic hooks *}
-          {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
-          {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}
-          {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
-        </div>
+          {*{hook h="displayProductPriceBlock" product=$product type="before_price"}*}
+          %% formatCurrency(priceTaxIncl) %%
+        </span>
+        {* TODO: find a way to handle discounts *}
+        <span v-if="basePriceTaxIncl > priceTaxIncl">
+          {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
+          <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>&nbsp;
+          <span class="price-percent-reduction">- %% discountPercentage %%%</span>
+        </span>
+        {* TODO: restore available_for_order property *}
+        {* Original Smarty logic: {if $PS_STOCK_MANAGEMENT && isset($product.available_for_order) && $product.available_for_order && !isset($restricted_country_mode)} *}
+        {*<span v-if="{if $PS_STOCK_MANAGEMENT}true{else}false{/if} " class="unvisible">*}
+        {*{if ($product.allow_oosp || $product.quantity > 0)}*}
+            {*{if $product.quantity <= 0}{if $product.allow_oosp}{if isset($product.available_later) && $product.available_later}{$product.available_later}{else}{l s='In Stock'}{/if}{/if}{else}{if isset($product.available_now) && $product.available_now}{$product.available_now}{else}{l s='In Stock'}{/if}{/if}*}
+        {* TODO: check if product combinations functionality should be removed *}
+        {*{elseif (isset($product.quantity_all_versions) && $product.quantity_all_versions > 0)}*}
+            {*{l s='Product available with different options'}*}
+        {*{else}*}
+          {*{l s='Out of stock'}*}
+        {*{/if}*}
+        {*</span>*}
+        {* TODO: find a way to restore dynamic hooks *}
+        {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
+        {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}
+        {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
+      </div>
 
       {* TODO: add these properties to indexed products *}
       {*<div class="product-label-container">*}
@@ -113,19 +107,14 @@
               {* TODO: find a way to restore dynamic hooks *}
               {*{hook h="displayProductPriceBlock" product=$product type='before_price'}*}
               <span class="price product-price">%% formatCurrency(priceTaxIncl) %%</span>
-              {*{if $product.price_without_reduction > 0 && isset($product.specific_prices) && $product.specific_prices && isset($product.specific_prices.reduction) && $product.specific_prices.reduction > 0}*}
+              <span v-if="basePriceTaxIncl > priceTaxIncl">
                 {* TODO: find a way to restore dynamic hooks *}
                 {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
-                {*<span class="old-price product-price">*}
-                {*{displayWtPrice p=$product.price_without_reduction}*}
-              {*</span>*}
+                <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>
                 {* TODO: find a way to restore dynamic hooks *}
                 {*{hook h="displayProductPriceBlock" id_product=$product.id_product type="old_price"}*}
-                {*{if $product.specific_prices.reduction_type == 'percentage'}*}
-                  {*<span class="price-percent-reduction">-{$product.specific_prices.reduction * 100}*}
-                    {*%</span>*}
-                {*{/if}*}
-              {*{/if}*}
+                  <span class="price-percent-reduction">- %% discountPercentage %%%</span>
+              </span>
               {* TODO: find a way to restore dynamic hooks *}
               {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
               {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}

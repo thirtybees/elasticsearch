@@ -40,14 +40,14 @@
 
           return 1 + parseFloat(taxes[this.item._source.id_tax_rules_group]) / 100;
         },
-        priceWithTaxAndConversion: function (price) {
-          return parseFloat(price) * this.tax * this.currencyConversion;
-        },
         basePriceTaxIncl: function () {
           return parseFloat(this.item._source.price_tax_excl_group_0) * this.tax * this.currencyConversion;
         },
         priceTaxIncl: function () {
           return parseFloat(this.item._source['price_tax_excl_group_' + this.idGroup]) * this.tax * this.currencyConversion;
+        },
+        discountPercentage: function () {
+          return Math.round((1 - this.priceTaxIncl / this.basePriceTaxIncl) * 100)
         }
       },
       methods: {
