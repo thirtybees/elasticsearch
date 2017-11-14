@@ -246,12 +246,12 @@ class Elasticsearch extends Module
         $this->context->controller->addCSS(_PS_JS_DIR_.'ace/aceinput.css');
 
         // Vue.js
-        $this->context->controller->addJS('https://unpkg.com/vue@2.4.1');
-//        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
+//        $this->context->controller->addJS('https://unpkg.com/vue@2.4.1');
+        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
 
         // Vuex
-        $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
-//        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
+//        $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
+        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
 
         Media::addJsDef(['elasticAjaxUrl' => $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}"]);
         $this->context->smarty->assign([
