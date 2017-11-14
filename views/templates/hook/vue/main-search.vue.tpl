@@ -23,7 +23,7 @@
 {* Components *}
 {include file=ElasticSearch::tpl('hook/vue/column.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/results.vue.tpl')}
-{include file=ElasticSearch::tpl('hook/vue/results/category-results.vue.tpl')}
+{if Configuration::get(Elasticsearch::REPLACE_NATIVE_PAGES)}{include file=ElasticSearch::tpl('hook/vue/results/category-results.vue.tpl')}{/if}
 
 {* Dependencies *}
 {include file=ElasticSearch::tpl('hook/vue/column-left.vue.tpl')}

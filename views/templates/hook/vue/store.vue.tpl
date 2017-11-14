@@ -267,6 +267,11 @@
 
     {literal}
     function filtersToUrl(properties) {
+      var instantSearch = {/literal}{if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};{literal}
+      if (!instantSearch) {
+        return;
+      }
+
       var selectedFilters = properties.selectedFilters;
       var query = properties.query;
 

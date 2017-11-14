@@ -25,7 +25,7 @@
     }
 }
 
-#elasticsearch-results {
+#elasticsearch-autocomplete {
     position: absolute;
     z-index: 100000;
     background-color: white;
@@ -36,18 +36,18 @@
     display: block;
 }
 
-#elasticsearch-results > span.elastic-suggestion {
+#elasticsearch-autocomplete > span.elastic-suggestion {
     display: inline-block;
     width: 100%;
     padding: 2px 8px;
     cursor: pointer;
 }
 
-#elasticsearch-results > span.elastic-suggestion.active {
+#elasticsearch-autocomplete > span.elastic-suggestion.active {
     background-color: #ddd;
 }
 
-#elasticsearch-results > span.elastic-suggestion:not(.active):hover {
+#elasticsearch-autocomplete > span.elastic-suggestion:not(.active):hover {
     background-color: #efefef;
 }
 

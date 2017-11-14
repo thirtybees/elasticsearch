@@ -36,20 +36,34 @@ class Elasticsearch extends Module
     // Include ajax functions
     use \ElasticsearchModule\ModuleAjaxTrait;
 
-    const LOGGING_ENABLED = 'ELASTICSEARCH_LOGGING';
-    const SERVERS = 'ELASTICSEARCH_SERVERS';
-    const PROXY = 'ELASTICSEARCH_PROXY';
-    const METAS = 'ELASTICSEARCH_METAS';
+    // Config page
     const INDEX_CHUNK_SIZE = 'ELASTICSEARCH_ICHUNK_SIZE';
     const INDEX_PREFIX = 'ELASTICSEARCH_IPREFIX';
-    const SHARDS = 'ELASTICSEARCH_SHARDS';
+    const STOP_WORDS = 'ELASTICSEARCH_STOP_WORDS';
     const REPLICAS = 'ELASTICSEARCH_REPLICAS';
+    const SHARDS = 'ELASTICSEARCH_SHARDS';
+    const LOGGING_ENABLED = 'ELASTICSEARCH_LOGGING';
+
+    // Connection page
+    const SERVERS = 'ELASTICSEARCH_SERVERS';
+    const PROXY = 'ELASTICSEARCH_PROXY';
+
+    // Indexing page
+    const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
+    const METAS = 'ELASTICSEARCH_METAS';
+
+    // Serach page
     const QUERY_JSON = 'ELASTICSEARCH_QUERY_JSON';
     const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
+
+    // Display page
     const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
     const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
-    const STOP_WORDS = 'ELASTICSEARCH_STOP_WORDS';
-    const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
+    const REPLACE_NATIVE_PAGES = 'ELASTICSEARCH_REPLACE_PAGES';
+    const AUTOCOMPLETE = 'ELASTICSEARCH_AUTOCOMPLETE';
+    const INSTANT_SEARCH = 'ELASTICSEARCH_INSTANT';
+
+    // Generic
     const CONFIG_UPDATED = 'ELASTICSEARCH_CONFIG_UPDATED';
 
     /** @var array $stopWordLangs */
@@ -151,6 +165,10 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
+        Configuration::updateGlobalValue(static::REPLACE_NATIVE_PAGES, true);
+        Configuration::updateGlobalValue(static::AUTOCOMPLETE, true);
+        Configuration::updateGlobalValue(static::INSTANT_SEARCH, true);
+
 
         $defaultTaxGroup = 0;
         $taxes = TaxRulesGroup::getTaxRulesGroups(true);
@@ -189,6 +207,9 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::SHARDS);
         Configuration::deleteByName(static::BLACKLISTED_FIELDS);
         Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
+        Configuration::deleteByName(static::REPLACE_NATIVE_PAGES);
+        Configuration::deleteByName(static::AUTOCOMPLETE);
+        Configuration::deleteByName(static::INSTANT_SEARCHQ);
 
         return parent::uninstall();
     }
@@ -439,13 +460,13 @@ class Elasticsearch extends Module
 
         // Find if there is a special filter
         $this->context->smarty->assign([
-            'autocomplete' => true,
-            'shop'         => $this->context->shop,
-            'language'     => $this->context->language,
-            'aggregations' => $aggegrations,
-            'sources'      => $sources,
-            'metas'        => $metas,
-            'fixedFilter'  => static::getFixedFilter(),
+            'autocomplete'  => Configuration::get(static::AUTOCOMPLETE),
+            'shop'          => $this->context->shop,
+            'language'      => $this->context->language,
+            'aggregations'  => $aggegrations,
+            'sources'       => $sources,
+            'metas'         => $metas,
+            'fixedFilter'   => static::getFixedFilter(),
         ]);
 
         return $this->display(__FILE__, 'displaytop.tpl');
@@ -822,6 +843,9 @@ class Elasticsearch extends Module
             static::DEFAULT_TAX_RULES_GROUP => Configuration::get(static::DEFAULT_TAX_RULES_GROUP),
             static::STOP_WORDS              => $stopWords,
             static::BLACKLISTED_FIELDS      => Configuration::get(static::BLACKLISTED_FIELDS),
+            static::REPLACE_NATIVE_PAGES    => (int) Configuration::get(static::REPLACE_NATIVE_PAGES),
+            static::INSTANT_SEARCH          => (int) Configuration::get(static::INSTANT_SEARCH),
+            static::AUTOCOMPLETE            => (int) Configuration::get(static::AUTOCOMPLETE),
         ];
     }
 
@@ -872,6 +896,10 @@ class Elasticsearch extends Module
      */
     protected function getFixedFilter()
     {
+        if (!Configuration::get(static::REPLACE_NATIVE_PAGES)) {
+            return null;
+        }
+
         $controller = Context::getContext()->controller;
         if ($controller instanceof CategoryControllerCore) {
             $category = $controller->getCategory();

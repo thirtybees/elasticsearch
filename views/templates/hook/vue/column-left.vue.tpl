@@ -35,7 +35,9 @@
 
     ready(function () {
       var target = document.getElementById('elasticsearch-column-left');
-      if (typeof target !== 'undefined') {
+      var shouldShow = {if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};
+
+      if (typeof target !== 'undefined' && shouldShow) {
         new Vue({
           el: target,
           template: '<elasticsearch-column position="left"></elasticsearch-column>',
