@@ -16,7 +16,7 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
 {* Include dependencies *}
-{capture name="resultsTemplate"}{include file=ElasticSearch::tpl('front/search.tpl')}{/capture}
+{capture name="categoryResultsTemplate"}<div id="es-category-results" v-cloak></div>{/capture}
 {include file=ElasticSearch::tpl('hook/vue/results/product-section.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/product-count.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/show-all.vue.tpl')}
@@ -27,7 +27,7 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/category-results.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-
+    var mainColumn;
 
     function ready(fn) {
       if (document.readyState !== 'loading') {
@@ -46,7 +46,7 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('es-category-results');
 
-      if (state.query || state.fixedFilter && state.fixedFilter === 'category') {
+      if (state.query || state.fixedFilter && state.fixedFilter.aggregationCode === 'category') {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
@@ -66,7 +66,7 @@
       }
 
       // Check if the Elasticsearch module is active
-      var target = document.getElementById('elasticsearch-results');
+      var target = document.getElementById('es-category-results');
       if (typeof target === 'undefined' || !target) {
         mainColumn = document.querySelectorAll('#category-products');
         if (!mainColumn.length) {
@@ -75,14 +75,16 @@
 
         // Take the first element
         mainColumn = mainColumn[0];
-        mainColumn.insertAdjacentHTML('beforebegin', '{$smarty.capture.resultsTemplate|escape:'javascript':'UTF-8'}');
+        mainColumn.insertAdjacentHTML('beforebegin', '{$smarty.capture.categoryResultsTemplate|escape:'javascript':'UTF-8'}');
 
-        target = document.getElementById('elasticsearch-results');
+        target = document.getElementById('es-category-results');
 
         // Apply the same classlist
         window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
         window.ElasticsearchModule.classList = mainColumn.classList.value;
       }
+
+      console.log(target);
 
       if (typeof target !== 'undefined' || !target) {
         new Vue({
