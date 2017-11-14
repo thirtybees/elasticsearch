@@ -3,7 +3,7 @@
     <div id="layered_block_left" class="block">
       <h2 class="title_block section-title-column">{l s='Catalog' mod='elasticsearch'}</h2>
       <div class="block_content">
-        <div id="enabled_filters" v-if="_.values(selectedFilters).length">
+        <div id="enabled_filters" v-if="!_.isEmpty(selectedFilters)">
         <span class="layered_subtitle" style="float: none;">
           {l s='Enabled filters:' mod='elasticsearch'}
         </span>
