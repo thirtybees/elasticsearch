@@ -20,7 +20,19 @@
   <div class="form-horizontal form-wrapper">
     <toggle display-name="{l s='Use a list as default product layout' mod='elasticsearch' js=1}"
             config-key="{Elasticsearch::PRODUCT_LIST}"
-            description="{l s='Show a product list instead of a grid by default' mod='elasticsearch'}"
+            help="{l s='Show a product list instead of a grid by default' mod='elasticsearch'}"
+    ></toggle>
+    <toggle display-name="{l s='Replace native pages' mod='elasticsearch' js=1}"
+            config-key="{Elasticsearch::REPLACE_NATIVE_PAGES}"
+            help="{l s='Replaces the category, manufacturer and supplier pages with Elasticsearch results' mod='elasticsearch'}"
+    ></toggle>
+    <toggle display-name="{l s='Autocomplete' mod='elasticsearch' js=1}"
+            config-key="{Elasticsearch::AUTOCOMPLETE}"
+            help="{l s='Shows an autocomplete dropdown with the closest results' mod='elasticsearch'}"
+    ></toggle>
+    <toggle display-name="{l s='Instant search' mod='elasticsearch' js=1}"
+            config-key="{Elasticsearch::INSTANT_SEARCH}"
+            help="{l s='Show instant results on the current page' mod='elasticsearch'}"
     ></toggle>
     <toggle display-name="{l s='Infinite scroll' mod='elasticsearch' js=1}"
             config-key="{Elasticsearch::INFINITE_SCROLL}"
@@ -29,6 +41,7 @@
     <tax-selector display-name="{l s='Price slider tax rules group' mod='elasticsearch'}"
                   config-key="{Elasticsearch::DEFAULT_TAX_RULES_GROUP}"
                   help="{l s='Apply this tax rules group to the slider. Note that if you have mixed taxes in your store, the shown product selection might no longer be accurate.' mod='elasticsearch'}"></tax-selector>
+
   </div>
   <div class="panel-footer">
     <button type="submit" class="btn btn-default pull-right ajax-save-btn" :disabled="!canSubmit"

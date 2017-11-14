@@ -15,7 +15,7 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<div id="elasticsearch-results" v-if="results.length">
+<div id="elasticsearch-autocomplete" v-if="results.length">
   <span :class="'elastic-suggestion clearfix ' + ((result._id == selected) ? 'active' : '')"
         v-for="result in results"
         :key="result._id"

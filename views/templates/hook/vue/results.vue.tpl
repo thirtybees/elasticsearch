@@ -58,6 +58,7 @@
     }
 
     ready(function () {
+      // Check if Elasticsearch is active
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
         mainColumn = document.querySelectorAll('#main_column, #center_column');

@@ -27,7 +27,7 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/category-results.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
-    var mainColumn;
+
 
     function ready(fn) {
       if (document.readyState !== 'loading') {

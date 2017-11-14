@@ -60,6 +60,12 @@
     }
 
     ready(function () {
+      var shouldShow = {if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};
+
+      if (!shouldShow) {
+        return;
+      }
+
       // Check if the Elasticsearch module is active
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {

@@ -16,7 +16,6 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
 <div id="elasticsearch-block-top" class="col-sm-4 col-md-5" role="search" v-cloak>
-  {* TODO: restore non-js submits *}
   <input type="hidden" name="controller" value="search"/>
   <input type="hidden" name="orderby" value="position"/>
   <input type="hidden" name="orderway" value="desc"/>
@@ -42,7 +41,8 @@
           <i class="icon icon-search"></i></button>
       </span>
   </div>
-  <elasticsearch-autocomplete id="elasticsearch-results"
+  <elasticsearch-autocomplete v-if="{if Configuration::get(Elasticsearch::AUTOCOMPLETE)}true{else}false{/if}"
+                              id="elasticsearch-autocomplete"
                               :results="suggestions"
                               :selected="selected"
   ></elasticsearch-autocomplete>
