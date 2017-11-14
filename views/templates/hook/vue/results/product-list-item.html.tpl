@@ -5,7 +5,8 @@
          :href.once="item._source.link"
          :title.once="item._source.name"
       >
-        <img class="replace-2x img-responsive center-block"
+        <img v-if="typeof item._source !== 'undefined' && typeof item._source.image_link_large !== 'undefined'"
+             class="replace-2x img-responsive center-block"
              :src.once="'//' + item._source.image_link_large.replace('search_default', 'large_default')"
                 {* TODO: restore responsive images *}
                 {*srcset=""*}

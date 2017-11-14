@@ -209,7 +209,11 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
         Configuration::deleteByName(static::REPLACE_NATIVE_PAGES);
         Configuration::deleteByName(static::AUTOCOMPLETE);
-        Configuration::deleteByName(static::INSTANT_SEARCHQ);
+        Configuration::deleteByName(static::INSTANT_SEARCH);
+
+        Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_index_status`');
+        Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta`');
+        Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta_lang`');
 
         return parent::uninstall();
     }
@@ -451,6 +455,8 @@ class Elasticsearch extends Module
                 'name',
                 'price_tax_excl',
                 'id_tax_rules_group',
+                'image_link_small',
+                'image_link_large',
             ])) {
                 continue;
             }

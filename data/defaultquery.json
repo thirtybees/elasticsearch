@@ -3,8 +3,8 @@
     "must": [
       {
         "multi_match": {
-          ||QUERY||,
-          ||FIELDS||,
+          "query": ||QUERY||,
+          "fields": ||FIELDS||,
           "type": "best_fields",
           "operator": "OR",
           "fuzziness": "auto"
