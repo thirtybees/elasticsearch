@@ -79,19 +79,25 @@ class Fetcher
                 META::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'on_sale'                 => [
-            'function' => [__CLASS__, 'getOnSale'],
-            'default'  => Meta::ELASTIC_TYPE_BINARY,
+        'on_sale' => [
+            'function'      => [__CLASS__, 'getOnSale'],
+            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_BOOLEAN,
+            ],
         ],
         'online_only'             => [
             'function' => [__CLASS__, 'getOnlineOnly'],
-            'default'  => Meta::ELASTIC_TYPE_BINARY,
+            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_BOOLEAN,
+            ],
         ],
         'available_now'           => [
             'function' => [__CLASS__, 'getAvailableNow'],
-            'default'  => Meta::ELASTIC_TYPE_BINARY,
+            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
-                Meta::ELASTIC_TYPE_BINARY,
+                Meta::ELASTIC_TYPE_BOOLEAN,
             ],
         ],
         'category'                => [
@@ -190,10 +196,10 @@ class Fetcher
         ],
         'id_tax_rules_group'      => [
             'function' => null,
-            'default'  => Meta::ELASTIC_TYPE_NESTED,
+            'default'  => Meta::ELASTIC_TYPE_INTEGER,
             'visible'  => false,
             'elastic_types' => [
-                Meta::ELASTIC_TYPE_NESTED,
+                Meta::ELASTIC_TYPE_INTEGER,
             ],
         ],
         'price_tax_excl'          => [
