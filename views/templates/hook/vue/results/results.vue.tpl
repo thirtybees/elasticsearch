@@ -46,7 +46,7 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('elasticsearch-results');
 
-      if (state.query) {
+      if (state.query || state.fixedFilter && state.fixedFilter.aggregationCode !== 'category') {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
