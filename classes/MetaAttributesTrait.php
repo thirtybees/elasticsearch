@@ -66,17 +66,21 @@ trait MetaAttributesTrait
         $metas = static::getAllMetas();
 
         $type = 'property';
-        foreach (array_keys(Fetcher::$attributes) as $defaultAttribute) {
-            $id = $defaultAttribute;
+        foreach (Fetcher::$attributes as $defaultAttributeName => $defaultAttribute) {
+            $id = $defaultAttributeName;
             $position = isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
             $name = [];
             foreach (Language::getLanguages(false, false, true) as $language) {
-                $name[(int) $language] = isset($metas[$language][$id]['name']) ? $metas[$language][$id]['name'] : $defaultAttribute;
+                $name[(int) $language] = isset($metas[$language][$id]['name']) ? $metas[$language][$id]['name'] : $defaultAttributeName;
+            }
+            $elasticType = isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['elastic_type']) ? $metas[$idLang][$id]['elastic_type'] : 'text';
+            if (isset($defaultAttribute['elastic_types']) && !in_array($elasticType, $defaultAttribute['elastic_types'])) {
+                $elasticType = isset($defaultAttribute['default']) ? $defaultAttribute['default'] : $defaultAttribute['elastic_types'][0];
             }
 
             $attribute = (object) [
                 'meta_type'         => $type,
-                'code'              => $defaultAttribute,
+                'code'              => $defaultAttributeName,
                 'name'              => $name,
                 'position'          => $position,
                 'weight'            => (float) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['weight']) ? $metas[$idLang][$id]['weight'] : 1),
@@ -85,11 +89,11 @@ trait MetaAttributesTrait
                 'aggregatable'      => (int) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['aggregatable']) ? $metas[$idLang][$id]['aggregatable'] : false),
                 'operator'          => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['operator']) ? $metas[$idLang][$id]['operator'] : false,
                 'display_type'      => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['display_type']) ? $metas[$idLang][$id]['display_type'] : 0,
-                'elastic_type'      => isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['elastic_type']) ? $metas[$idLang][$id]['elastic_type'] : 'text',
+                'elastic_type'      => $elasticType,
                 'result_limit'      => (int) isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['result_limit']) ? $metas[$idLang][$id]['result_limit'] : 0,
-                'type_configurable' => isset(Fetcher::$attributes[$defaultAttribute]['type_configurable']) ? Fetcher::$attributes[$defaultAttribute]['type_configurable'] : false,
-                'elastic_types'     => isset(Fetcher::$attributes[$defaultAttribute]['elastic_types']) ? Fetcher::$attributes[$defaultAttribute]['elastic_types'] : null,
-                'visible'           => isset(Fetcher::$attributes[$defaultAttribute]['visible']) ? Fetcher::$attributes[$defaultAttribute]['visible'] : true,
+                'type_configurable' => isset(Fetcher::$attributes[$defaultAttributeName]['type_configurable']) ? Fetcher::$attributes[$defaultAttributeName]['type_configurable'] : false,
+                'elastic_types'     => isset(Fetcher::$attributes[$defaultAttributeName]['elastic_types']) ? Fetcher::$attributes[$defaultAttributeName]['elastic_types'] : null,
+                'visible'           => isset(Fetcher::$attributes[$defaultAttributeName]['visible']) ? Fetcher::$attributes[$defaultAttributeName]['visible'] : true,
             ];
             if ($position) {
                 $attributes[] = $attribute;
