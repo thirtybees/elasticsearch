@@ -27,6 +27,8 @@
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
+    var mainColumn;
+
     function ready(fn) {
       if (document.readyState !== 'loading') {
         fn();
@@ -44,7 +46,7 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('es-results');
 
-      if (state.query || state.fixedFilter && state.fixedFilter.aggregationCode !== 'category') {
+      if (state.query) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
