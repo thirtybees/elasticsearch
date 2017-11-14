@@ -323,6 +323,17 @@
         hash = hash.slice(0, 1) + hash.slice(2);
       }
 
+      if (hash === '#') {
+        // Remove hash
+        if (typeof history.replaceState === 'function') {
+          history.replaceState('', document.title, window.location.pathname + window.location.search);
+        } else {
+          window.location.hash = '';
+        }
+
+        return;
+      }
+
       window.location.hash = hash;
     }
 

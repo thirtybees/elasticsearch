@@ -22,7 +22,8 @@
 
 {* Components *}
 {include file=ElasticSearch::tpl('hook/vue/column.vue.tpl')}
-{include file=ElasticSearch::tpl('hook/vue/results.vue.tpl')}
+{include file=ElasticSearch::tpl('hook/vue/results/results.vue.tpl')}
+{include file=ElasticSearch::tpl('hook/vue/results/category-results.vue.tpl')}
 
 {* Dependencies *}
 {include file=ElasticSearch::tpl('hook/vue/column-left.vue.tpl')}

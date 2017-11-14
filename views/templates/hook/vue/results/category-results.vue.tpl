@@ -24,7 +24,7 @@
 {include file=ElasticSearch::tpl('hook/vue/results/product-list-item.vue.tpl')}
 
 {* Template file *}
-{capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/results.html.tpl')}{/capture}
+{capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/category-results.html.tpl')}{/capture}
 <script type="text/javascript">
   (function () {
     function ready(fn) {
@@ -42,7 +42,7 @@
     }
 
     function manageSearchBlockVisibility(state) {
-      var instantSearchBlock = document.getElementById('es-results');
+      var instantSearchBlock = document.getElementById('es-category-results');
 
       if (state.query || state.fixedFilter) {
         mainColumn.style.display = 'none';
@@ -58,9 +58,15 @@
     }
 
     ready(function () {
+      var fixedFilter = {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if};
+      if (!fixedFilter || fixedFilter.aggregationCode !== 'category') {
+        return;
+      }
+
+      // Check if the Elasticsearch module is active
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
-        mainColumn = document.querySelectorAll('#main_column, #center_column');
+        mainColumn = document.querySelectorAll('#category-products');
         if (!mainColumn.length) {
           return;
         }
@@ -68,7 +74,9 @@
         // Take the first element
         mainColumn = mainColumn[0];
         mainColumn.insertAdjacentHTML('beforebegin', '{$smarty.capture.resultsTemplate|escape:'javascript':'UTF-8'}');
+
         target = document.getElementById('elasticsearch-results');
+
         // Apply the same classlist
         window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
         window.ElasticsearchModule.classList = mainColumn.classList.value;

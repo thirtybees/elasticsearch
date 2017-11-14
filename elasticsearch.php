@@ -45,7 +45,6 @@ class Elasticsearch extends Module
     const SHARDS = 'ELASTICSEARCH_SHARDS';
     const REPLICAS = 'ELASTICSEARCH_REPLICAS';
     const QUERY_JSON = 'ELASTICSEARCH_QUERY_JSON';
-    const OVERLAY_DIV = 'ELASTICSEARCH_OVERLAY_DIV';
     const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
     const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
     const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
@@ -151,7 +150,6 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::SERVERS, json_encode([['url' => 'http://localhost:9200', 'read' => true, 'write' => true]]));
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
-        Configuration::updateGlobalValue(static::OVERLAY_DIV, '#main_column, #center_column');
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
 
         $defaultTaxGroup = 0;
@@ -190,7 +188,6 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::REPLICAS);
         Configuration::deleteByName(static::SHARDS);
         Configuration::deleteByName(static::BLACKLISTED_FIELDS);
-        Configuration::deleteByName(static::OVERLAY_DIV);
         Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
 
         return parent::uninstall();
@@ -821,7 +818,6 @@ class Elasticsearch extends Module
             static::METAS                   => Meta::getAllAttributes(),
             static::INDEX_PREFIX            => Configuration::get(static::INDEX_PREFIX),
             static::QUERY_JSON              => Configuration::get(static::QUERY_JSON),
-            static::OVERLAY_DIV             => Configuration::get(static::OVERLAY_DIV),
             static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),
             static::DEFAULT_TAX_RULES_GROUP => Configuration::get(static::DEFAULT_TAX_RULES_GROUP),
             static::STOP_WORDS              => $stopWords,
