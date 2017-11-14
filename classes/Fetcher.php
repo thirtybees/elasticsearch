@@ -83,6 +83,10 @@ class Fetcher
             'function' => [__CLASS__, 'getOnSale'],
             'default'  => Meta::ELASTIC_TYPE_BINARY,
         ],
+        'online_only'             => [
+            'function' => [__CLASS__, 'getOnlineOnly'],
+            'default'  => Meta::ELASTIC_TYPE_BINARY,
+        ],
         'available_now'           => [
             'function' => [__CLASS__, 'getAvailableNow'],
             'default'  => Meta::ELASTIC_TYPE_BINARY,
@@ -800,6 +804,19 @@ class Fetcher
     {
         return (bool) $product->on_sale;
     }
+
+    /**
+     * Get online only flag
+     *
+     * @param Product $product
+     *
+     * @return bool
+     */
+    protected static function getOnlineOnly($product)
+    {
+        return (bool) $product->online_only;
+    }
+
 
     /**
      * Get available now flag
