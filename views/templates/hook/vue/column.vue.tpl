@@ -38,6 +38,9 @@
             return parseInt(agg.position, 10);
           });
         },
+        query: function () {
+          return this.$store.state.query;
+        },
         selectedFilters: function () {
           return this.$store.state.selectedFilters;
         },
