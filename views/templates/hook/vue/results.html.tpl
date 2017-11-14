@@ -1,7 +1,10 @@
 <main v-if="_.indexOf(['list', 'grid'], layoutType) > -1" id="es-results" :class="classList">
   <section id="category-info">
     <h1 class="page-heading product-listing">
-      <span v-if="!query" class="cat-name">
+      <span v-if="!query && fixedFilter && _.indexOf(['manufacturer', 'supplier'], fixedFilter.aggregationCode) > -1" class="cat-name">
+        %% fixedFilter.filterName %%
+      </span>
+      <span v-else-if="!query">
         {l s='Search' mod='elasticsearch'}
       </span>
       <span v-else class="cat-name">
@@ -14,7 +17,8 @@
            v-if="query && total || fixedFilter && _.indexOf(['manufacturer', 'supplier'], fixedFilter.aggregationCode) > -1"
   >
     <h2 class="page-heading">
-      <span>{l s='Products' mod='elasticsearch'}</span>
+      <span v-if="query || !fixedFilter">{l s='Products' mod='elasticsearch'}</span>
+      <span v-else>{l s='List of products by %% fixedFilter.aggregationCode %% %% fixedFilter.filterName %%' mod='elasticsearch'}</span>
       <span class="pull-right">
         <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
         <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>

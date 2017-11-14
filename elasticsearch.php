@@ -440,6 +440,7 @@ class Elasticsearch extends Module
             $sources[] = $meta['code'];
         }
 
+        // Find if there is a special filter
         $this->context->smarty->assign([
             'autocomplete' => true,
             'shop'         => $this->context->shop,
@@ -447,7 +448,7 @@ class Elasticsearch extends Module
             'aggregations' => $aggegrations,
             'sources'      => $sources,
             'metas'        => $metas,
-            'fixedFilter'  => false,
+            'fixedFilter'  => static::getFixedFilter(),
         ]);
 
         return $this->display(__FILE__, 'displaytop.tpl');
@@ -868,5 +869,49 @@ class Elasticsearch extends Module
         }
 
         return $this->l('Unknown');
+    }
+
+    /**
+     * @return null|array
+     */
+    protected function getFixedFilter()
+    {
+        $controller = Context::getContext()->controller;
+        if ($controller instanceof CategoryControllerCore) {
+            $category = $controller->getCategory();
+
+            if (Validate::isLoadedObject($category)) {
+                return [
+                    'aggregationCode' => 'category',
+                    'aggregationName' => Meta::getName('category', Context::getContext()->language->id),
+                    'filterCode'      => Tools::link_rewrite($category->name),
+                    'filterName'      => $category->name,
+                ];
+            }
+        } elseif ($controller instanceof ManufacturerControllerCore) {
+            $manufacturer = $controller->getManufacturer();
+
+            if (Validate::isLoadedObject($manufacturer)) {
+                return [
+                    'aggregationCode' => 'manufacturer',
+                    'aggregationName' => Meta::getName('manufacturer', Context::getContext()->language->id),
+                    'filterCode'      => Tools::link_rewrite($manufacturer->name),
+                    'filterName'      => $manufacturer->name,
+                ];
+            }
+        } elseif ($controller instanceof SupplierControllerCore) {
+            $supplier = $controller->getSupplier();
+
+            if (Validate::isLoadedObject($supplier)) {
+                return [
+                    'aggregationCode' => 'supplier',
+                    'aggregationName' => Meta::getName('supplier', Context::getContext()->language->id),
+                    'filterCode'      => Tools::link_rewrite($supplier->name),
+                    'filterName'      => $supplier->name,
+                ];
+            }
+        }
+
+        return null;
     }
 }

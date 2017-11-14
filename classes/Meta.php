@@ -261,4 +261,27 @@ class Meta extends ObjectModel
             static::DISPLAY_TYPE_COLORS   => 'Colors',
         ];
     }
+
+    /**
+     * Get the name of a meta
+     *
+     * @param string $code
+     * @param int    $idLang
+     *
+     * @return false|null|string
+     */
+    public static function getName($code, $idLang)
+    {
+        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            (new DbQuery())
+                ->select('ml.`name`')
+                ->from(bqSQL(static::$definition['table']).'_lang', 'ml')
+                ->innerJoin(
+                    bqSQL(static::$definition['table']),
+                    'm',
+                    'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'` AND ml.`id_lang` = '.(int) $idLang
+                )
+                ->where('m.`code` = \''.pSQL($code).'\'')
+        );
+    }
 }
