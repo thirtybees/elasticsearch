@@ -336,7 +336,7 @@ class Fetcher
 
         // Filter metas
         foreach ($metas as $code => $meta) {
-            if (!$meta['enabled'] && static::$attributes[$code]['visible']) {
+            if (!$meta['enabled'] && isset(static::$attributes[$code]['visible']) && static::$attributes[$code]['visible']) {
                 unset($elasticProduct->$code);
             }
         }
