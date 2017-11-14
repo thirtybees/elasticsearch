@@ -300,7 +300,7 @@ class Meta extends ObjectModel
                 ->select($withWeights ? 'm.`weight`' : '')
                 ->from(bqSQL(static::$definition['table']), 'm')
                 ->where('m.`searchable` = 1')
-                // Only text type fields are truly searchable, removing the rest
+            // Only text type fields are truly searchable, removing the rest
                 ->where('m.`elastic_type` = \'text\'')
         );
 
