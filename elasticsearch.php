@@ -470,6 +470,7 @@ class Elasticsearch extends Module
             'shop'          => $this->context->shop,
             'language'      => $this->context->language,
             'aggregations'  => $aggegrations,
+            'fields'        => Meta::getSearchableMetas(),
             'sources'       => $sources,
             'metas'         => $metas,
             'fixedFilter'   => static::getFixedFilter(),
