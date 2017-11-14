@@ -18,7 +18,8 @@
   >
     <h2 class="page-heading">
       <span v-if="query || !fixedFilter">{l s='Products' mod='elasticsearch'}</span>
-      <span v-else>{l s='List of products by %% fixedFilter.aggregationCode %% %% fixedFilter.filterName %%' mod='elasticsearch'}</span>
+      <span v-else-if="fixedFilter.aggregationCode === 'manufacturer'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
+      <span v-else-if="fixedFilter.aggregationCode === 'supplier'">{l s='List of products by supplie:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
       <span class="pull-right">
         <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
         <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>
