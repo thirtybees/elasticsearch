@@ -332,7 +332,7 @@ class Fetcher
 
         // Filter metas
         foreach ($metas as $code => $meta) {
-            if (!$meta['enabled']) {
+            if (!$meta['enabled'] && static::$attributes[$code]['visible']) {
                 unset($elasticProduct->$code);
             }
         }
@@ -495,9 +495,9 @@ class Fetcher
         $cover = Image::getCover($product->id);
 
         if ($cover['id_image']) {
-            $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover["id_image"], ImageType::getFormatedName("search"));
+            $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('large'));
         } else {
-            $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-search_default.jpg';
+            $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-large_default.jpg';
         }
 
         return $imageLink;
@@ -517,7 +517,7 @@ class Fetcher
         $cover = Image::getCover($product->id);
 
         if ($cover['id_image']) {
-            $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover["id_image"], ImageType::getFormatedName("small"));
+            $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('small'));
         } else {
             $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-small_default.jpg';
         }
