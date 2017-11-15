@@ -30,7 +30,6 @@
           currentSlider: 0
         };
       },
-
       props: {
         width: {
           type: [Number, String],
