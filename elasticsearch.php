@@ -190,6 +190,48 @@ class Elasticsearch extends Module
             Configuration::updateValue(static::STOP_WORDS, $stopWords, false, (int) $shop['id_shop_group'], (int) $shop['id_shop']);
         }
 
+        $defaultMetas = json_decode(file_get_contents(__DIR__.'/data/defaultmetas.json'), true);
+        $attributes = Meta::getAllAttributes();
+        $metaInserts = [];
+        $metaLangInserts = [];
+        $langs = Language::getLanguages(false);
+        foreach ($langs as &$lang) {
+            if (!isset($defaultMetas['name'][$lang['iso_code']])) {
+                // Use the default language
+                $lang['iso_code'] = 'en';
+            }
+        }
+
+        $i = 1;
+        foreach ($attributes as $attribute) {
+            $metaInserts[] = [
+                bqSQL(Meta::$definition['primary']) => $i,
+                'code'                              => $attribute->code,
+                'enabled'                           => !in_array($attribute->code, ['sales', 'pageviews']),
+                'meta_type'                         => bqSQL($attribute->meta_type),
+                'elastic_type'                      => bqSQL($attribute->elastic_type),
+                'searchable'                        => in_array($attribute->code, ['name', 'reference', 'manufacturer']),
+                'weight'                            => 1,
+                'position'                          => $i,
+                'aggregatable'                      => in_array($attribute->code, ['category', 'manufacturer']),
+                'operator'                          => (float) $attribute->weight,
+                'display_type'                      => bqSQL($attribute->weight),
+                'result_limit'                      => 0,
+            ];
+
+            foreach ($langs as $lang) {
+                $metaLangInserts[] = [
+                    bqSQL(Meta::$definition['primary']) => $i,
+                    'id_lang'                           => (int) $lang['id_lang'],
+                    'name'                              => isset($defaultMetas[$attribute->code][$lang['iso_code']]) ? $defaultMetas[$attribute->code][$lang['iso_code']] : $attribute->code,
+                ];
+            }
+
+            $i++;
+        }
+        Db::getInstance()->insert(bqSQL(Meta::$definition['table']), $metaInserts);
+        Db::getInstance()->insert(bqSQL(Meta::$definition['table']).'_lang', $metaLangInserts);
+
         return true;
     }
 
