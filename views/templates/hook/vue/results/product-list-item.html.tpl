@@ -1,3 +1,20 @@
+{*
+ * Copyright (C) 2017 thirty bees
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.md
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to contact@thirtybees.com so we can send you a copy immediately.
+ *
+ * @author    thirty bees <contact@thirtybees.com>
+ * @copyright 2017 thirty bees
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ *}
 <article>
   <div class="product-container">
     <div class="product-image-container">
@@ -24,8 +41,7 @@
       {/if}
 
       {* TODO: add show_price and available_for_order properties to indexed product and add this constraint *}
-      {* Original smarty logic: {if (!$PS_CATALOG_MODE && ((isset($product.show_price) && $product.show_price && !isset($restricted_country_mode)) || (isset($product.available_for_order) && $product.available_for_order)))} *}
-      <div v-if="{if !$PS_CATALOG_MODE}true{else}false{/if}" class="content_price show-if-product-grid-hover">
+      <div v-if="{if !$PS_CATALOG_MODE && !isset($restricted_country_mode)}true{else}false{/if} && item._source.show_price || item._source.available_for_order" class="content_price show-if-product-grid-hover">
         <span class="price product-price">
           {* TODO: find a way to restore dynamic hooks *}
           {*{hook h="displayProductPriceBlock" product=$product type="before_price"}*}
@@ -37,46 +53,24 @@
           <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>&nbsp;
           <span class="price-percent-reduction">- %% discountPercentage %%%</span>
         </span>
-        {* TODO: restore available_for_order property *}
-        {* Original Smarty logic: {if $PS_STOCK_MANAGEMENT && isset($product.available_for_order) && $product.available_for_order && !isset($restricted_country_mode)} *}
-        {*<span v-if="{if $PS_STOCK_MANAGEMENT}true{else}false{/if} " class="unvisible">*}
-        {*{if ($product.allow_oosp || $product.quantity > 0)}*}
-            {*{if $product.quantity <= 0}{if $product.allow_oosp}{if isset($product.available_later) && $product.available_later}{$product.available_later}{else}{l s='In Stock'}{/if}{/if}{else}{if isset($product.available_now) && $product.available_now}{$product.available_now}{else}{l s='In Stock'}{/if}{/if}*}
-        {* TODO: check if product combinations functionality should be removed *}
-        {*{elseif (isset($product.quantity_all_versions) && $product.quantity_all_versions > 0)}*}
-            {*{l s='Product available with different options'}*}
-        {*{else}*}
-          {*{l s='Out of stock'}*}
-        {*{/if}*}
-        {*</span>*}
         {* TODO: find a way to restore dynamic hooks *}
         {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
         {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}
         {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
       </div>
 
-      {* TODO: add these properties to indexed products *}
-      {*<div class="product-label-container">*}
-        {*{if (!$PS_CATALOG_MODE AND ((isset($product.show_price) && $product.show_price) || (isset($product.available_for_order) && $product.available_for_order)))}*}
-        {*{if isset($product.online_only) && $product.online_only}*}
-        {*<span class="product-label product-label-online">{l s='Online only'}</span>*}
-        {*{/if}*}
-        {*{/if}*}
-        {*{if isset($product.new) && $product.new == 1}*}
-          {*<span class="product-label product-label-new">{l s='New'}</span>*}
-        {*{/if}*}
-        {*{if isset($product.on_sale) && $product.on_sale && isset($product.show_price) && $product.show_price && !$PS_CATALOG_MODE}*}
-          {*<span class="product-label product-label-sale">{l s='Sale!'}</span>*}
-        {*{elseif isset($product.reduction) && $product.reduction && isset($product.show_price) && $product.show_price && !$PS_CATALOG_MODE}*}
-          {*<span class="product-label product-label-discount">{l s='Reduced price!'}</span>*}
-        {*{/if}*}
-      {*</div>*}
+      <div v-if="{if !PS_CATALOG_MODE}true{else}false{/if} && item._source.show_price || item._source.available_for_order" class="product-label-container">
+        <span v-if="item._source.online_only" class="product-label product-label-online">{l s='Online only' mod='elasticsearch'}</span>
+        <span v-else-if="item._source.new" class="product-label product-label-new">{l s='New' mod='elasticsearch'}</span>
+        <span v-else-if="item._source.on_sale" class="product-label product-label-sale">{l s='Sale!' mod='elasticsearch'}</span>
+        <span v-else-if="basePriceTaxIncl > priceTaxIncl" class="product-label product-label-discount">{l s='Reduced price!' mod='elasticsearch'}</span>
+      </div>
 
     </div>
 
     <div class="product-description-container">
       <h3 class="h4 product-name">
-        {*{if isset($product.pack_quantity) && $product.pack_quantity}{$product.pack_quantity|intval|cat:' x '}{/if}*}
+        <span v-if="item._source.pack_quantity">%% item._source.pack_quantity %% x </span>
         <a class="product-name"
            :href="item._source.link"
            :title="item._source.name">
@@ -101,103 +95,54 @@
 
     <div class="product-actions-container">
       <div class="product-price-button-wrapper">
-        {*{if (!$PS_CATALOG_MODE AND ((isset($product.show_price) && $product.show_price) || (isset($product.available_for_order) && $product.available_for_order)))}*}
-          <div class="content_price">
-            {*{if isset($product.show_price) && $product.show_price && !isset($restricted_country_mode)}*}
+          <div v-if="{if !$PS_CATALOG_MODE}true{else}false{/if} && item._source.show_price || item._source.available_for_order" class="content_price">
+            {* TODO: find a way to restore dynamic hooks *}
+            {*{hook h="displayProductPriceBlock" product=$product type='before_price'}*}
+            <span v-if="item._source.show_price && {if !isset($restricted_country_mode)}true{else}false{/if}"
+                  class="price product-price">
+              %% formatCurrency(priceTaxIncl) %%
+            </span>
+            <span v-if="item._source.show_price && {if !isset($restricted_country_mode)}true{else}false{/if} && basePriceTaxIncl > priceTaxIncl">
               {* TODO: find a way to restore dynamic hooks *}
-              {*{hook h="displayProductPriceBlock" product=$product type='before_price'}*}
-              <span class="price product-price">%% formatCurrency(priceTaxIncl) %%</span>
-              <span v-if="basePriceTaxIncl > priceTaxIncl">
-                {* TODO: find a way to restore dynamic hooks *}
-                {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
-                <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>
-                {* TODO: find a way to restore dynamic hooks *}
-                {*{hook h="displayProductPriceBlock" id_product=$product.id_product type="old_price"}*}
-                  <span class="price-percent-reduction">- %% discountPercentage %%%</span>
-              </span>
+              {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
+              <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>
               {* TODO: find a way to restore dynamic hooks *}
-              {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
-              {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}
-              {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
-            {*{/if}*}
-          {*</div>*}
-        {*{/if}*}
+              {*{hook h="displayProductPriceBlock" id_product=$product.id_product type="old_price"}*}
+              <span class="price-percent-reduction">- %% discountPercentage %%%</span>
+            </span>
+            {* TODO: find a way to restore dynamic hooks *}
+            {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
+            {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}
+            {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
         </div>
 
         <div class="button-container">
-          {*{if ($product.id_product_attribute == 0 || (isset($add_prod_display) && ($add_prod_display == 1))) && $product.available_for_order && !isset($restricted_country_mode) && $product.customizable != 2 && !$PS_CATALOG_MODE}*}
-          {*{if (!isset($product.customization_required) || !$product.customization_required) && ($product.allow_oosp || $product.quantity > 0)}*}
-          {*{capture}add=1&amp;id_product={$product.id_product|intval}{if isset($product.id_product_attribute) && $product.id_product_attribute}&amp;ipa={$product.id_product_attribute|intval}{/if}{if isset($static_token)}&amp;token={$static_token}{/if}{/capture}*}
-          <a class="ajax_add_to_cart_button btn btn-primary"
-                  {*href="{$link->getPageLink('cart', true, NULL, $smarty.capture.default, false)|escape:'html':'UTF-8'}"*}
-             href="#"
+          <a v-if="item._source.in_stock && item._source.available_for_order && !item._source.customization_required && (item._source.allow_oosp || item._source.in_stock) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
+             class="ajax_add_to_cart_button btn btn-primary"
+             style="cursor: pointer"
              rel="nofollow" title="{l s='Add to cart' mod='elasticsearch'}"
-                  {*data-id-product-attribute="{$product.id_product_attribute|intval}"*}
-             :data-id-product="item['_id']"
-                  {*data-minimal_quantity="{if isset($product.product_attribute_minimal_quantity) && $product.product_attribute_minimal_quantity >= 1}{$product.product_attribute_minimal_quantity|intval}{else}{$product.minimal_quantity|intval}{/if}"*}
+             :data-id-product.once="item._id"
+             :data-minimal_quantity="item._source.minimal_quantity ? item._source.minimal_quantity : 1"
           >
             <span>{l s='Add to cart' mod='elasticsearch'}</span>
           </a>
-          {*{else}*}
-          {*<span class="ajax_add_to_cart_button btn btn-primary disabled">*}
-          {*<span>{l s='Add to cart' mod='elasticsearch'}</span>*}
-          {*</span>*}
-          {*{/if}*}
-          {*{/if}*}
+
+          <span v-else class="ajax_add_to_cart_button btn btn-primary disabled">
+            <span>{l s='Add to cart' mod='elasticsearch'}</span>
+          </span>
           <a class="btn btn-default" :href="item._source.link" title="{l s='View' mod='elasticsearch'}">
-            {* TODO: handle customizations *}
-            <span>
-              {*{if (isset($product.customization_required) && $product.customization_required)}*}
-              {*{l s='Customize' mod='elasticsearch'}*}
-              {*{else}*}
+            <span v-if="item._source.customization_required">
+             {l s='Customize' mod='elasticsearch'}
+            </span>
+            <span v-else>
               {l s='More' mod='elasticsearch'}
-              {*{/if}*}
             </span>
           </a>
         </div>
       </div>
 
-      {* TODO: handle color lists *}
-      {*{if isset($product.color_list)}*}
-        {*<div class="color-list-container">{$product.color_list}</div>*}
-      {*{/if}*}
-      {*{if (!$PS_CATALOG_MODE && $PS_STOCK_MANAGEMENT && ((isset($product.show_price) && $product.show_price) || (isset($product.available_for_order) && $product.available_for_order)))}*}
-        {*{if isset($product.available_for_order) && $product.available_for_order && !isset($restricted_country_mode)}*}
-          <div class="availability">
-            {*{if ($product.allow_oosp || $product.quantity > 0)}*}
-              {*<span class="label {if $product.quantity <= 0 && isset($product.allow_oosp) && !$product.allow_oosp} label-danger{elseif $product.quantity <= 0} label-warning{else} label-success{/if}">*}
-
-              <span v-if="item._source.quantity <= 0 && item._source.available_later" class="label label-danger">%% item._source.available_later</span>
-              <span v-else-if="item._source.quantity <= 0" class="label label-danger">{l s='Out of stock' mod='elasticsearch'}</span>
-              <span v-else class="label label-success">{l s='In stock' mod='elasticsearch'}</span>
-
-              {* TODO: handle backorders *}
-              {*{if $product.quantity <= 0}*}
-               {*{if $product.allow_oosp}*}
-                {*{if isset($product.available_later) && $product.available_later}*}
-                  {*{$product.available_later}*}
-                {*{else}*}
-                  {*{l s='In Stock'}*}
-                {*{/if}*}
-              {*{else}*}
-                {*{l s='Out of stock' mod='elasticsearch'}*}
-              {*{/if}*}
-              {*{else}*}
-                {*{if isset($product.available_now) && $product.available_now}*}
-                  {*{$product.available_now}*}
-                {*{else}*}
-                  {*{l s='In Stock' mod='elasticsearch'}*}
-                {*{/if}*}
-              {*{/if}*}
-              {* TODO: check if product combinations functionality should be removed *}
-              {*{elseif (isset($product.quantity_all_versions) && $product.quantity_all_versions > 0)}*}
-              {*<span class="label label-warning">{l s='Product available with different options'}</span>*}
-              {*{else}*}
-              {*<span class="label label-danger">{l s='Out of stock' mod='elasticsearch'}</span>*}
-            {*{/if}*}
-          </div>
-        {*{/if}*}
-      {*{/if}*}
+      <div v-if="item._source.color_list" v-html="item._source.color_list" class="color-list-container"></div>
+          <stock-badge :item.once="item"></stock-badge>
       {* TODO: restore show_functional_buttons variable *}
       {*{if $show_functional_buttons}*}
         {*<div class="functional-buttons clearfix show-if-product-grid-hover">*}
