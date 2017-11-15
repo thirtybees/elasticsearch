@@ -46,26 +46,26 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('es-category-results');
 
-      if (state.query || state.fixedFilter && state.fixedFilter.aggregationCode === 'category') {
-        mainColumn.style.display = 'none';
-        if (instantSearchBlock) {
+      if (state.query || state.fixedFilter && _.indexOf(['category', 'categories'], state.fixedFilter.aggregationCode) < 0) {
+        mainColumn.style.display = '';
+        if (typeof instantSearchBlock !== 'undefined') {
           instantSearchBlock.style.display = '';
         }
       } else {
-        mainColumn.style.display = '';
-        if (instantSearchBlock) {
-          instantSearchBlock.style.display = 'none';
+        mainColumn.style.display = 'none';
+        if (typeof instantSearchBlock !== 'undefined') {
+          instantSearchBlock.style.display = '';
         }
       }
     }
 
     ready(function () {
       var fixedFilter = {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if};
-      if (!fixedFilter || fixedFilter.aggregationCode !== 'category') {
+      if (!fixedFilter || _.indexOf(['category', 'categories'], fixedFilter.aggregationCode) < 0) {
         return;
       }
 
-      // Check if the Elasticsearch module is active
+      // Check if the Elasticsearch module should be hooked
       var target = document.getElementById('es-category-results');
       if (typeof target === 'undefined' || !target) {
         mainColumn = document.querySelectorAll('#category-products');

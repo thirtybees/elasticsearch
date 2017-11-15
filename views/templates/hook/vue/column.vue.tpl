@@ -162,22 +162,12 @@
         getPriceInclTax: function (price) {
           return Math.round(price * this.tax * this.currencyConversion);
         },
-        hasFixedFilter: function (aggregationCode, filterCode) {
-          if (!this.fixedFilter || typeof this.$store.state.aggregations[aggregationCode] === 'undefined') {
+        hasFixedFilter: function (aggregationCode) {
+          if (!this.fixedFilter) {
             return false;
           }
 
-          var fixed = false;
-          var self = this;
-          _.forEach(this.$store.state.aggregations[aggregationCode].buckets, function (bucket) {
-            if (self.fixedFilter.aggregationCode === aggregationCode && self.fixedFilter.filterCode === bucket.code) {
-              fixed = true;
-
-              return false;
-            }
-          });
-
-          return fixed;
+          return this.fixedFilter.aggregationCode === aggregationCode || aggregationCode === 'category' && this.fixedFilter.aggregationCode === 'categories';
         }
       }
     });

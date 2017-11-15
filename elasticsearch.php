@@ -60,6 +60,7 @@ class Elasticsearch extends Module
     const DEFAULT_TAX_RULES_GROUP = 'ELASTICSEARCH_ID_TAX_RULES';
     const INFINITE_SCROLL = 'ELASTICSEARCH_INFINITE_SCROLL';
     const REPLACE_NATIVE_PAGES = 'ELASTICSEARCH_REPLACE_PAGES';
+    const SEARCH_SUBCATEGORIES = 'ELASTICSEARCH_SEARCH_SUBCATS';
     const AUTOCOMPLETE = 'ELASTICSEARCH_AUTOCOMPLETE';
     const INSTANT_SEARCH = 'ELASTICSEARCH_INSTANT';
 
@@ -166,6 +167,7 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
         Configuration::updateGlobalValue(static::REPLACE_NATIVE_PAGES, true);
+        Configuration::updateGlobalValue(static::SEARCH_SUBCATEGORIES, true);
         Configuration::updateGlobalValue(static::AUTOCOMPLETE, true);
         Configuration::updateGlobalValue(static::INSTANT_SEARCH, true);
 
@@ -208,6 +210,7 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::BLACKLISTED_FIELDS);
         Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
         Configuration::deleteByName(static::REPLACE_NATIVE_PAGES);
+        Configuration::deleteByName(static::SEARCH_SUBCATEGORIES);
         Configuration::deleteByName(static::AUTOCOMPLETE);
         Configuration::deleteByName(static::INSTANT_SEARCH);
 
@@ -851,6 +854,7 @@ class Elasticsearch extends Module
             static::STOP_WORDS              => $stopWords,
             static::BLACKLISTED_FIELDS      => Configuration::get(static::BLACKLISTED_FIELDS),
             static::REPLACE_NATIVE_PAGES    => (int) Configuration::get(static::REPLACE_NATIVE_PAGES),
+            static::SEARCH_SUBCATEGORIES    => (int) Configuration::get(static::SEARCH_SUBCATEGORIES),
             static::INSTANT_SEARCH          => (int) Configuration::get(static::INSTANT_SEARCH),
             static::AUTOCOMPLETE            => (int) Configuration::get(static::AUTOCOMPLETE),
         ];
@@ -907,15 +911,27 @@ class Elasticsearch extends Module
             return null;
         }
 
+        $idLang = (int) Context::getContext()->language->id;
         $controller = Context::getContext()->controller;
         if ($controller instanceof CategoryControllerCore) {
             $category = $controller->getCategory();
 
             if (Validate::isLoadedObject($category)) {
+                if (!Configuration::get(static::SEARCH_SUBCATEGORIES)) {
+                    return [
+                        'aggregationCode' => 'category',
+                        'aggregationName' => Meta::getName('category', $idLang),
+                        'filterCode'      => Tools::link_rewrite($category->name),
+                        'filterName'      => $category->name,
+                    ];
+                }
+
+                $categoryPath = \ElasticsearchModule\Fetcher::getCategoryPathArray($category->id, $idLang);
+
                 return [
-                    'aggregationCode' => 'category',
-                    'aggregationName' => Meta::getName('category', Context::getContext()->language->id),
-                    'filterCode'      => Tools::link_rewrite($category->name),
+                    'aggregationCode' => 'categories',
+                    'aggregationName' => Meta::getName('category', $idLang),
+                    'filterCode'      => Tools::link_rewrite(implode(' /// ', $categoryPath)),
                     'filterName'      => $category->name,
                 ];
             }
@@ -925,7 +941,7 @@ class Elasticsearch extends Module
             if (Validate::isLoadedObject($manufacturer)) {
                 return [
                     'aggregationCode' => 'manufacturer',
-                    'aggregationName' => Meta::getName('manufacturer', Context::getContext()->language->id),
+                    'aggregationName' => Meta::getName('manufacturer', $idLang),
                     'filterCode'      => Tools::link_rewrite($manufacturer->name),
                     'filterName'      => $manufacturer->name,
                 ];
