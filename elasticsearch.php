@@ -191,7 +191,7 @@ class Elasticsearch extends Module
         }
 
         $defaultMetas = json_decode(file_get_contents(__DIR__.'/data/defaultmetas.json'), true);
-        $attributes = Meta::getAllAttributes();
+        $attributes = Meta::getAllProperties();
         $metaInserts = [];
         $metaLangInserts = [];
         $langs = Language::getLanguages(false);
@@ -886,7 +886,7 @@ class Elasticsearch extends Module
             static::SERVERS                 => (array) json_decode(Configuration::get(static::SERVERS), true),
             static::SHARDS                  => (int) Configuration::get(static::SHARDS),
             static::REPLICAS                => (int) Configuration::get(static::REPLICAS),
-            static::METAS                   => Meta::getAllAttributes(),
+            static::METAS                   => Meta::getAllProperties(),
             static::INDEX_PREFIX            => Configuration::get(static::INDEX_PREFIX),
             static::QUERY_JSON              => Configuration::get(static::QUERY_JSON),
             static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),

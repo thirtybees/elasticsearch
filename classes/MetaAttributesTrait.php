@@ -36,15 +36,13 @@ trait MetaAttributesTrait
     /**
      * Get searchable attributes
      *
-     * @param int $idLang
-     *
      * @return array
      */
-    public static function getSearchableAttributes($idLang)
+    public static function getSearchableProperties()
     {
         $searchable = [];
 
-        foreach (static::getAllAttributes() as $key => $value) {
+        foreach (static::getAllProperties() as $key => $value) {
             if ($value->checked) {
                 $searchable[$key] = $value->name;
             }
@@ -58,11 +56,11 @@ trait MetaAttributesTrait
      *
      * @return array
      */
-    public static function getAllAttributes()
+    public static function getAllProperties()
     {
         $idLang = Context::getContext()->language->id;
-        $attributes = [];
-        $deferredAttributes = [];
+        $properties = [];
+        $deferredProperties = [];
         $metas = static::getAllMetas();
 
         $type = 'property';
@@ -78,7 +76,7 @@ trait MetaAttributesTrait
                 $elasticType = isset($defaultAttribute['default']) ? $defaultAttribute['default'] : $defaultAttribute['elastic_types'][0];
             }
 
-            $attribute = (object) [
+            $property = (object) [
                 'meta_type'         => $type,
                 'code'              => $defaultAttributeName,
                 'name'              => $name,
@@ -96,11 +94,11 @@ trait MetaAttributesTrait
                 'visible'           => isset(Fetcher::$attributes[$defaultAttributeName]['visible']) ? Fetcher::$attributes[$defaultAttributeName]['visible'] : true,
             ];
             if ($position) {
-                $attributes[] = $attribute;
+                static::addProperty($properties, $property);
             } else {
-                $deferredAttributes[] = $attribute;
+                $deferredProperties[] = $property;
             }
-            unset($attribute);
+            unset($property);
         }
 
         $type = 'feature';
@@ -113,7 +111,7 @@ trait MetaAttributesTrait
             }
             $code = Tools::link_rewrite($feature['name']);
 
-            $attribute = (object) [
+            $property = (object) [
                 'meta_type'    => $type,
                 'code'         => $code,
                 'name'         => $name,
@@ -131,11 +129,11 @@ trait MetaAttributesTrait
                 'visible'           => isset(Fetcher::$attributes[$code]['visible']) ? Fetcher::$attributes[$code]['visible'] : true,
             ];
             if ($position) {
-                $attributes[] = $attribute;
+                static::addProperty($properties, $property);
             } else {
-                $deferredAttributes[] = $attribute;
+                $deferredProperties[] = $property;
             }
-            unset($attribute);
+            unset($property);
         }
 
         $type = 'attribute';
@@ -148,7 +146,7 @@ trait MetaAttributesTrait
             }
             $code = Tools::link_rewrite($tbAttribute['attribute_group']);
 
-            $attribute = (object) [
+            $property = (object) [
                 'meta_type'         => $type,
                 'code'              => $code,
                 'name'              => $name,
@@ -166,21 +164,21 @@ trait MetaAttributesTrait
                 'visible'           => isset(Fetcher::$attributes[$code]['visible']) ? Fetcher::$attributes[$code]['visible'] : true,
             ];
             if ($position) {
-                $attributes[] = $attribute;
+                static::addProperty($properties, $property);
             } else {
-                $deferredAttributes[] = $attribute;
+                $deferredProperties[] = $property;
             }
-            unset($attribute);
+            unset($property);
         }
 
-        usort($attributes, function ($a, $b) {
+        usort($properties, function ($a, $b) {
             return ($a->position < $b->position) ? -1 : 1;
         });
-        foreach ($deferredAttributes as &$deferredAttribute) {
-            $attributes[] = $deferredAttribute;
+        foreach ($deferredProperties as &$deferredAttribute) {
+            static::addProperty($properties, $deferredAttribute);
         }
 
-        return $attributes;
+        return $properties;
     }
 
     /**
@@ -203,5 +201,26 @@ trait MetaAttributesTrait
                 ->join(Shop::addSqlAssociation('attribute', 'a'))
                 ->orderBy('agl.`name` ASC, a.`position` ASC')
         );
+    }
+
+    /**
+     * Adds a property to the props array and makes sure it says unique
+     *
+     * @param array  $array
+     * @param object $property
+     */
+    protected static function addProperty(&$array, $property)
+    {
+        $found = false;
+        foreach ($array as $item) {
+            if ($property->code === $item->code) {
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $array[] = $property;
+        }
     }
 }
