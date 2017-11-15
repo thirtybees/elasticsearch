@@ -47,7 +47,7 @@
         store: window.ElasticsearchModule.store,
         data: function () {
           return {
-            itemsPerPageOptions: [12, 24, 36],
+            itemsPerPageOptions: [12, 24, 60],
             busy: false
           }
         },
