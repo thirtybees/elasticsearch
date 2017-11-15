@@ -49,23 +49,6 @@
           <div class="layered_subtitle_heading">
             <span class="layered_subtitle">%% aggregation.name %%</span>
           </div>
-          <ul v-if="aggregation.display_type == 0" class="layered_filter_ul">
-            <li v-for="bucket in aggregation.buckets" class="nomargin hiddable" :key="aggregation.code + bucket.code">
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox"
-                         :checked="isFilterChecked(aggregation.code, bucket.code)"
-                         @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
-                  >
-                  <a class="pointer"
-                     data-rel="nofollow"
-                  >
-                    %% bucket.name %%<span> (%% bucket.total %%)</span>
-                  </a>
-                </label>
-              </div>
-            </li>
-          </ul>
           <ul v-if="aggregation.display_type == 4" class="layered_filter_ul">
             <br />
             <br />
@@ -79,7 +62,7 @@
                           @drag-end="processRangeSlider(aggregation.code, aggregation.name, $event)"
             ></range-slider>
           </ul>
-          <ul v-if="aggregation.display_type == 5" class="layered_filter_ul color-group">
+          <ul v-else-if="aggregation.display_type == 5" class="layered_filter_ul color-group">
             <li v-for="bucket in aggregation.buckets"
                 class="nomargin hiddable pointer"
                 :key="aggregation.code + bucket.code"
@@ -98,6 +81,23 @@
                   %% bucket.name %% <span style="cursor: pointer"> (%% bucket.total %%)</span>
                 </a>
               </label>
+            </li>
+          </ul>
+          <ul v-else class="layered_filter_ul">
+            <li v-for="bucket in aggregation.buckets" class="nomargin hiddable" :key="aggregation.code + bucket.code">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox"
+                         :checked="isFilterChecked(aggregation.code, bucket.code)"
+                         @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
+                  >
+                  <a class="pointer"
+                     data-rel="nofollow"
+                  >
+                    %% bucket.name %%<span> (%% bucket.total %%)</span>
+                  </a>
+                </label>
+              </div>
             </li>
           </ul>
         </div>
