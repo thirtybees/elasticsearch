@@ -827,6 +827,8 @@
         },
         changeSort: function (state, sort) {
           state.sort = sort;
+          state.offset = 0;
+          state.limit = 12;
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
         },
