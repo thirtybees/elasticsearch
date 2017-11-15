@@ -35,7 +35,7 @@
       ></text-input>
       <lang-text-input :display-name="'{l s='Stop words' mod='elasticsearch' js=1}'"
                        config-key="{Elasticsearch::STOP_WORDS}"
-                       description="{l s='Separate the stop words by a comma. __english__ represents the array with common stop words in English' mod='elasticsearch'}"
+                       description="{l s='Separate the stop words by a comma. _english_ represents the array with common stop words in English' mod='elasticsearch'}"
       ></lang-text-input>
       <toggle :display-name="'{l s='Enable logging' mod='elasticsearch' js=1}'"
               config-key="{Elasticsearch::LOGGING_ENABLED}"
