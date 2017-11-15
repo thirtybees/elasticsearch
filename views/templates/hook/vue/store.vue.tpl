@@ -293,7 +293,7 @@
       if (properties.page && properties.page > 1) {
         hash += '/p=' + properties.page;
       }
-      if (properties.limit && _.indexOf([24, 36, 'all'], properties.limit) > -1) {
+      if (properties.limit && _.indexOf([24, 60, 'all'], properties.limit) > -1) {
         hash += '/n=' + properties.limit;
       }
 
