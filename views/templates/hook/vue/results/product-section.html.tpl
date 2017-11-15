@@ -15,9 +15,9 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<section v-if="query && total || fixedFilter && _.indexOf(['manufacturer', 'supplier', 'category'], fixedFilter.aggregationCode) > -1">
+<section v-if="query && total || fixedFilter && _.indexOf(['manufacturer', 'supplier', 'category', 'categories'], fixedFilter.aggregationCode) > -1">
   <h2 class="page-heading">
-    <span v-if="query || fixedFilter && fixedFilter.aggregationCode === 'category'">{l s='Products' mod='elasticsearch'}</span>
+    <span v-if="query || fixedFilter && _.indexOf(['category', 'categories'], fixedFilter.aggregationCode) > -1">{l s='Products' mod='elasticsearch'}</span>
     <span v-else-if="fixedFilter.aggregationCode === 'manufacturer'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span v-else-if="fixedFilter.aggregationCode === 'supplier'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span class="pull-right">
@@ -115,12 +115,12 @@
       </span>
   </infinite-loading>
 </section>
-<section id="category-products" v-else-if="!query">
+<section v-else-if="!query">
   <div class="alert alert-warning">
     {l s='Please enter a search keyword' mod='elasticsearch'}
   </div>
 </section>
-<section id="category-products" v-else>
+<section v-else>
   <div class="alert alert-warning">
     {l s='No results found' mod='elasticsearch'}
   </div>

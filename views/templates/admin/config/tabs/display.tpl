@@ -26,6 +26,10 @@
             config-key="{Elasticsearch::REPLACE_NATIVE_PAGES}"
             help="{l s='Replaces the category, manufacturer and supplier pages with Elasticsearch results' mod='elasticsearch'}"
     ></toggle>
+    <toggle display-name="{l s='Search in subcategories on replaced pages' mod='elasticsearch' js=1}"
+            config-key="{Elasticsearch::SEARCH_SUBCATEGORIES}"
+            help="{l s='Shows subcatgories as well on replaced category pages' mod='elasticsearch'}"
+    ></toggle>
     <toggle display-name="{l s='Autocomplete' mod='elasticsearch' js=1}"
             config-key="{Elasticsearch::AUTOCOMPLETE}"
             help="{l s='Shows an autocomplete dropdown with the closest results' mod='elasticsearch'}"

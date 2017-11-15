@@ -47,12 +47,12 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('elasticsearch-results');
 
-      if (state.query || state.fixedFilter && state.fixedFilter.aggregationCode !== 'category') {
+      if (state.query || state.fixedFilter && _.indexOf(['category', 'categories'], state.fixedFilter.aggregationCode) < 0) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
         }
-      } else if (!state.fixedFilter || state.fixedFilter.aggregationCode === 'category') {
+      } else if (!state.fixedFilter || _.indexOf(['category', 'categories'], state.fixedFilter.aggregationCode) > -1) {
         mainColumn.style.display = '';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = 'none';
@@ -67,7 +67,7 @@
         return;
       }
 
-      // Check if the Elasticsearch module is active
+      // Check if the Elasticsearch module should be hooked
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
         mainColumn = document.querySelectorAll('#main_column, #center_column');

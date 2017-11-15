@@ -463,6 +463,83 @@ class Fetcher
     }
 
     /**
+     * Get category path
+     *
+     * @param int $idCategory
+     * @param int $idLang
+     *
+     * @return array
+     */
+    public static function getCategoryPathArray($idCategory, $idLang)
+    {
+        $cats = [];
+        $interval = Category::getInterval($idCategory);
+
+        if ($interval) {
+            $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('c.*, cl.*')
+                    ->from('category', 'c')
+                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
+                    ->join(Shop::addSqlRestrictionOnLang('cl'))
+                    ->join(Shop::addSqlAssociation('category', 'c'))
+                    ->where('c.`nleft` <= '.(int) $interval['nleft'])
+                    ->where('c.`nright` >= '.(int) $interval['nright'])
+                    ->where('cl.`id_lang` = '.(int) $idLang)
+                    ->where('c.`active` = 1')
+                    ->orderBy('c.`level_depth` ASC')
+            );
+
+            foreach ($categories as $category) {
+                $cats[] = $category;
+            }
+        }
+
+        static::getNestedCats(0, $cats, '', $results);
+        if (count($results) < 3) {
+            return [];
+        }
+
+        return array_splice($results, 1);
+    }
+
+    /**
+     * Get category path
+     *
+     * @param int $idCategory
+     * @param int $idLang
+     *
+     * @return array
+     */
+    protected static function getCategoryPath($idCategory, $idLang)
+    {
+        $cats = [];
+        $interval = Category::getInterval($idCategory);
+
+        if ($interval) {
+            $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('c.*, cl.*')
+                    ->from('category', 'c')
+                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
+                    ->join(Shop::addSqlRestrictionOnLang('cl'))
+                    ->join(Shop::addSqlAssociation('category', 'c'))
+                    ->where('c.`nleft` <= '.(int) $interval['nleft'])
+                    ->where('c.`nright` >= '.(int) $interval['nright'])
+                    ->where('cl.`id_lang` = '.(int) $idLang)
+                    ->where('c.`active` = 1')
+                    ->orderBy('c.`level_depth` ASC')
+            );
+
+            foreach ($categories as $category) {
+                $cats[] = $category;
+            }
+        }
+
+        return $cats;
+    }
+
+    /**
      * Get stock quantity
      */
     protected static function getStockQty($product)
@@ -708,42 +785,6 @@ class Fetcher
     }
 
     /**
-     * Get category path
-     *
-     * @param int $idCategory
-     * @param int $idLang
-     *
-     * @return array
-     */
-    protected static function getCategoryPath($idCategory, $idLang)
-    {
-        $cats = [];
-        $interval = Category::getInterval($idCategory);
-
-        if ($interval) {
-            $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                (new DbQuery())
-                    ->select('c.*, cl.*')
-                    ->from('category', 'c')
-                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
-                    ->join(Shop::addSqlRestrictionOnLang('cl'))
-                    ->join(Shop::addSqlAssociation('category', 'c'))
-                    ->where('c.`nleft` <= '.(int) $interval['nleft'])
-                    ->where('c.`nright` >= '.(int) $interval['nright'])
-                    ->where('cl.`id_lang` = '.(int) $idLang)
-                    ->where('c.`active` = 1')
-                    ->orderBy('c.`level_depth` ASC')
-            );
-
-            foreach ($categories as $category) {
-                $cats[] = $category;
-            }
-        }
-
-        return $cats;
-    }
-
-    /**
      * Get nested categories without paths
      *
      * @param array $cats
@@ -798,6 +839,10 @@ class Fetcher
      */
     protected static function getNestedCats($key, $value, $prefix, &$solution)
     {
+        if (!is_array($solution)) {
+            $solution = [];
+        }
+
         if (is_string($key) && $key == "name") {
             if ($value == 'Home') {
                 return '';
@@ -1073,7 +1118,7 @@ class Fetcher
      * @since   1.0.0
      * @version 1.0.0 Initial version
      */
-    public static function getAttributesColorList(array $products, $haveStock = true, $idLang = null)
+    protected static function getAttributesColorList(array $products, $haveStock = true, $idLang = null)
     {
         if (!count($products)) {
             return [];

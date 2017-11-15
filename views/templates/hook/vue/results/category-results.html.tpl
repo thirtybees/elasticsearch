@@ -15,6 +15,6 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<section id="es-category-results" v-if="!query && fixedFilter && fixedFilter.aggregationCode === 'category' && _.indexOf(['list', 'grid'], layoutType) > -1" :class="classList">
+<section id="es-category-results" v-if="!query && fixedFilter && _.indexOf(['category', 'categories'], fixedFilter.aggregationCode) > -1 && _.indexOf(['list', 'grid'], layoutType) > -1" :class="classList">
   <product-section></product-section>
 </section>
