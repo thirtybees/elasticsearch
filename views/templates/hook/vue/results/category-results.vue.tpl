@@ -84,8 +84,6 @@
         window.ElasticsearchModule.classList = mainColumn.classList.value;
       }
 
-      console.log(target);
-
       if (typeof target !== 'undefined' || !target) {
         new Vue({
           beforeUpdate: function () {

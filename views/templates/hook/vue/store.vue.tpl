@@ -62,26 +62,28 @@
 
       // Iterating the aggregations returned by Elasticsearch and starting the normalization process
       _.forEach(aggs, function (agg, aggCode) {
+        // Handle the aggregation according to the display type
+        var displayType = parseInt(agg.meta.display_type, 10);
+
         // Check if this aggregation should be processed
-        if (typeof agg.code.buckets !== 'undefined' && !agg.code.buckets.length) {
+        if (displayType !== 4 && typeof agg.code.buckets !== 'undefined' && !agg.code.buckets.length) {
           return;
         }
 
-        var buckets = [];
-        _.forEach(agg.code.buckets, function (b, index) {
-          var bucket = _.cloneDeep(b);
-          if (typeof agg.name !== 'undefined') {
-            bucket.name = agg.name.buckets[index].name;
-          }
-          if (typeof agg.color_code !== 'undefined') {
-            bucket.color_code = agg.color_code.buckets[index].color_code;
-          }
+        if (displayType !== 4) {
+          var buckets = [];
+          _.forEach(agg.code.buckets, function (b, index) {
+            var bucket = _.cloneDeep(b);
+            if (typeof agg.name !== 'undefined') {
+              bucket.name = agg.name.buckets[index].name;
+            }
+            if (typeof agg.color_code !== 'undefined') {
+              bucket.color_code = agg.color_code.buckets[index].color_code;
+            }
 
-          buckets.push(bucket);
-        });
-
-        // Handle the aggregation according to the display type
-        var displayType = parseInt(agg.meta.display_type, 10);
+            buckets.push(bucket);
+          });
+        }
 
         var actualAggCode = aggCode;
         if (displayType === 4) {
@@ -685,6 +687,10 @@
 
       var aggs = {if !empty($aggregations)}{$aggregations|json_encode}{else}{ldelim}{rdelim}{/if};
       _.forEach(aggs, function (agg, aggName) {
+        if (_.indexOf(['_min', '_max'], aggName.substring(aggName.length - 4, aggName.length)) > -1) {
+          return;
+        }
+
         var filterQuery;
         if (typeof state.selectedFilters[aggName] !== 'undefined' && state.selectedFilters[aggName].operator !== 'OR') {
           filterQuery = buildFilterQuery(state.selectedFilters, null);
