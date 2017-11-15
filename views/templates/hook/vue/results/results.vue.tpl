@@ -20,6 +20,7 @@
 {include file=ElasticSearch::tpl('hook/vue/results/product-section.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/product-count.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/show-all.vue.tpl')}
+{include file=ElasticSearch::tpl('hook/vue/results/product-sort.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/pagination.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/product-list-item.vue.tpl')}
 

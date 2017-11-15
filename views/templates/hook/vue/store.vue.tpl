@@ -723,6 +723,18 @@
         searchRequest.query = queryObject;
       }
 
+      if (state.sort) {
+        var sortElems = state.sort.split(':');
+        if (sortElems.length === 2) {
+          var sortObject = {ldelim}{rdelim};
+          sortObject[sortElems[0] + '_agg'] = {
+            order: sortElems[1]
+          };
+
+          searchRequest.sort = [sortObject];
+        }
+      }
+
       request.send(JSON.stringify(searchRequest));
 
       // Save these in the pending requests array
@@ -735,6 +747,7 @@
         results: [],
         total: 0,
         maxScore: 0,
+        sort: 'date_add:asc',
         suggestions: [],
         aggregations: {ldelim}{rdelim},
         limit: 12,
@@ -809,6 +822,11 @@
         },
         setPage: function (state, page) {
           state.offset = state.limit * (page - 1);
+
+          updateResults(state, state.query, this.getters.elasticQuery, false);
+        },
+        changeSort: function (state, sort) {
+          state.sort = sort;
 
           updateResults(state, state.query, this.getters.elasticQuery, false);
         },
