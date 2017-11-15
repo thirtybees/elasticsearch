@@ -51,7 +51,7 @@
         <span v-if="basePriceTaxIncl > priceTaxIncl">
           {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
           <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>&nbsp;
-          <span class="price-percent-reduction">- %% discountPercentage %%%</span>
+          <span class="price-percent-reduction">-%% discountPercentage %%%</span>
         </span>
         {* TODO: find a way to restore dynamic hooks *}
         {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
@@ -108,7 +108,7 @@
               <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>
               {* TODO: find a way to restore dynamic hooks *}
               {*{hook h="displayProductPriceBlock" id_product=$product.id_product type="old_price"}*}
-              <span class="price-percent-reduction">- %% discountPercentage %%%</span>
+              <span class="price-percent-reduction">-%% discountPercentage %%%</span>
             </span>
             {* TODO: find a way to restore dynamic hooks *}
             {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
