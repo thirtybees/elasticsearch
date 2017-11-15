@@ -18,9 +18,7 @@
 <script type="text/javascript">
   (function () {
     {* If dev mode, enable Vue dev mode as well *}
-    {*{if $smarty.const._PS_MODE_DEV_}Vue.config.devtools = true;{/if}*}
-    {* FIXME: hard-coded to true *}
-    Vue.config.devtools = true;
+    {if $smarty.const._PS_MODE_DEV_}Vue.config.devtools = true;{/if}
 
     var ajaxAttempts = 3;
 
