@@ -296,6 +296,16 @@
       if (properties.limit && _.indexOf([24, 60, 'all'], properties.limit) > -1) {
         hash += '/n=' + properties.limit;
       }
+      if (properties.sort && properties.sort !== 'date_add:desc') {
+        if (properties.sort.substring(0, 21) === 'price_tax_excl_group_') {
+          var props = properties.sort.split(':');
+          if (props.length === 2) {
+            hash += '/sort=price:' + props[1];
+          }
+        } else {
+          hash += '/sort=' + properties.sort;
+        }
+      }
 
       // Add the selected filters to the URL
       _.forEach(selectedFilters, function (aggregation) {
@@ -375,6 +385,27 @@
               properties.limit = 10000;
             } else {
               properties.limit = parseInt(properties.limit, 10);
+            }
+
+            return;
+          case 'sort':
+            if (_.indexOf([
+                'date_add:desc',
+                'price:asc',
+                'price:desc',
+                'name:asc',
+                'name:desc',
+                'reference:asc',
+                'reference:desc',
+              ], filterElems[1])) {
+              properties.sort = filterElems[1];
+            }
+
+            if (properties.sort.substring(0, 5) === 'price') {
+              var props = properties.sort.split(':');
+              if (props.length === 2) {
+                properties.sort = 'price_tax_excl_group_{/literal}{Context::getContext()->customer->id_default_group|intval}{literal}:' + props[1];
+              }
             }
 
             return;
@@ -671,7 +702,8 @@
                 selectedFilters: state.selectedFilters,
                 query: query,
                 page: page,
-                limit: limit
+                limit: limit,
+                sort: state.sort
               });
             }
           } else {
@@ -747,7 +779,7 @@
         results: [],
         total: 0,
         maxScore: 0,
-        sort: 'date_add:asc',
+        sort: 'date_add:desc',
         suggestions: [],
         aggregations: {ldelim}{rdelim},
         limit: 12,
@@ -787,6 +819,10 @@
 
           state.offset = offset;
           state.limit = limit;
+
+          if (properties.sort) {
+            state.sort = properties.sort;
+          }
 
           updateResults(state, properties.query, this.getters.elasticQuery, false);
         },
