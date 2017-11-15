@@ -17,6 +17,7 @@
  *}
 {* Include dependencies *}
 {capture name="resultsTemplate"}{include file=ElasticSearch::tpl('front/search.tpl')}{/capture}
+{include file=ElasticSearch::tpl('hook/vue/results/stock-badge.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/product-section.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/product-count.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/show-all.vue.tpl')}

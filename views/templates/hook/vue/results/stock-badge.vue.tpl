@@ -15,6 +15,14 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<div class="form-group showall">
-  <button type="submit" class="btn btn-default" @click="showAllHandler">{l s='Show all' mod='elasticsearch'}</button>
-</div>
+{* Template file *}
+{capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/stock-badge.html.tpl')}{/capture}
+<script type="text/javascript">
+  (function () {
+    Vue.component('stock-badge', {
+      delimiters: ['%%', '%%'],
+      template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
+      props: ['item']
+    });
+  }());
+</script>

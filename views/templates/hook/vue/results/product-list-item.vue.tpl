@@ -15,6 +15,8 @@
  * @copyright 2017 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
+{* Components *}
+{include file=ElasticSearch::tpl('hook/vue/results/stock-badge.vue.tpl')}
 {* Template file *}
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/product-list-item.html.tpl')}{/capture}
 <script type="text/javascript">
