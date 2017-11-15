@@ -53,20 +53,7 @@
         </div>
       </div>
 
-      {* TODO: implement sort by *}
-      {*<div id="productsSortForm" class="form-group productsSortForm">*}
-      {*<label for="selectProductSort">Sort by</label>*}
-      {*<select id="selectProductSort" class="selectProductSort form-control">*}
-      {*<option value="date_add:asc" selected="selected">--</option>*}
-      {*<option value="price:asc">Price: Lowest first</option>*}
-      {*<option value="price:desc">Price: Highest first</option>*}
-      {*<option value="name:asc">Product Name: A to Z</option>*}
-      {*<option value="name:desc">Product Name: Z to A</option>*}
-      {*<option value="quantity:desc">In stock</option>*}
-      {*<option value="reference:asc">Reference: Lowest first</option>*}
-      {*<option value="reference:desc">Reference: Highest first</option>*}
-      {*</select>*}
-      {*</div>*}
+      <product-sort></product-sort>
 
       <div class="js-per-page form-group" v-if="!infiniteScroll">
         <label for="nb_item">{l s='Items per page:' mod='elasticsearch'}</label>
