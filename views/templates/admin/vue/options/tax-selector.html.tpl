@@ -28,8 +28,8 @@
   </label>
   <div class="col-lg-9">
     <select class="form-control fixed-width-xxl" @change="setTaxRulesGroupId">
-      <option value="0">{l s='None' mod='elasticsearch'}</option>
-      <option v-for="tax in taxes" value="tax.id_tax_rules_group">%% tax.name %%</option>
+      <option value="0" :selected.once="!selectedTax">{l s='None' mod='elasticsearch'}</option>
+      <option v-for="tax in taxes" :value="tax.id_tax_rules_group" :selected.once="tax.id_tax_rules_group == selectedTax">%% tax.name %%</option>
     </select>
   </div>
   <div v-if="help" class="col-lg-9 col-lg-offset-3">
