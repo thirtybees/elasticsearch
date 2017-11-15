@@ -97,9 +97,16 @@ class Fetcher
         ],
         'available_now'           => [
             'function'      => [__CLASS__, 'getAvailableNow'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
             'elastic_types' => [
-                Meta::ELASTIC_TYPE_BOOLEAN,
+                Meta::ELASTIC_TYPE_KEYWORD,
+            ],
+        ],
+        'available_later'           => [
+            'function'      => [__CLASS__, 'getAvailableLater'],
+            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
         'category'                => [
@@ -948,7 +955,7 @@ class Fetcher
     }
 
     /**
-     * Get available now flag
+     * Get `available_now` flag
      *
      * @param Product $product
      *
@@ -957,6 +964,18 @@ class Fetcher
     protected static function getAvailableNow($product)
     {
         return (bool) $product->available_now;
+    }
+
+    /**
+     * Get `available_later` flag
+     *
+     * @param Product $product
+     *
+     * @return bool
+     */
+    protected static function getAvailableLater($product)
+    {
+        return (bool) $product->available_later;
     }
 
     /**
