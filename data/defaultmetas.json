@@ -1,0 +1,145 @@
+{
+  "name": {
+    "en": "Name",
+    "nl": "Naam"
+  },
+  "reference": {
+    "en": "Reference",
+    "nl": "SKU"
+  },
+  "allow_oosp": {
+    "en": "Allow out-of-stock orders",
+    "nl": "Backorders toestaan"
+  },
+  "available_for_order": {
+    "en": "Available",
+    "nl": "Beschikbaar"
+  },
+  "available_now": {
+    "en": "Available now",
+    "nl": "Nu beschikbaar"
+  },
+  "available_later": {
+    "en": "Available later",
+    "nl": "Later beschikbaar"
+  },
+  "category":{
+    "en": "Category",
+    "nl": "Categorie"
+  },
+  "categories": {
+    "en": "Category",
+    "nl": "Categorie"
+  },
+  "categories_without_path": {
+    "en": "Category",
+    "nl": "Categorie"
+  },
+  "color_list": {
+    "en": "Color list",
+    "nl": "Lijst met kleuren"
+  },
+  "condition": {
+    "en": "Condition",
+    "nl": "Staat"
+  },
+  "customization_required": {
+    "en": "Customization required",
+    "nl": "Aanpassing vereist"
+  },
+  "date_add": {
+    "en": "Date added",
+    "nl": "Datum toegevoegd"
+  },
+  "date_upd": {
+    "en": "Date updated",
+    "nl": "Datum bijgewerkt"
+  },
+  "description": {
+    "en": "Description",
+    "nl": "Beschrijving"
+  },
+  "description_short": {
+    "en": "Short description",
+    "nl": "Korte beschrijving"
+  },
+  "ean13": {
+    "en": "EAN13",
+    "nl": "EAN13"
+  },
+  "image_link_large": {
+    "en": "Image",
+    "nl": "Afbeelding"
+  },
+  "image_link_small": {
+    "en": "Image",
+    "nl": "Afbeelding"
+  },
+  "in_stock": {
+    "en": "In Stock",
+    "nl": "Op voorraad"
+  },
+  "is_virtual": {
+    "en": "Is Virtual",
+    "nl": "Is virtueel"
+  },
+  "link": {
+    "en": "URL",
+    "nl": "URL"
+  },
+  "id_tax_rules_group": {
+    "en": "id_tax_rules_group"
+  },
+  "manufacturer": {
+    "en": "Manufacturer",
+    "nl": "Fabrikant"
+  },
+  "minimal_quantity": {
+    "en": "Minimal Quantity for Order",
+    "nl": "Minimale hoeveelheid nodig voor bestelling"
+  },
+  "new": {
+    "en": "New",
+    "nl": "Nieuw"
+  },
+  "price_tax_excl": {
+    "en": "Price",
+    "nl": "Prijs"
+  },
+  "show_price": {
+    "en": "Show price",
+    "nl": "Prijs tonen"
+  },
+  "supplier": {
+    "en": "Supplier",
+    "nl": "Leverancier"
+  },
+  "on_sale": {
+    "en": "Sale",
+    "nl": "Sale"
+  },
+  "online_only": {
+    "en": "Online Only",
+    "nl": "Alleen online"
+  },
+  "ordered_qty": {
+    "en": "Ordered Quantity",
+    "nl": "Bestelde hoeveelheid"
+  },
+  "stock_qty": {
+    "en": "Stock",
+    "nl": "Voorraad"
+  },
+  "weight": {
+    "en": "Weight",
+    "nl": "Gewicht"
+  },
+  "pageviews": {
+    "en": "Pageviews",
+    "nl": "Weergaven"
+  },
+  "sales": {
+    "en": "Sales",
+    "nl": "Verkopen"
+  }
+}
