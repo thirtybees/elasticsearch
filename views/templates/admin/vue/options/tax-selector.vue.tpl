@@ -27,6 +27,11 @@
           taxes: {TaxRulesGroup::getTaxRulesGroups(true)|json_encode}
         };
       },
+      computed: {
+        selectedTax: function () {
+          return this.$store.state.config[this.configKey];
+        }
+      },
       methods: {
         setTaxRulesGroupId: function (event) {
           this.$store.commit('setConfig', {
