@@ -613,6 +613,8 @@
       var url = parser.protocol + '//' + parser.host + parser.pathname;
       if (!proxied) {
         url += '{Configuration::get(Elasticsearch::INDEX_PREFIX)|escape:'javascript':'UTF-8'}_{$shop->id|intval}_{$language->id|intval}/_search';
+      } else {
+        url += parser.search;
       }
 
       // Cancel pending requests and remove references to them, so the browser can start cleaning up
