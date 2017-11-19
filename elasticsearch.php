@@ -377,8 +377,8 @@ class Elasticsearch extends Module
         $this->context->controller->addJS($this->_path.'views/js/elasticsearch.13.3.1.min.js');
 
         // Autocomplete CSS
-        if (file_exists(__DIR__.'/views/templates/themes/'.$this->context->shop->theme_name.'/front.css')) {
-            $this->context->controller->addCSS(__DIR__.'/views/templates/themes/'.$this->context->shop->theme_name.'/front.css');
+        if (file_exists(__DIR__.'/views/templates/themes/'.$this->context->shop->theme_directory.'/front.css')) {
+            $this->context->controller->addCSS(__DIR__.'/views/templates/themes/'.$this->context->shop->theme_directory.'/front.css');
         } else {
             $this->context->controller->addCSS($this->_path.'views/css/front.css', 'screen');
         }
@@ -673,7 +673,7 @@ class Elasticsearch extends Module
     public static function tpl($relativePath)
     {
         $themeBaseDir = _PS_THEME_DIR_.'modules/elasticsearch/';
-        $modThemeBaseDir = __DIR__.'/views/templates/themes/'.Context::getContext()->shop->theme_name.'/';
+        $modThemeBaseDir = __DIR__.'/views/templates/themes/'.Context::getContext()->shop->theme_directory.'/';
         $modDir = __DIR__.'/views/templates/';
 
         // Search for a theme-specific file
