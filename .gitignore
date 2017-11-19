@@ -3,3 +3,4 @@ composer.lock
 .idea/
 *elasticsearch*.zip
 *.bak
+views/templates/themes/minikneet-bootstrap
