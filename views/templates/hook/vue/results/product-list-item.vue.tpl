@@ -24,7 +24,7 @@
     Vue.component('product-list-item', {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
-      props: ['item'],
+      props: ['item', 'extraClass'],
       data: function () {
         return {
           idGroup: {$idGroup|intval},
