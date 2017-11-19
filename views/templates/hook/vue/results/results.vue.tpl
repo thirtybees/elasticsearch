@@ -70,13 +70,11 @@
       // Check if the Elasticsearch module should be hooked
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
-        mainColumn = document.querySelectorAll('#main_column, #center_column');
-        if (!mainColumn.length) {
+        mainColumn = document.querySelector('#main_column, #center_column');
+        if (!mainColumn) {
           return;
         }
 
-        // Take the first element
-        mainColumn = mainColumn[0];
         mainColumn.insertAdjacentHTML('beforebegin', '{$smarty.capture.resultsTemplate|escape:'javascript':'UTF-8'}');
 
         target = document.getElementById('elasticsearch-results');
@@ -90,7 +88,7 @@
         new Vue({
           beforeUpdate: function () {
             // Not `undefined` means we're dealing with instant search
-            if (typeof mainColumn !== 'undefined') {
+            if (mainColumn) {
               manageSearchBlockVisibility(this.$store.state);
             }
           },
@@ -106,7 +104,7 @@
             this.$store.commit('setLayoutType', view);
           },
           mounted: function () {
-            if (typeof mainColumn !== 'undefined') {
+            if (mainColumn) {
               manageSearchBlockVisibility(this.$store.state);
             }
           },

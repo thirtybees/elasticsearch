@@ -47,14 +47,23 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('elasticsearch-results');
 
+      if (state.query || state.fixedFilter && _.indexOf(['category', 'categories', 'manufacturer', 'supplier'], state.fixedFilter.aggregationCode) > -1) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
         }
+      } else {
+        mainColumn.style.display = '';
+        if (instantSearchBlock) {
+          instantSearchBlock.style.display = 'none';
+        }
+      }
     }
 
     ready(function () {
-      var shouldShow = {if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};
+      var initialFixedFilter = {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if};
+
+      var shouldShow = initialFixedFilter || {if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};
 
         if (!shouldShow) {
           return;
@@ -63,13 +72,11 @@
         // Check if the Elasticsearch module should be hooked
         var target = document.getElementById('elasticsearch-results');
         if (typeof target === 'undefined' || !target) {
-          mainColumn = document.querySelectorAll('#main_column, #center_column');
-          if (!mainColumn.length) {
+          mainColumn = document.querySelector('#main_column, #center_column');
+          if (!mainColumn) {
             return;
           }
 
-          // Take the first element
-          mainColumn = mainColumn[0];
           mainColumn.insertAdjacentHTML('beforebegin', '{$smarty.capture.resultsTemplate|escape:'javascript':'UTF-8'}');
 
           target = document.getElementById('elasticsearch-results');
@@ -82,8 +89,7 @@
         if (typeof target !== 'undefined' || !target) {
           new Vue({
             beforeUpdate: function () {
-              // Not `undefined` means we're dealing with instant search
-              if (typeof mainColumn !== 'undefined') {
+              if (mainColumn) {
                 manageSearchBlockVisibility(this.$store.state);
               }
             },
@@ -99,7 +105,7 @@
               this.$store.commit('setLayoutType', view);
             },
             mounted: function () {
-              if (typeof mainColumn !== 'undefined') {
+              if (mainColumn) {
                 manageSearchBlockVisibility(this.$store.state);
               }
             },
