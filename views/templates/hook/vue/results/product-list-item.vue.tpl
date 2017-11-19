@@ -50,7 +50,10 @@
         },
         discountPercentage: function () {
           return Math.round((1 - this.priceTaxIncl / this.basePriceTaxIncl) * 100)
-        }
+        },
+        layoutType: function () {
+          return this.$store.state.layoutType;
+        },
       },
       methods: {
         formatCurrency: function (price) {
