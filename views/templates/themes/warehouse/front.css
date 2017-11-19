@@ -35,6 +35,10 @@
     }
 }
 
+.top-pagination-content ul.pagination li.disabled, .bottom-pagination-content ul.pagination li.disabled {
+    display: inline-block!important;
+}
+
 .form-inline.sortPagiBar {
     padding-bottom: 10px;
 }
