@@ -31,17 +31,17 @@
         <label class="visible-xs">{l s='Display product list as:' mod='elasticsearch'}</label>
         <div class="view-and-count">
           <div class="display" aria-label="Product list display type">
-            <li style="list-style-type: none" :class="layoutType === 'grid' ? 'selected' : ''">
-              <a id="es-grid"
-                   rel="nofollow"
-                   @click="setLayoutType('grid')"
-                   title="{l s='Grid' mod='elasticsearch'}"
-                   style="cursor: pointer"
-              >
-                <i class="icon icon-th-large"></i>
-                <span class="visible-xs">{l s='Grid' mod='elasticsearch'}</span>
-              </a>
-            </li>
+            {*<li style="list-style-type: none" :class="layoutType === 'grid' ? 'selected' : ''">*}
+              {*<a id="es-grid"*}
+                   {*rel="nofollow"*}
+                   {*@click="setLayoutType('grid')"*}
+                   {*title="{l s='Grid' mod='elasticsearch'}"*}
+                   {*style="cursor: pointer"*}
+              {*>*}
+                {*<i class="icon icon-th-large"></i>*}
+                {*<span class="visible-xs">{l s='Grid' mod='elasticsearch'}</span>*}
+              {*</a>*}
+            {*</li>*}
             {*<li style="list-style-type: none" :class="layoutType === 'list' ? 'selected' : ''">*}
               {*<a id="es-list"*}
                    {*rel="nofollow"*}
