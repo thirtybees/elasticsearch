@@ -35,6 +35,10 @@
     }
 }
 
+.form-inline.sortPagiBar {
+    padding-bottom: 10px;
+}
+
 #elasticsearch-query-top {
     height: 40px;
 }
