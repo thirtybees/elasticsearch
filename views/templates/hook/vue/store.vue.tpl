@@ -247,7 +247,7 @@
           selectedFilters[fixedFilter.aggregationCode] = {
             code: fixedFilter.aggregationCode,
             name: fixedFilter.aggregationName,
-            operator: 'AND',
+            operator: fixedFilter.aggregationCode === 'categories' ? 'OR' : 'AND',
             display_type: fixedFilter.displayType,
             values: [
               {
