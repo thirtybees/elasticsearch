@@ -739,10 +739,17 @@
         agg.filter = filterQuery;
       });
 
+      var selectedFilters;
+      if (query && !state.columns) {
+        selectedFilters = [];
+      } else {
+        selectedFilters = state.selectedFilters;
+      }
+
       var searchRequest = {
         size: state.limit,
         from: state.offset,
-        post_filter: buildFilterQuery(state.selectedFilters),
+        post_filter: buildFilterQuery(selectedFilters),
         highlight: {
           fields: {
             name: {ldelim}{rdelim}
@@ -792,7 +799,8 @@
         layoutType: null,
         tax: {$defaultTax|floatval},
         currencyConversion: {$currencyConversion|floatval},
-        infiniteScroll: {if Configuration::get(Elasticsearch::INFINITE_SCROLL)}true{else}false{/if}
+        infiniteScroll: {if Configuration::get(Elasticsearch::INFINITE_SCROLL)}true{else}false{/if},
+        columns: 0
       },
       mutations: {
         initQuery: function (state) {
@@ -957,6 +965,9 @@
           state.limit += 12;
 
           updateResults(state, state.query, this.getters.elasticQuery, false, callback);
+        },
+        addColumn: function (state) {
+          state.column++;
         }
       },
       getters: {

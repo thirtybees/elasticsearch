@@ -32,6 +32,9 @@
           value: 0
         };
       },
+      mounted: function () {
+        this.$store.commit('addColumn');
+      },
       computed: {
         aggregations: function () {
           return _.sortBy(_.values(this.$store.state.aggregations), function (agg) {
