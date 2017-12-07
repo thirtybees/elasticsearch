@@ -210,6 +210,7 @@ class Elasticsearch extends Module
                 $lang['iso_code'] = 'en';
             }
         }
+        unset($lang);
 
         $i = 1;
         foreach ($attributes as $attribute) {
