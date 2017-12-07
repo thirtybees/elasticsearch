@@ -145,7 +145,13 @@ class Elasticsearch extends Module
     public function install()
     {
         if (version_compare(phpversion(), '5.6', '<')) {
-            Context::getContext()->controller->errors[] = sprintf($this->l('The Elasticsearch module requires at least PHP version 5.6. Your current version is: %s'), phpversion());
+            $this->context->controller->errors[] = sprintf($this->l('The Elasticsearch module requires at least PHP version 5.6. Your current version is: %s'), phpversion());
+
+            return false;
+        }
+
+        if (!extension_loaded('curl')) {
+            $this->context->controller->errors[] = $this->l('The Elasticsearch module requires the cURL extension to be installed and available. Ask your web host for more info on how to enable it.');
         }
 
         if (!parent::install()) {
@@ -155,7 +161,10 @@ class Elasticsearch extends Module
         $this->installDB();
 
         foreach ($this->hooks as $hook) {
-            $this->registerHook($hook);
+            try {
+                $this->registerHook($hook);
+            } catch (PrestaShopException $e) {
+            }
         }
 
         Configuration::updateGlobalValue(static::INDEX_CHUNK_SIZE, 10);
@@ -229,8 +238,22 @@ class Elasticsearch extends Module
 
             $i++;
         }
-        Db::getInstance()->insert(bqSQL(Meta::$definition['table']), $metaInserts);
-        Db::getInstance()->insert(bqSQL(Meta::$definition['table']).'_lang', $metaLangInserts);
+        try {
+            Db::getInstance()->insert(bqSQL(Meta::$definition['table']), $metaInserts);
+        } catch (PrestaShopException $e) {
+            $this->context->controller->errors[] = "Elasticsearch module database error: {$e->getMessage()}";
+            $this->uninstall();
+
+            return false;
+        }
+        try {
+            Db::getInstance()->insert(bqSQL(Meta::$definition['table']).'_lang', $metaLangInserts);
+        } catch (PrestaShopException $e) {
+            $this->context->controller->errors[] = "Elasticsearch module database error: {$e->getMessage()}";
+            $this->uninstall();
+
+            return false;
+        }
 
         return true;
     }
@@ -256,9 +279,18 @@ class Elasticsearch extends Module
         Configuration::deleteByName(static::AUTOCOMPLETE);
         Configuration::deleteByName(static::INSTANT_SEARCH);
 
-        Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_index_status`');
-        Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta`');
-        Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta_lang`');
+        try {
+            Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_index_status`');
+        } catch (PrestaShopException $e) {
+        }
+        try {
+            Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta`');
+        } catch (PrestaShopException $e) {
+        }
+        try {
+            Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta_lang`');
+        } catch (PrestaShopException $e) {
+        }
 
         return parent::uninstall();
     }
@@ -861,7 +893,11 @@ class Elasticsearch extends Module
         $sql = preg_split("/;\s*[\r\n]+/", trim($sql));
 
         foreach ($sql as $query) {
-            if (!Db::getInstance()->execute(trim($query))) {
+            try {
+                if (!Db::getInstance()->execute(trim($query))) {
+                    return false;
+                }
+            } catch (PrestaShopException $e) {
                 return false;
             }
         }
