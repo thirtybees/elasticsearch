@@ -585,7 +585,19 @@ class Elasticsearch extends Module
         $readHosts = [];
         foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
             if ($host['read']) {
-                $readHosts[] = $host['url'];
+                $parsed = self::splitUrl($host['url']);
+                if (empty($parsed['host'])) {
+                    continue;
+                }
+                if (empty($parsed['scheme'])) {
+                    $parsed['scheme'] = 'http';
+                }
+
+                if (empty($parsed['port'])) {
+                    $parsed['port'] = ($parsed['scheme'] === 'https') ? 443 : 80;
+                }
+
+                $readHosts[] = self::joinUrl($parsed);
             }
         }
 
@@ -629,7 +641,19 @@ class Elasticsearch extends Module
         $writeHosts = [];
         foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
             if ($host['write']) {
-                $writeHosts[] = $host['url'];
+                $parsed = self::splitUrl($host['url']);
+                if (empty($parsed['host'])) {
+                    continue;
+                }
+                if (empty($parsed['scheme'])) {
+                    $parsed['scheme'] = 'http';
+                }
+
+                if (empty($parsed['port'])) {
+                    $parsed['port'] = ($parsed['scheme'] === 'https') ? 443 : 80;
+                }
+
+                $writeHosts[] = self::joinUrl($parsed);
             }
         }
 
@@ -1037,5 +1061,187 @@ class Elasticsearch extends Module
         }
 
         return null;
+    }
+
+    /**
+     * @param string $url
+     * @param bool   $decode
+     *
+     * @return mixed
+     *
+     * @source http://nadeausoftware.com/articles/2008/05/php_tip_how_parse_and_build_urls
+     */
+    protected static function splitUrl($url, $decode = true)
+    {
+        $xunressub = 'a-zA-Z\d\-._~\!$&\'()*+,;=';
+        $xpchar = $xunressub.':@%';
+
+        $xscheme = '([a-zA-Z][a-zA-Z\d+-.]*)';
+
+        $xuserinfo = '((['.$xunressub.'%]*)'.'(:(['.$xunressub.':%]*))?)';
+
+        $xipv4 = '(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})';
+
+        $xipv6 = '(\[([a-fA-F\d.:]+)\])';
+
+        $xhostName = '([a-zA-Z\d-.%]+)';
+
+        $xhost = '('.$xhostName.'|'.$xipv4.'|'.$xipv6.')';
+        $xport = '(\d*)';
+        $xauthority = '(('.$xuserinfo.'@)?'.$xhost.'?(:'.$xport.')?)';
+
+        $xslashSeg = '(/['.$xpchar.']*)';
+        $xpathAuthabs = '((//'.$xauthority.')((/['.$xpchar.']*)*))';
+        $xpathRel = '(['.$xpchar.']+'.$xslashSeg.'*)';
+        $xpathAbs = '(/('.$xpathRel.')?)';
+        $xapath = '('.$xpathAuthabs.'|'.$xpathAbs.'|'.$xpathRel.')';
+
+        $xqueryfrag = '(['.$xpchar.'/?'.']*)';
+
+        $xurl = '^('.$xscheme.':)?'.$xapath.'?'.'(\?'.$xqueryfrag.')?(#'.$xqueryfrag.')?$';
+
+
+        // Split the URL into components.
+        if (!preg_match('!'.$xurl.'!', $url, $m)) {
+            return false;
+        }
+
+        if (!empty($m[2])) {
+            $parts['scheme'] = strtolower($m[2]);
+        }
+
+        if (!empty($m[7])) {
+            if (isset($m[9])) {
+                $parts['user'] = $m[9];
+            } else {
+                $parts['user'] = '';
+            }
+        }
+        if (!empty($m[10])) {
+            $parts['pass'] = $m[11];
+        }
+
+        if (!empty($m[13])) {
+            $h = $parts['host'] = $m[13];
+        } elseif (!empty($m[14])) {
+            $parts['host'] = $m[14];
+        } elseif (!empty($m[16])) {
+            $parts['host'] = $m[16];
+        } elseif (!empty($m[5])) {
+            $parts['host'] = '';
+        }
+        if (!empty($m[17])) {
+            $parts['port'] = $m[18];
+        }
+
+        if (!empty($m[19])) {
+            $parts['path'] = $m[19];
+        } elseif (!empty($m[21])) {
+            $parts['path'] = $m[21];
+        } elseif (!empty($m[25])) {
+            $parts['path'] = $m[25];
+        }
+
+        if (!empty($m[27])) {
+            $parts['query'] = $m[28];
+        }
+        if (!empty($m[29])) {
+            $parts['fragment'] = $m[30];
+        }
+
+        if (!$decode) {
+            return $parts;
+        }
+        if (!empty($parts['user'])) {
+            $parts['user'] = rawurldecode($parts['user']);
+        }
+        if (!empty($parts['pass'])) {
+            $parts['pass'] = rawurldecode($parts['pass']);
+        }
+        if (!empty($parts['path'])) {
+            $parts['path'] = rawurldecode($parts['path']);
+        }
+        if (isset($h)) {
+            $parts['host'] = rawurldecode($parts['host']);
+        }
+        if (!empty($parts['query'])) {
+            $parts['query'] = rawurldecode($parts['query']);
+        }
+        if (!empty($parts['fragment'])) {
+            $parts['fragment'] = rawurldecode($parts['fragment']);
+        }
+
+        return $parts;
+    }
+
+    /**
+     * @param array $parts
+     * @param bool  $encode
+     *
+     * @return string
+     *
+     * @source http://nadeausoftware.com/articles/2008/05/php_tip_how_parse_and_build_urls
+     */
+    protected static function joinUrl($parts, $encode = true)
+    {
+        if ($encode) {
+            if (isset($parts['user'])) {
+                $parts['user'] = rawurlencode($parts['user']);
+            }
+            if (isset($parts['pass'])) {
+                $parts['pass'] = rawurlencode($parts['pass']);
+            }
+            if (isset($parts['host']) &&
+                !preg_match('!^(\[[\da-f.:]+\]])|([\da-f.:]+)$!ui', $parts['host'])) {
+                $parts['host'] = rawurlencode($parts['host']);
+            }
+            if (!empty($parts['path'])) {
+                $parts['path'] = preg_replace('!%2F!ui', '/', rawurlencode($parts['path']));
+            }
+            if (isset($parts['query'])) {
+                $parts['query'] = rawurlencode($parts['query']);
+            }
+            if (isset($parts['fragment'])) {
+                $parts['fragment'] = rawurlencode($parts['fragment']);
+            }
+        }
+
+        $url = '';
+        if (!empty($parts['scheme'])) {
+            $url .= $parts['scheme'].':';
+        }
+        if (isset($parts['host'])) {
+            $url .= '//';
+            if (isset($parts['user'])) {
+                $url .= $parts['user'];
+                if (isset($parts['pass'])) {
+                    $url .= ':'.$parts['pass'];
+                }
+                $url .= '@';
+            }
+            if (preg_match('!^[\da-f]*:[\da-f.:]+$!ui', $parts['host'])) {
+                $url .= '['.$parts['host'].']';
+            } // IPv6
+            else {
+                $url .= $parts['host'];
+            }             // IPv4 or name
+            if (isset($parts['port'])) {
+                $url .= ':'.$parts['port'];
+            }
+            if (!empty($parts['path']) && $parts['path'][0] != '/') {
+                $url .= '/';
+            }
+        }
+        if (!empty($parts['path'])) {
+            $url .= $parts['path'];
+        }
+        if (isset($parts['query'])) {
+            $url .= '?'.$parts['query'];
+        }
+        if (isset($parts['fragment'])) {
+            $url .= '#'.$parts['fragment'];
+        }
+
+        return $url;
     }
 }
