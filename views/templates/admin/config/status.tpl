@@ -35,6 +35,10 @@
     </div>
   </div>
   <div class="panel-footer">
+    <button v-if="!indexing" class="btn btn-default" @click="startFullIndexing">
+      <i class="process-icon-refresh"></i>
+      {l s='Full (re)index' mod='elasticsearch'}
+    </button>
     <button v-if="!indexing" class="btn btn-default" @click="startIndexing">
       <i class="process-icon-refresh"></i>
       {l s='Index remaining items' mod='elasticsearch'}

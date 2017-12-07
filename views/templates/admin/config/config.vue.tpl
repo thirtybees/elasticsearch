@@ -38,7 +38,7 @@
       }
     }
 
-    function indexProducts(self) {
+    function indexProducts(self, callback) {
       var request = new XMLHttpRequest();
       request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=indexRemaining', true);
 
@@ -68,9 +68,12 @@
                 text: '{l s='Unable to connect with the Elasticsearch server. Has the connection been configured?' mod='elasticsearch' js=1}',
                 icon: 'error'
               });
+
+              callback('success', response, this);
             }
           } else {
             // Error :(
+            callback('error', response, this);
           }
 
           // Finally
@@ -98,10 +101,56 @@
             self.$store.commit('setIndexing', false);
             self.$store.commit('setCancelingIndexing', false);
           }
+
+          callback('complete', response, this);
         }
       };
 
       request.send();
+      request = null;
+    }
+
+    function eraseIndex(self, callback) {
+      var request = new XMLHttpRequest();
+      request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=eraseIndex', true);
+
+      request.onreadystatechange = function() {
+        if (this.readyState === 4) {
+          var response;
+          try {
+            response = JSON.parse(this.responseText);
+          } catch (e) {
+            response = null;
+          }
+
+          if (this.status >= 200 && this.status < 400) {
+            // Success!
+            if (typeof response !== 'undefined'
+              && response
+              && typeof response.indexed !== 'undefined'
+              && typeof response.total !== 'undefined'
+            ) {
+              self.$store.commit('setIndexingStatus', {
+                indexed: response.indexed,
+                total: response.total
+              });
+            }
+
+            callback('success', response, this);
+          } else {
+            // Error :(
+            callback('error', response, this);
+          }
+
+          // Finally
+          self.$store.commit('setSaving', false);
+          self.$store.commit('setConfigUpdated', false);
+
+          callback('complete', response, this);
+        }
+      };
+
+      request.send(JSON.stringify(this.$store.state.config));
       request = null;
     }
 
@@ -207,6 +256,17 @@
             }
           });
         },
+        startFullIndexing: function () {
+          var self = this;
+
+          function callback(status, response, xhr) {
+            if (status === 'success') {
+              eraseIndex(self);
+            }
+          }
+
+          indexProducts(self, callback);
+        },
         startIndexing: function () {
           this.$store.commit('setIndexing', true);
 
@@ -218,44 +278,7 @@
           this.$store.commit('setCancelingIndexing', true);
         },
         eraseIndex: function () {
-          var self = this;
-
-          var request = new XMLHttpRequest();
-          request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=eraseIndex', true);
-
-          request.onreadystatechange = function() {
-            if (this.readyState === 4) {
-              var response;
-              try {
-                response = JSON.parse(this.responseText);
-              } catch (e) {
-                response = null;
-              }
-
-              if (this.status >= 200 && this.status < 400) {
-                // Success!
-                if (typeof response !== 'undefined'
-                  && response
-                  && typeof response.indexed !== 'undefined'
-                  && typeof response.total !== 'undefined'
-                ) {
-                  self.$store.commit('setIndexingStatus', {
-                    indexed: response.indexed,
-                    total: response.total
-                  });
-                }
-              } else {
-                // Error :(
-              }
-
-              // Finally
-              self.$store.commit('setSaving', false);
-              self.$store.commit('setConfigUpdated', false);
-            }
-          };
-
-          request.send(JSON.stringify(this.$store.state.config));
-          request = null;
+          eraseIndex(this);
         },
         submitSettings: function (event) {
           if (this.$store.state.saving) {
