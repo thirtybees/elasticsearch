@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_elasticsearch_index_status` (
 
 CREATE TABLE IF NOT EXISTS `PREFIX_elasticsearch_meta` (
   `id_elasticsearch_meta` INT(11) UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `alias`                 VARCHAR(190)        NOT NULL,
   `code`                  VARCHAR(190)        NOT NULL,
   `enabled`               TINYINT(1) UNSIGNED NOT NULL DEFAULT '1',
   `meta_type`             VARCHAR(255)        NOT NULL DEFAULT 'attribute',
@@ -26,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `PREFIX_elasticsearch_meta` (
   `display_type`          INT(11) UNSIGNED    NOT NULL DEFAULT '1',
   `result_limit`          INT(11) UNSIGNED    NOT NULL DEFAULT '0',
   PRIMARY KEY (`id_elasticsearch_meta`),
-  UNIQUE (`code`)
+  UNIQUE (`alias`)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

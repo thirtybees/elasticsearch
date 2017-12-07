@@ -215,7 +215,8 @@ class Elasticsearch extends Module
         foreach ($attributes as $attribute) {
             $metaInserts[] = [
                 bqSQL(Meta::$definition['primary']) => $i,
-                'code'                              => $attribute->code,
+                'alias'                             => bqSQL($attribute->code.$attribute->meta_type),
+                'code'                              => bqSQL($attribute->code),
                 'enabled'                           => !in_array($attribute->code, ['sales', 'pageviews']),
                 'meta_type'                         => bqSQL($attribute->meta_type),
                 'elastic_type'                      => bqSQL($attribute->elastic_type),
@@ -235,7 +236,6 @@ class Elasticsearch extends Module
                     'name'                              => isset($defaultMetas[$attribute->code][$lang['iso_code']]) ? $defaultMetas[$attribute->code][$lang['iso_code']] : $attribute->code,
                 ];
             }
-
             $i++;
         }
         try {
