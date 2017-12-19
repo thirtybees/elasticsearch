@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2017 thirty bees
+ * Copyright (C) 2017-2018 thirty bees
  *
  * NOTICE OF LICENSE
  *
@@ -13,7 +13,7 @@
  * to contact@thirtybees.com so we can send you a copy immediately.
  *
  * @author    thirty bees <contact@thirtybees.com>
- * @copyright 2017 thirty bees
+ * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -129,7 +129,10 @@ class Elasticsearch extends Module
 
         $this->bootstrap = true;
 
-        parent::__construct();
+        try {
+            parent::__construct();
+        } catch (PrestaShopException $e) {
+        }
 
         $this->displayName = $this->l('Elasticsearch');
         $this->description = $this->l('Elasticsearch module for thirty bees');
@@ -141,6 +144,7 @@ class Elasticsearch extends Module
      * Install this module
      *
      * @return bool
+     * @throws PrestaShopException
      */
     public function install()
     {
@@ -154,7 +158,11 @@ class Elasticsearch extends Module
             $this->context->controller->errors[] = $this->l('The Elasticsearch module requires the cURL extension to be installed and available. Ask your web host for more info on how to enable it.');
         }
 
-        if (!parent::install()) {
+        try {
+            if (!parent::install()) {
+                return false;
+            }
+        } catch (PrestaShopException $e) {
             return false;
         }
 
@@ -182,7 +190,11 @@ class Elasticsearch extends Module
 
 
         $defaultTaxGroup = 0;
-        $taxes = TaxRulesGroup::getTaxRulesGroups(true);
+        try {
+            $taxes = TaxRulesGroup::getTaxRulesGroups(true);
+        } catch (PrestaShopException $e) {
+            $taxes = [];
+        }
         if (!empty($taxes)) {
             $defaultTaxGroup = $taxes[0][TaxRulesGroup::$definition['primary']];
         }
@@ -192,15 +204,26 @@ class Elasticsearch extends Module
         foreach (Shop::getShops(false) as $shop) {
             $stopWords = [];
 
-            foreach (Language::getLanguages(false) as $language) {
-                $stopWords[(int) $language['id_lang']] = static::getStopWordLang(strtolower($language['iso_code']));
+            try {
+                foreach (Language::getLanguages(false) as $language) {
+                    $stopWords[(int) $language['id_lang']] = static::getStopWordLang(strtolower($language['iso_code']));
+                }
+            } catch (PrestaShopException $e) {
             }
 
-            Configuration::updateValue(static::STOP_WORDS, $stopWords, false, (int) $shop['id_shop_group'], (int) $shop['id_shop']);
+            try {
+                Configuration::updateValue(static::STOP_WORDS, $stopWords, false, (int) $shop['id_shop_group'], (int) $shop['id_shop']);
+            } catch (PrestaShopException $e) {
+                $this->context->controller->errors[] = $this->l('Unable to add stop words during installation, you might have to change these manually.');
+            }
         }
 
         $defaultMetas = json_decode(file_get_contents(__DIR__.'/data/defaultmetas.json'), true);
-        $attributes = Meta::getAllProperties();
+        try {
+            $attributes = Meta::getAllProperties();
+        } catch (PrestaShopException $e) {
+            $attributes = [];
+        }
         $metaInserts = [];
         $metaLangInserts = [];
         $langs = Language::getLanguages(false);
@@ -426,7 +449,7 @@ class Elasticsearch extends Module
         $taxes = TaxRulesGroup::getAssociatedTaxRatesByIdCountry(Context::getContext()->country->id);
         if (!Tax::excludeTaxeOption() && (int) Group::getPriceDisplayMethod($this->context->customer->id_default_group) === PS_TAX_EXC) {
             foreach ($taxes as &$tax) {
-                $tax['rate'] = 1.000;
+                $tax = 100.000;
             }
         }
 
@@ -664,8 +687,6 @@ class Elasticsearch extends Module
      * Get ElasticSearch Client with write access
      *
      * @return \Elasticsearch\Client|null
-     *
-     * @throws \Exception
      */
     public static function getWriteClient()
     {

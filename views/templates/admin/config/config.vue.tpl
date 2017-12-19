@@ -1,5 +1,5 @@
 {*
- * Copyright (C) 2017 thirty bees
+ * Copyright (C) 2017-2018 thirty bees
  *
  * NOTICE OF LICENSE
  *
@@ -12,7 +12,7 @@
  * to contact@thirtybees.com so we can send you a copy immediately.
  *
  * @author    thirty bees <contact@thirtybees.com>
- * @copyright 2017 thirty bees
+ * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
 <script type="text/javascript">
@@ -69,11 +69,15 @@
                 icon: 'error'
               });
 
-              callback('success', response, this);
+              if (typeof callback === 'function') {
+                callback('success', response, this);
+              }
             }
           } else {
             // Error :(
-            callback('error', response, this);
+            if (typeof callback === 'function') {
+              callback('error', response, this);
+            }
           }
 
           // Finally
@@ -93,7 +97,7 @@
             if (ajaxAttempts <= 0) {
               swal({
                 title: '{l s='Error!' mod='elasticsearch' js=1}',
-                text: '{l s='Error while contacting the webserver. Please check your server logs for errors and correct them if necessary.' mod='elasticsearch' js=1}',
+                text: '{l s='Error while contacting the webserver. Please check the server logs for errors and correct them if necessary.' mod='elasticsearch' js=1}',
                 icon: 'error'
               });
             }
@@ -102,7 +106,9 @@
             self.$store.commit('setCancelingIndexing', false);
           }
 
-          callback('complete', response, this);
+          if (typeof callback === 'function') {
+            callback('complete', response, this);
+          }
         }
       };
 
@@ -111,6 +117,7 @@
     }
 
     function eraseIndex(self, callback) {
+      self.$store.commit('setSaving', true);
       var request = new XMLHttpRequest();
       request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=eraseIndex', true);
 
@@ -136,21 +143,27 @@
               });
             }
 
-            callback('success', response, this);
+            if (typeof callback === 'function') {
+              callback('success', response, this);
+            }
           } else {
             // Error :(
-            callback('error', response, this);
+            if (typeof callback === 'function') {
+              callback('error', response, this);
+            }
           }
 
           // Finally
           self.$store.commit('setSaving', false);
           self.$store.commit('setConfigUpdated', false);
 
-          callback('complete', response, this);
+          if (typeof callback === 'function') {
+            callback('complete', response, this);
+          }
         }
       };
 
-      request.send(JSON.stringify(this.$store.state.config));
+      request.send(JSON.stringify(self.$store.state.config));
       request = null;
     }
 
@@ -259,13 +272,12 @@
         startFullIndexing: function () {
           var self = this;
 
-          function callback(status, response, xhr) {
+          eraseIndex(self, function (status) {
+            self.$store.commit('setSaving', false);
             if (status === 'success') {
-              eraseIndex(self);
+              self.startIndexing(self);
             }
-          }
-
-          indexProducts(self, callback);
+          });
         },
         startIndexing: function () {
           this.$store.commit('setIndexing', true);
@@ -309,7 +321,7 @@
             }
           };
 
-          request.send(JSON.stringify(this.$store.state.config));
+          request.send(JSON.stringify(self.$store.state.config));
           request = null;
         }
       }

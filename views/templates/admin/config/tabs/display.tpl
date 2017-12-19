@@ -1,5 +1,5 @@
 {*
- * Copyright (C) 2017 thirty bees
+ * Copyright (C) 2017-2018 thirty bees
  *
  * NOTICE OF LICENSE
  *
@@ -12,7 +12,7 @@
  * to contact@thirtybees.com so we can send you a copy immediately.
  *
  * @author    thirty bees <contact@thirtybees.com>
- * @copyright 2017 thirty bees
+ * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
 <div class="panel panel-default">
@@ -40,11 +40,11 @@
     ></toggle>
     <toggle display-name="{l s='Infinite scroll' mod='elasticsearch' js=1}"
             config-key="{Elasticsearch::INFINITE_SCROLL}"
-            help="{l s='Load more products when the bottom of the page is reached. Note: visitors might have a hard time reaching your footer!' mod='elasticsearch'}"
+            help="{l s='Load more products when the bottom of the page is reached. Note: visitors might have a hard time reaching the footer!' mod='elasticsearch'}"
     ></toggle>
     <tax-selector display-name="{l s='Price slider tax rules group' mod='elasticsearch'}"
                   config-key="{Elasticsearch::DEFAULT_TAX_RULES_GROUP}"
-                  help="{l s='Apply this tax rules group to the slider. Note that if you have mixed taxes in your store, the shown product selection might no longer be accurate.' mod='elasticsearch'}"></tax-selector>
+                  help="{l s='Apply this tax rules group to the slider. Note that if you have mixed taxes in the store, the shown product selection might no longer be accurate.' mod='elasticsearch'}"></tax-selector>
 
   </div>
   <div class="panel-footer">
