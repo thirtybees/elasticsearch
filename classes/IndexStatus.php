@@ -71,14 +71,20 @@ class IndexStatus extends \ObjectModel
      */
     public static function getIndexed($idLang = null, $idShop = null)
     {
-        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('COUNT(*)')
-                ->from(bqSQL(static::$definition['table']), 'eis')
-                ->innerJoin(bqSQL(Product::$definition['table']).'_shop', 'p', 'p.`id_product` = eis.`id_product` AND p.`id_shop` = eis.`id_shop` AND p.`date_upd` = eis.`date_upd`')
-                ->where($idLang ?'eis.`id_lang` = '.(int) $idLang : '')
-                ->where($idShop ? 'eis.`id_shop` = '.(int) $idShop : '')
-        );
+        try {
+            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('COUNT(*)')
+                    ->from(bqSQL(static::$definition['table']), 'eis')
+                    ->innerJoin(bqSQL(Product::$definition['table']).'_shop', 'p', 'p.`id_product` = eis.`id_product` AND p.`id_shop` = eis.`id_shop` AND p.`date_upd` = eis.`date_upd`')
+                    ->where($idLang ? 'eis.`id_lang` = '.(int) $idLang : '')
+                    ->where($idShop ? 'eis.`id_shop` = '.(int) $idShop : '')
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
     }
 
     /**
@@ -95,13 +101,19 @@ class IndexStatus extends \ObjectModel
             $idShop = Shop::getContextShopID();
         }
 
-        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('COUNT(*)')
-                ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
-                ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
-                ->where('ps.`id_shop` = '.(int) $idShop)
-        );
+        try {
+            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('COUNT(*)')
+                    ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
+                    ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
+                    ->where('ps.`id_shop` = '.(int) $idShop)
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
     }
 
     /**
@@ -117,12 +129,18 @@ class IndexStatus extends \ObjectModel
             $idShop = Context::getContext()->shop->id;
         }
 
-        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('COUNT(*)')
-                ->from(bqSQL(Language::$definition['table']).'_shop')
-                ->where('`id_shop` = '.(int) $idShop)
-        );
+        try {
+            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('COUNT(*)')
+                    ->from(bqSQL(Language::$definition['table']).'_shop')
+                    ->where('`id_shop` = '.(int) $idShop)
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
     }
 
     /**
@@ -134,7 +152,13 @@ class IndexStatus extends \ObjectModel
      */
     public static function erase($idShop = null)
     {
-        return Db::getInstance()->delete(bqSQL(static::$definition['table']), $idShop ? '`id_shop` = '.(int) $idShop : '');
+        try {
+            return Db::getInstance()->delete(bqSQL(static::$definition['table']), $idShop ? '`id_shop` = '.(int) $idShop : '');
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return false;
+        }
     }
 
     /**
@@ -151,21 +175,33 @@ class IndexStatus extends \ObjectModel
         // other than the current language
         static::prepareDispatcher();
 
-        $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new DbQuery())
-                ->select('ps.`id_product`, ps.`id_shop`, pl.`id_lang`, ps.`date_upd` AS `product_updated`, eis.`date_upd` AS `product_indexed`')
-                ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
-                ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'pl.`id_product` = ps.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
-                ->leftJoin(bqSQL(IndexStatus::$definition['table']), 'eis', 'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`')
-                ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
-                ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
-                ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
-                ->limit($limit, $offset)
-        );
+        try {
+            $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('ps.`id_product`, ps.`id_shop`, pl.`id_lang`, ps.`date_upd` AS `product_updated`, eis.`date_upd` AS `product_indexed`')
+                    ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
+                    ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'pl.`id_product` = ps.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
+                    ->leftJoin(bqSQL(IndexStatus::$definition['table']), 'eis', 'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`')
+                    ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
+                    ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
+                    ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
+                    ->limit($limit, $offset)
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $results = false;
+        }
 
         $products = [];
         foreach ($results as &$result) {
-            $product = Fetcher::initProduct($result['id_product'], $result['id_lang']);
+            try {
+                $product = Fetcher::initProduct($result['id_product'], $result['id_lang']);
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+                continue;
+            }
             $product->id_lang = $result['id_lang'];
             $product->id_shop = $result['id_shop'];
 
@@ -197,48 +233,52 @@ class IndexStatus extends \ObjectModel
         $cmsroutes = 'PS_ROUTE_cms_rule';
         $cmscatroutes = 'PS_ROUTE_cms_category_rule';
         $moduleroutes = 'PS_ROUTE_module';
-        foreach (Language::getLanguages(false) as $lang) {
-            foreach (Dispatcher::getInstance()->default_routes as $id => $route) {
-                switch ($id) {
-                    case 'product_rule':
-                        $rule = Configuration::get($prodroutes, (int) $lang['id_lang']);
-                        break;
-                    case 'category_rule':
-                        $rule = Configuration::get($catroutes, (int) $lang['id_lang']);
-                        break;
-                    case 'supplier_rule':
-                        $rule = Configuration::get($supproutes, (int) $lang['id_lang']);
-                        break;
-                    case 'manufacturer_rule':
-                        $rule = Configuration::get($manuroutes, (int) $lang['id_lang']);
-                        break;
-                    case 'layered_rule':
-                        $rule = Configuration::get($layeredroutes, (int) $lang['id_lang']);
-                        break;
-                    case 'cms_rule':
-                        $rule = Configuration::get($cmsroutes, (int) $lang['id_lang']);
-                        break;
-                    case 'cms_category_rule':
-                        $rule = Configuration::get($cmscatroutes, (int) $lang['id_lang']);
-                        break;
-                    case 'module':
-                        $rule = Configuration::get($moduleroutes, (int) $lang['id_lang']);
-                        break;
-                    default:
-                        $rule = $route['rule'];
-                        break;
-                }
+        try {
+            foreach (Language::getLanguages(false) as $lang) {
+                foreach (Dispatcher::getInstance()->default_routes as $id => $route) {
+                    switch ($id) {
+                        case 'product_rule':
+                            $rule = Configuration::get($prodroutes, (int) $lang['id_lang']);
+                            break;
+                        case 'category_rule':
+                            $rule = Configuration::get($catroutes, (int) $lang['id_lang']);
+                            break;
+                        case 'supplier_rule':
+                            $rule = Configuration::get($supproutes, (int) $lang['id_lang']);
+                            break;
+                        case 'manufacturer_rule':
+                            $rule = Configuration::get($manuroutes, (int) $lang['id_lang']);
+                            break;
+                        case 'layered_rule':
+                            $rule = Configuration::get($layeredroutes, (int) $lang['id_lang']);
+                            break;
+                        case 'cms_rule':
+                            $rule = Configuration::get($cmsroutes, (int) $lang['id_lang']);
+                            break;
+                        case 'cms_category_rule':
+                            $rule = Configuration::get($cmscatroutes, (int) $lang['id_lang']);
+                            break;
+                        case 'module':
+                            $rule = Configuration::get($moduleroutes, (int) $lang['id_lang']);
+                            break;
+                        default:
+                            $rule = $route['rule'];
+                            break;
+                    }
 
-                Dispatcher::getInstance()->addRoute(
-                    $id,
-                    $rule,
-                    $route['controller'],
-                    $lang['id_lang'],
-                    $route['keywords'],
-                    isset($route['params']) ? $route['params'] : [],
-                    Context::getContext()->shop->id
-                );
+                    Dispatcher::getInstance()->addRoute(
+                        $id,
+                        $rule,
+                        $route['controller'],
+                        $lang['id_lang'],
+                        $route['keywords'],
+                        isset($route['params']) ? $route['params'] : [],
+                        Context::getContext()->shop->id
+                    );
+                }
             }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         static::$dispatcherPrepared = true;

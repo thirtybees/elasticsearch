@@ -97,16 +97,26 @@ class Meta extends ObjectModel
     public static function getAllMetas($idLangs = null)
     {
         if (!is_array($idLangs) || !empty($idLangs)) {
-            $idLangs = Language::getLanguages(false, null, true);
+            try {
+                $idLangs = Language::getLanguages(false, null, true);
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+                return [];
+            }
         }
 
-        $results = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new DbQuery())
-                ->select('m.*, ml.`name`, ml.`id_lang`')
-                ->from(bqSQL(static::$definition['table']), 'm')
-                ->rightJoin(bqSQL(static::$definition['table']).'_lang', 'ml', 'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'`')
-                ->where('ml.`id_lang` IN ('.implode(',', array_map('intval', $idLangs)).')')
-        );
+        try {
+            $results = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('m.*, ml.`name`, ml.`id_lang`')
+                    ->from(bqSQL(static::$definition['table']), 'm')
+                    ->rightJoin(bqSQL(static::$definition['table']).'_lang', 'ml', 'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'`')
+                    ->where('ml.`id_lang` IN ('.implode(',', array_map('intval', $idLangs)).')')
+            );
+        } catch (\PrestaShopException $e) {
+            $results = false;
+        }
         $metas = [];
         foreach ($results as &$result) {
             if (!isset($metas[(int) $result['id_lang']])) {
@@ -165,11 +175,15 @@ class Meta extends ObjectModel
 
                 $update[$metaPrimary] = $existingMetas[$meta['code']][$metaPrimary];
                 $update['position'] = $position;
-                Db::getInstance()->update(
-                    $metaTable,
-                    $update,
-                    "`$metaPrimary` = {$existingMetas[$meta['code']][$metaPrimary]}"
-                );
+                try {
+                    Db::getInstance()->update(
+                        $metaTable,
+                        $update,
+                        "`$metaPrimary` = {$existingMetas[$meta['code']][$metaPrimary]}"
+                    );
+                } catch (\PrestaShopException $e) {
+                    \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+                }
             } else {
                 // Insert
                 $insert = [];
@@ -189,14 +203,22 @@ class Meta extends ObjectModel
         }
 
         if (!empty($inserts)) {
-            Db::getInstance()->insert($metaTable, $inserts);
+            try {
+                Db::getInstance()->insert($metaTable, $inserts);
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            }
         }
 
-        $codesAndIds = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new DbQuery())
-                ->select("m.`code`, m.`$metaPrimary`")
-                ->from($metaTable, 'm')
-        );
+        try {
+            $codesAndIds = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select("m.`code`, m.`$metaPrimary`")
+                    ->from($metaTable, 'm')
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        }
         foreach ($metas as $meta) {
             foreach ($meta['name'] as $idLang => $name) {
                 $primary = '';
@@ -213,11 +235,15 @@ class Meta extends ObjectModel
 
                 if (isset($existingMetas[$meta['code']])) {
                     // Update
-                    Db::getInstance()->update("{$metaTable}_lang", [
-                        $metaPrimary => $primary,
-                        'id_lang'    => $idLang,
-                        'name'       => $meta['name'][$idLang],
-                    ], "`$metaPrimary` = $primary AND `id_lang` = $idLang");
+                    try {
+                        Db::getInstance()->update("{$metaTable}_lang", [
+                            $metaPrimary => $primary,
+                            'id_lang'    => $idLang,
+                            'name'       => $meta['name'][$idLang],
+                        ], "`$metaPrimary` = $primary AND `id_lang` = $idLang");
+                    } catch (\PrestaShopException $e) {
+                        \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+                    }
                 } else {
                     // Insert
                     $langInserts[] = [
@@ -229,7 +255,11 @@ class Meta extends ObjectModel
             }
         }
         if (!empty($langInserts)) {
-            Db::getInstance()->insert("{$metaTable}_lang", $langInserts);
+            try {
+                Db::getInstance()->insert("{$metaTable}_lang", $langInserts);
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            }
         }
     }
 
@@ -272,17 +302,23 @@ class Meta extends ObjectModel
      */
     public static function getName($code, $idLang)
     {
-        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('ml.`name`')
-                ->from(bqSQL(static::$definition['table']).'_lang', 'ml')
-                ->innerJoin(
-                    bqSQL(static::$definition['table']),
-                    'm',
-                    'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'` AND ml.`id_lang` = '.(int) $idLang
-                )
-                ->where('m.`code` = \''.pSQL($code).'\'')
-        );
+        try {
+            return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('ml.`name`')
+                    ->from(bqSQL(static::$definition['table']).'_lang', 'ml')
+                    ->innerJoin(
+                        bqSQL(static::$definition['table']),
+                        'm',
+                        'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'` AND ml.`id_lang` = '.(int) $idLang
+                    )
+                    ->where('m.`code` = \''.pSQL($code).'\'')
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return false;
+        }
     }
 
     /**
@@ -294,15 +330,21 @@ class Meta extends ObjectModel
      */
     public static function getSearchableMetas($withWeights = true)
     {
-        $metas = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new DbQuery())
-                ->select('m.`code`')
-                ->select($withWeights ? 'm.`weight`' : '')
-                ->from(bqSQL(static::$definition['table']), 'm')
-                ->where('m.`searchable` = 1')
-            // Only text type fields are truly searchable, removing the rest
-                ->where('m.`elastic_type` = \'text\'')
-        );
+        try {
+            $metas = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('m.`code`')
+                    ->select($withWeights ? 'm.`weight`' : '')
+                    ->from(bqSQL(static::$definition['table']), 'm')
+                    ->where('m.`searchable` = 1')
+                    // Only text type fields are truly searchable, removing the rest
+                    ->where('m.`elastic_type` = \'text\'')
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $metas = [];
+        }
 
         $newMetas = [];
         $requiredMetas = ['name'];

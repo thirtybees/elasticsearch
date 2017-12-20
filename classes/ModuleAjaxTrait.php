@@ -50,7 +50,6 @@ trait ModuleAjaxTrait
     {
         header('Content-Type: application/json; charset=utf-8');
         $settings = json_decode(file_get_contents('php://input'), true);
-        $idShop = Context::getContext()->shop->id;
 
         // Figure out which setting keys are available (constants from the main class)
         /** @var ReflectionClass $reflect */
@@ -62,7 +61,11 @@ trait ModuleAjaxTrait
                     Meta::saveMetas($value);
                     continue;
                 } elseif ($setting == static::STOP_WORDS) {
-                    Configuration::updateValue($setting, $value);
+                    try {
+                        Configuration::updateValue($setting, $value);
+                    } catch (\PrestaShopException $e) {
+                        \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+                    }
 
                     continue;
                 } elseif ($setting == static::SERVERS) {
@@ -77,11 +80,19 @@ trait ModuleAjaxTrait
                     $value = json_encode($value);
                 }
 
-                Configuration::updateValue($setting, $value);
+                try {
+                    Configuration::updateValue($setting, $value);
+                } catch (\PrestaShopException $e) {
+                    \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+                }
             }
         }
 
-        Configuration::updateValue(Elasticsearch::CONFIG_UPDATED, true);
+        try {
+            Configuration::updateValue(Elasticsearch::CONFIG_UPDATED, true);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        }
 
         // Reponse status
         die(json_encode([
@@ -105,11 +116,23 @@ trait ModuleAjaxTrait
             ]));
         }
         $input = json_decode(file_get_contents('php://input'), true);
-        $amount = (int) (isset($input['amount']) ? (int) $input['amount'] : Configuration::get(static::INDEX_CHUNK_SIZE));
+        try {
+            $amount = (int) (isset($input['amount']) ? (int) $input['amount'] : Configuration::get(static::INDEX_CHUNK_SIZE));
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $amount = false;
+        }
         if (!$amount) {
             $amount = 10;
         }
-        $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
+        try {
+            $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return;
+        }
         $idShop = Context::getContext()->shop->id;
         $idLang = Context::getContext()->language->id;
         $metas = Meta::getAllMetas([$idLang]);
@@ -161,10 +184,22 @@ trait ModuleAjaxTrait
                 if (isset($metas[$name]) && in_array($metas[$name]['elastic_type'], ['string', 'text'])) {
                     if (is_array($var)) {
                         foreach ($var as &$item) {
-                            $item = Tools::link_rewrite($item);
+                            try {
+                                $item = Tools::link_rewrite($item);
+                            } catch (\PrestaShopException $e) {
+                                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+                                continue;
+                            }
                         }
                     } else {
-                        $var = Tools::link_rewrite($var);
+                        try {
+                            $var = Tools::link_rewrite($var);
+                        } catch (\PrestaShopException $e) {
+                            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+                            continue;
+                        }
                     }
                 }
 
@@ -201,7 +236,11 @@ trait ModuleAjaxTrait
                         && (int) $product->id_shop === (int) $failure['id_shop']
                         && (int) $product->id_lang === (int) $failure['id_lang']
                     ) {
-                        Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
+                        try {
+                            Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
+                        } catch (\PrestaShopException $e) {
+                            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+                        }
 
                         unset($products[$index]);
                     }
@@ -216,7 +255,11 @@ trait ModuleAjaxTrait
         }
         $values = rtrim($values, ',');
         if ($values) {
-            Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
+            try {
+                Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            }
         }
 
         // Response status
@@ -249,7 +292,11 @@ trait ModuleAjaxTrait
         } catch (Exception $e) {
         }
 
-        Configuration::updateValue(Elasticsearch::CONFIG_UPDATED, false);
+        try {
+            Configuration::updateValue(Elasticsearch::CONFIG_UPDATED, false);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        }
 
         // Response status
         die(json_encode([

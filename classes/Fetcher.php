@@ -360,12 +360,16 @@ class Fetcher
         static::addColorListHTML($products);
 
         $metas = [];
-        foreach (Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new DbQuery())
-                ->select('*')
-                ->from(bqSQL(Meta::$definition['table']))
-        ) as $meta) {
-            $metas[$meta['code']] = $meta;
+        try {
+            foreach (Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('*')
+                    ->from(bqSQL(Meta::$definition['table']))
+            ) as $meta) {
+                $metas[$meta['code']] = $meta;
+            }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Default properties
@@ -384,38 +388,46 @@ class Fetcher
         }
 
         // Features
-        foreach ($product->getFrontFeatures($idLang) as $feature) {
-            $name = Tools::link_rewrite($feature['name']);
-            $propItems = $feature['value'];
+        try {
+            foreach ($product->getFrontFeatures($idLang) as $feature) {
+                $name = Tools::link_rewrite($feature['name']);
+                $propItems = $feature['value'];
 
-            $elasticProduct->$name = $propItems;
+                $elasticProduct->$name = $propItems;
+            }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Attribute groups
-        foreach ($product->getAttributesGroups($idLang) as $attribute) {
-            $groupName = Tools::link_rewrite($attribute['group_name']);
-            $attributeName = $attribute['attribute_name'];
+        try {
+            foreach ($product->getAttributesGroups($idLang) as $attribute) {
+                $groupName = Tools::link_rewrite($attribute['group_name']);
+                $attributeName = $attribute['attribute_name'];
 
-            if (!isset($elasticProduct->{$groupName}) || !is_array($elasticProduct->{$groupName})) {
-                $elasticProduct->{$groupName} = [];
-            }
-
-            if (!in_array($attributeName, $elasticProduct->{$groupName})) {
-                $elasticProduct->{$groupName}[] = $attributeName;
-            }
-
-            if ($attribute['is_color_group']) {
-                // Add a special property for the color group
-                // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
-                // will eventually be in the same order, so that's how you can match them later
-                if (!isset($elasticProduct->{"{$groupName}_color_code"}) || !is_array($elasticProduct->{"{$groupName}_color_code"})) {
-                    $elasticProduct->{"{$groupName}_color_code"} = [];
+                if (!isset($elasticProduct->{$groupName}) || !is_array($elasticProduct->{$groupName})) {
+                    $elasticProduct->{$groupName} = [];
                 }
 
-                if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$groupName}_color_code"})) {
-                    $elasticProduct->{"{$groupName}_color_code"}[] = $attribute['attribute_color'];
+                if (!in_array($attributeName, $elasticProduct->{$groupName})) {
+                    $elasticProduct->{$groupName}[] = $attributeName;
+                }
+
+                if ($attribute['is_color_group']) {
+                    // Add a special property for the color group
+                    // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
+                    // will eventually be in the same order, so that's how you can match them later
+                    if (!isset($elasticProduct->{"{$groupName}_color_code"}) || !is_array($elasticProduct->{"{$groupName}_color_code"})) {
+                        $elasticProduct->{"{$groupName}_color_code"} = [];
+                    }
+
+                    if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$groupName}_color_code"})) {
+                        $elasticProduct->{"{$groupName}_color_code"}[] = $attribute['attribute_color'];
+                    }
                 }
             }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Filter metas
@@ -536,22 +548,32 @@ class Fetcher
     protected static function getCategoryPath($idCategory, $idLang)
     {
         $cats = [];
-        $interval = Category::getInterval($idCategory);
+        try {
+            $interval = Category::getInterval($idCategory);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $interval = false;
+        }
 
         if ($interval) {
-            $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                (new DbQuery())
-                    ->select('c.*, cl.*')
-                    ->from('category', 'c')
-                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
-                    ->join(Shop::addSqlRestrictionOnLang('cl'))
-                    ->join(Shop::addSqlAssociation('category', 'c'))
-                    ->where('c.`nleft` <= '.(int) $interval['nleft'])
-                    ->where('c.`nright` >= '.(int) $interval['nright'])
-                    ->where('cl.`id_lang` = '.(int) $idLang)
-                    ->where('c.`active` = 1')
-                    ->orderBy('c.`level_depth` ASC')
-            );
+            try {
+                $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                    (new DbQuery())
+                        ->select('c.*, cl.*')
+                        ->from('category', 'c')
+                        ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
+                        ->join(Shop::addSqlRestrictionOnLang('cl'))
+                        ->join(Shop::addSqlAssociation('category', 'c'))
+                        ->where('c.`nleft` <= '.(int) $interval['nleft'])
+                        ->where('c.`nright` >= '.(int) $interval['nright'])
+                        ->where('cl.`id_lang` = '.(int) $idLang)
+                        ->where('c.`active` = 1')
+                        ->orderBy('c.`level_depth` ASC')
+                );
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            }
 
             foreach ($categories as $category) {
                 $cats[] = $category;
@@ -566,7 +588,13 @@ class Fetcher
      */
     protected static function getStockQty($product)
     {
-        return Product::getQuantity($product->id);
+        try {
+            return Product::getQuantity($product->id);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
     }
 
     /**
@@ -582,12 +610,18 @@ class Fetcher
             return 0;
         }
 
-        return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('SUM(`product_quantity`) AS `total`')
-                ->from('order_detail')
-                ->where('`product_id` = '.(int) $product->id)
-        );
+        try {
+            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('SUM(`product_quantity`) AS `total`')
+                    ->from('order_detail')
+                    ->where('`product_id` = '.(int) $product->id)
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
     }
 
     /**
@@ -604,40 +638,52 @@ class Fetcher
         // Simulate customer group prices via Customers in those groups
         // Base price (0) is grabbed directly from the database
         // Visitor group (1) is used as the default group for tax excl. prices
-        $prices = [
-            'group_0' => (float) static::getProductBasePrice($product->id),
-            'group_1' => (float) Product::getPriceStatic($product->id, false, null, _TB_PRICE_DATABASE_PRECISION_),
-        ];
-        foreach (Group::getGroups(Context::getContext()->language->id) as $group) {
-            if ((int) $group['id_group'] === 1) {
-                continue;
-            }
-            // Get a default customer in this group, if not available, skip. You will have to reindex this product
-            // once you add a customer to this (new) group
-            $idCustomer = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-                (new DbQuery())
-                    ->select('c.`id_customer`')
-                    ->from(bqSQL(Customer::$definition['table']), 'c')
-                    ->innerJoin('customer_group', 'cg', 'cg.`id_customer` = c.`id_customer`')
-                    ->where('cg.`id_group` = '.(int) $group['id_group'])
-            );
-            if (!$idCustomer) {
-                $prices["group_{$group['id_group']}"] = $prices['group_0'];
+        try {
+            $prices = [
+                'group_0' => (float) static::getProductBasePrice($product->id),
+                'group_1' => (float) Product::getPriceStatic($product->id, false, null, _TB_PRICE_DATABASE_PRECISION_),
+            ];
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
-                continue;
+            return [];
+        }
+        try {
+            foreach (Group::getGroups(Context::getContext()->language->id) as $group) {
+                if ((int) $group['id_group'] === 1) {
+                    continue;
+                }
+                // Get a default customer in this group, if not available, skip. You will have to reindex this product
+                // once you add a customer to this (new) group
+                $idCustomer = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                    (new DbQuery())
+                        ->select('c.`id_customer`')
+                        ->from(bqSQL(Customer::$definition['table']), 'c')
+                        ->innerJoin('customer_group', 'cg', 'cg.`id_customer` = c.`id_customer`')
+                        ->where('cg.`id_group` = '.(int) $group['id_group'])
+                );
+                if (!$idCustomer) {
+                    $prices["group_{$group['id_group']}"] = $prices['group_0'];
+
+                    continue;
+                }
+                $prices["group_{$group['id_group']}"] = (float) Product::getPriceStatic(
+                    $product->id,
+                    false,
+                    null,
+                    _TB_PRICE_DATABASE_PRECISION_,
+                    null,
+                    false,
+                    true,
+                    1,
+                    false,
+                    $idCustomer
+                );
             }
-            $prices["group_{$group['id_group']}"] = (float) Product::getPriceStatic(
-                $product->id,
-                false,
-                null,
-                _TB_PRICE_DATABASE_PRECISION_,
-                null,
-                false,
-                true,
-                1,
-                false,
-                $idCustomer
-            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return [];
         }
 
         return $prices;
@@ -654,12 +700,24 @@ class Fetcher
     protected static function generateImageLinkLarge($product, $idLang)
     {
         $link = new Link();
-        $cover = Image::getCover($product->id);
+        try {
+            $cover = Image::getCover($product->id);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
-        if ($cover['id_image']) {
-            $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('large'));
-        } else {
-            $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-large_default.jpg';
+            return '';
+        }
+
+        try {
+            if ($cover['id_image']) {
+                $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('large'));
+            } else {
+                $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-large_default.jpg';
+            }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return '';
         }
 
         return $imageLink;
@@ -676,12 +734,24 @@ class Fetcher
     protected static function generateImageLinkSmall($product, $idLang)
     {
         $link = new Link();
-        $cover = Image::getCover($product->id);
+        try {
+            $cover = Image::getCover($product->id);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
-        if ($cover['id_image']) {
-            $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('small'));
-        } else {
-            $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-small_default.jpg';
+            return '';
+        }
+
+        try {
+            if ($cover['id_image']) {
+                $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('small'));
+            } else {
+                $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-small_default.jpg';
+            }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return '';
         }
 
         return $imageLink;
@@ -716,7 +786,13 @@ class Fetcher
      */
     protected static function getAllowOosp($product)
     {
-        return (bool) Product::isAvailableWhenOutOfStock($product->out_of_stock);
+        try {
+            return (bool) Product::isAvailableWhenOutOfStock($product->out_of_stock);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return false;
+        }
     }
 
     protected static function getCategoryName($product, $idLang)
@@ -916,7 +992,13 @@ class Fetcher
      */
     protected static function getManufacturerName($product)
     {
-        return Manufacturer::getNameById((int) $product->id_manufacturer);
+        try {
+            return Manufacturer::getNameById((int) $product->id_manufacturer);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return '';
+        }
     }
 
     /**
