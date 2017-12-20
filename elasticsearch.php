@@ -119,6 +119,8 @@ class Elasticsearch extends Module
 
     /**
      * ElasticSearch constructor.
+     *
+     * @throws PrestaShopException
      */
     public function __construct()
     {
@@ -129,10 +131,7 @@ class Elasticsearch extends Module
 
         $this->bootstrap = true;
 
-        try {
-            parent::__construct();
-        } catch (PrestaShopException $e) {
-        }
+        parent::__construct();
 
         $this->displayName = $this->l('Elasticsearch');
         $this->description = $this->l('Elasticsearch module for thirty bees');
@@ -289,34 +288,51 @@ class Elasticsearch extends Module
      */
     public function uninstall()
     {
-        Configuration::deleteByName(static::SERVERS);
-        Configuration::deleteByName(static::PROXY);
-        Configuration::deleteByName(static::LOGGING_ENABLED);
-        Configuration::deleteByName(static::INDEX_CHUNK_SIZE);
-        Configuration::deleteByName(static::INDEX_PREFIX);
-        Configuration::deleteByName(static::REPLICAS);
-        Configuration::deleteByName(static::SHARDS);
-        Configuration::deleteByName(static::BLACKLISTED_FIELDS);
-        Configuration::deleteByName(static::DEFAULT_TAX_RULES_GROUP);
-        Configuration::deleteByName(static::REPLACE_NATIVE_PAGES);
-        Configuration::deleteByName(static::SEARCH_SUBCATEGORIES);
-        Configuration::deleteByName(static::AUTOCOMPLETE);
-        Configuration::deleteByName(static::INSTANT_SEARCH);
+        foreach ([
+            static::SERVERS,
+            static::PROXY,
+            static::LOGGING_ENABLED,
+            static::INDEX_CHUNK_SIZE,
+            static::INDEX_PREFIX,
+            static::REPLICAS,
+            static::SHARDS,
+            static::BLACKLISTED_FIELDS,
+            static::DEFAULT_TAX_RULES_GROUP,
+            static::REPLACE_NATIVE_PAGES,
+            static::SEARCH_SUBCATEGORIES,
+            static::AUTOCOMPLETE,
+            static::INSTANT_SEARCH,
+            ] as $key) {
+            try {
+                Configuration::deleteByName($key);
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            }
+        }
 
         try {
             Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_index_status`');
         } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
         try {
             Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta`');
         } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
         try {
             Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta_lang`');
         } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
-        return parent::uninstall();
+        try {
+            return parent::uninstall();
+        } catch (PrestaShopException $e) {
+            Context::getContext()->controller->errors[] = $e->getMessage();
+
+            return false;
+        }
     }
 
     /**
@@ -404,7 +420,13 @@ class Elasticsearch extends Module
             'elastic_types' => Meta::getElasticTypes(),
         ]);
 
-        return $this->display(__FILE__, 'views/templates/admin/config/main.tpl');
+        try {
+            return $this->display(__FILE__, 'views/templates/admin/config/main.tpl');
+        } catch (Exception $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return '';
+        }
     }
 
     /**
@@ -421,8 +443,12 @@ class Elasticsearch extends Module
         $this->context->controller->addJS('https://unpkg.com/vue@2.4.4');
 //        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
 
-        if (Configuration::get(static::INFINITE_SCROLL)) {
-            $this->context->controller->addJS('https://unpkg.com/vue-infinite-loading');
+        try {
+            if (Configuration::get(static::INFINITE_SCROLL)) {
+                $this->context->controller->addJS('https://unpkg.com/vue-infinite-loading');
+            }
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Vuex
@@ -563,19 +589,47 @@ class Elasticsearch extends Module
             $sources[] = $meta['code'];
         }
 
+        try {
+            $autocomplete = Configuration::get(static::AUTOCOMPLETE);
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $autocomplete = false;
+        }
+        try {
+            $searchableMetas = Meta::getSearchableMetas();
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $searchableMetas = [];
+        }
+        try {
+            $fixedFilter = static::getFixedFilter();
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $fixedFilter = null;
+        }
+
         // Find if there is a special filter
         $this->context->smarty->assign([
-            'autocomplete'  => Configuration::get(static::AUTOCOMPLETE),
+            'autocomplete'  => $autocomplete,
             'shop'          => $this->context->shop,
             'language'      => $this->context->language,
             'aggregations'  => $aggegrations,
-            'fields'        => Meta::getSearchableMetas(),
+            'fields'        => $searchableMetas,
             'sources'       => $sources,
             'metas'         => $metas,
-            'fixedFilter'   => static::getFixedFilter(),
+            'fixedFilter'   => $fixedFilter,
         ]);
 
-        return $this->display(__FILE__, 'displaytop.tpl');
+        try {
+            return $this->display(__FILE__, 'displaytop.tpl');
+        } catch (Exception $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return '';
+        }
     }
 
     /**
@@ -606,22 +660,26 @@ class Elasticsearch extends Module
     public static function getReadHosts()
     {
         $readHosts = [];
-        foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
-            if ($host['read']) {
-                $parsed = self::splitUrl($host['url']);
-                if (empty($parsed['host'])) {
-                    continue;
-                }
-                if (empty($parsed['scheme'])) {
-                    $parsed['scheme'] = 'http';
-                }
+        try {
+            foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
+                if ($host['read']) {
+                    $parsed = self::splitUrl($host['url']);
+                    if (empty($parsed['host'])) {
+                        continue;
+                    }
+                    if (empty($parsed['scheme'])) {
+                        $parsed['scheme'] = 'http';
+                    }
 
-                if (empty($parsed['port'])) {
-                    $parsed['port'] = ($parsed['scheme'] === 'https') ? 443 : 80;
-                }
+                    if (empty($parsed['port'])) {
+                        $parsed['port'] = ($parsed['scheme'] === 'https') ? 443 : 80;
+                    }
 
-                $readHosts[] = self::joinUrl($parsed);
+                    $readHosts[] = self::joinUrl($parsed);
+                }
             }
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         return $readHosts;
@@ -662,22 +720,28 @@ class Elasticsearch extends Module
     public static function getWriteHosts()
     {
         $writeHosts = [];
-        foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
-            if ($host['write']) {
-                $parsed = self::splitUrl($host['url']);
-                if (empty($parsed['host'])) {
-                    continue;
-                }
-                if (empty($parsed['scheme'])) {
-                    $parsed['scheme'] = 'http';
-                }
+        try {
+            foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
+                if ($host['write']) {
+                    $parsed = self::splitUrl($host['url']);
+                    if (empty($parsed['host'])) {
+                        continue;
+                    }
+                    if (empty($parsed['scheme'])) {
+                        $parsed['scheme'] = 'http';
+                    }
 
-                if (empty($parsed['port'])) {
-                    $parsed['port'] = ($parsed['scheme'] === 'https') ? 443 : 80;
-                }
+                    if (empty($parsed['port'])) {
+                        $parsed['port'] = ($parsed['scheme'] === 'https') ? 443 : 80;
+                    }
 
-                $writeHosts[] = self::joinUrl($parsed);
+                    $writeHosts[] = self::joinUrl($parsed);
+                }
             }
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return $writeHosts;
         }
 
         return $writeHosts;
@@ -721,8 +785,12 @@ class Elasticsearch extends Module
      */
     public static function getFrontendHosts()
     {
-        if (Configuration::get(static::PROXY)) {
-            return [Context::getContext()->link->getModuleLink('elasticsearch', 'proxy', [], Tools::usingSecureMode())];
+        try {
+            if (Configuration::get(static::PROXY)) {
+                return [Context::getContext()->link->getModuleLink('elasticsearch', 'proxy', [], Tools::usingSecureMode())];
+            }
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         return static::getReadHosts();
@@ -743,10 +811,6 @@ class Elasticsearch extends Module
      * @param string $relativePath
      *
      * @return string
-     *
-     * @throws Exception
-     *
-     * @todo: use the built-in caching system among requests, file_exists lookups can cause heavy IO
      */
     public static function tpl($relativePath)
     {
@@ -767,7 +831,9 @@ class Elasticsearch extends Module
             }
         }
 
-        throw new Exception("Unable to find Elasticsearch template file `$relativePath`");
+        Logger::addLog("Elasticsearch module error: Unable to find Elasticsearch template file `$relativePath`");
+
+        return '';
     }
 
     /**

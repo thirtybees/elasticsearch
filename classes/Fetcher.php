@@ -437,14 +437,20 @@ class Fetcher
      */
     public static function getPageViews($product)
     {
-        return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('IFNULL(SUM(pv.`counter`), 0)')
-                ->from('page', 'pa')
-                ->leftJoin('page_viewed', 'pv', 'pa.`id_page` = pv.`id_page`')
-                ->where('pa.`id_object` = '.(int) $product->id)
-                ->where('pa.`id_page_type` = '.(int) Page::getPageTypeByName('product'))
-        );
+        try {
+            return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('IFNULL(SUM(pv.`counter`), 0)')
+                    ->from('page', 'pa')
+                    ->leftJoin('page_viewed', 'pv', 'pa.`id_page` = pv.`id_page`')
+                    ->where('pa.`id_object` = '.(int) $product->id)
+                    ->where('pa.`id_page_type` = '.(int) Page::getPageTypeByName('product'))
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
 
     }
 
@@ -457,7 +463,13 @@ class Fetcher
      */
     public static function getSales($product)
     {
-        $sales = ProductSale::getNbrSales($product->id);
+        try {
+            $sales = ProductSale::getNbrSales($product->id);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
 
         return $sales > 0 ? $sales : 0;
     }
@@ -473,22 +485,32 @@ class Fetcher
     public static function getCategoryPathArray($idCategory, $idLang)
     {
         $cats = [];
-        $interval = Category::getInterval($idCategory);
+        try {
+            $interval = Category::getInterval($idCategory);
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $interval = 0;
+        }
 
         if ($interval) {
-            $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                (new DbQuery())
-                    ->select('c.*, cl.*')
-                    ->from('category', 'c')
-                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
-                    ->join(Shop::addSqlRestrictionOnLang('cl'))
-                    ->join(Shop::addSqlAssociation('category', 'c'))
-                    ->where('c.`nleft` <= '.(int) $interval['nleft'])
-                    ->where('c.`nright` >= '.(int) $interval['nright'])
-                    ->where('cl.`id_lang` = '.(int) $idLang)
-                    ->where('c.`active` = 1')
-                    ->orderBy('c.`level_depth` ASC')
-            );
+            try {
+                $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                    (new DbQuery())
+                        ->select('c.*, cl.*')
+                        ->from('category', 'c')
+                        ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
+                        ->join(Shop::addSqlRestrictionOnLang('cl'))
+                        ->join(Shop::addSqlAssociation('category', 'c'))
+                        ->where('c.`nleft` <= '.(int) $interval['nleft'])
+                        ->where('c.`nright` >= '.(int) $interval['nright'])
+                        ->where('cl.`id_lang` = '.(int) $idLang)
+                        ->where('c.`active` = 1')
+                        ->orderBy('c.`level_depth` ASC')
+                );
+            } catch (\PrestaShopException $e) {
+                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            }
 
             foreach ($categories as $category) {
                 $cats[] = $category;
@@ -732,17 +754,23 @@ class Fetcher
      */
     protected static function getNestedCategoriesData($idLang, $product)
     {
-        $cats = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new DbQuery())
-                ->select('c.*, cl.*')
-                ->from('category', 'c')
-                ->join(Shop::addSqlAssociation('category', 'c'))
-                ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`'.Shop::addSqlRestrictionOnLang('cl'))
-                ->leftJoin('category_product', 'cp', 'cp.`id_category` = c.`id_category` AND cp.`id_product` = '.(int) $product->id)
-                ->where('`id_lang` = '.(int) $idLang)
-                ->where('c.`active` = 1')
-                ->orderBy('c.`level_depth` ASC, category_shop.`position` ASC')
-        );
+        try {
+            $cats = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
+                    ->select('c.*, cl.*')
+                    ->from('category', 'c')
+                    ->join(Shop::addSqlAssociation('category', 'c'))
+                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`'.Shop::addSqlRestrictionOnLang('cl'))
+                    ->leftJoin('category_product', 'cp', 'cp.`id_category` = c.`id_category` AND cp.`id_product` = '.(int) $product->id)
+                    ->where('`id_lang` = '.(int) $idLang)
+                    ->where('c.`active` = 1')
+                    ->orderBy('c.`level_depth` ASC, category_shop.`position` ASC')
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::AddLog("Elasticsearch module error: {$e->getMessage()}");
+
+            $cats = [];
+        }
 
         $categories = [];
         $buff = [];
@@ -1032,7 +1060,13 @@ class Fetcher
      */
     protected static function getInStock($product)
     {
-        return (bool) Product::getQuantity($product->id) > 0;
+        try {
+            return (bool) Product::getQuantity($product->id) > 0;
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return false;
+        }
     }
 
     /**
@@ -1044,13 +1078,19 @@ class Fetcher
      */
     protected static function getProductBasePrice($idProduct)
     {
-        return (float) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('ps.`price`')
-                ->from('product', 'p')
-                ->innerJoin('product_shop', 'ps', 'ps.`id_product` = p.`id_product` AND ps.`id_shop` = '.(int) Context::getContext()->shop->id)
-                ->where('p.`id_product` = '.(int) $idProduct)
-        );
+        try {
+            return (float) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                (new DbQuery())
+                    ->select('ps.`price`')
+                    ->from('product', 'p')
+                    ->innerJoin('product_shop', 'ps', 'ps.`id_product` = p.`id_product` AND ps.`id_shop` = '.(int) Context::getContext()->shop->id)
+                    ->where('p.`id_product` = '.(int) $idProduct)
+            );
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return 0;
+        }
     }
 
     /**
@@ -1074,7 +1114,10 @@ class Fetcher
         }
         unset($product);
 
-        Tools::enableCache();
+        try {
+            Tools::enableCache();
+        } catch (\PrestaShopException $e) {
+        }
         foreach ($products as &$product) {
             $colors = false;
             if (count($productsNeedCache)) {
@@ -1128,22 +1171,34 @@ class Fetcher
             $idLang = Context::getContext()->language->id;
         }
 
-        $checkStock = !\Configuration::get('PS_DISP_UNAVAILABLE_ATTR');
-        if (!$res = Db::getInstance()->executeS(
-            '
-			SELECT pa.`id_product`, a.`color`, pac.`id_product_attribute`, '.($checkStock ? 'SUM(IF(stock.`quantity` > 0, 1, 0))' : '0').' qty, a.`id_attribute`, al.`name`, IF(color = "", a.id_attribute, color) group_by
-			FROM `'._DB_PREFIX_.'product_attribute` pa
-			'.Shop::addSqlAssociation('product_attribute', 'pa').($checkStock ? Product::sqlStock('pa', 'pa') : '').'
-			JOIN `'._DB_PREFIX_.'product_attribute_combination` pac ON (pac.`id_product_attribute` = product_attribute_shop.`id_product_attribute`)
-			JOIN `'._DB_PREFIX_.'attribute` a ON (a.`id_attribute` = pac.`id_attribute`)
-			JOIN `'._DB_PREFIX_.'attribute_lang` al ON (a.`id_attribute` = al.`id_attribute` AND al.`id_lang` = '.(int) $idLang.')
-			JOIN `'._DB_PREFIX_.'attribute_group` ag ON (a.id_attribute_group = ag.`id_attribute_group`)
-			WHERE pa.`id_product` IN ('.implode(array_map('intval', $products), ',').') AND ag.`is_color_group` = 1
-			GROUP BY pa.`id_product`, a.`id_attribute`, `group_by`
-			'.($checkStock ? 'HAVING qty > 0' : '').'
-			ORDER BY a.`position` ASC;'
-        )
-        ) {
+        try {
+            $checkStock = !\Configuration::get('PS_DISP_UNAVAILABLE_ATTR');
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+            return false;
+        }
+        try {
+            if (!$res = Db::getInstance()->executeS(
+                '
+                SELECT pa.`id_product`, a.`color`, pac.`id_product_attribute`, '.($checkStock ? 'SUM(IF(stock.`quantity` > 0, 1, 0))' : '0').' qty, a.`id_attribute`, al.`name`, IF(color = "", a.id_attribute, color) group_by
+                FROM `'._DB_PREFIX_.'product_attribute` pa
+                '.Shop::addSqlAssociation('product_attribute', 'pa').($checkStock ? Product::sqlStock('pa', 'pa') : '').'
+                JOIN `'._DB_PREFIX_.'product_attribute_combination` pac ON (pac.`id_product_attribute` = product_attribute_shop.`id_product_attribute`)
+                JOIN `'._DB_PREFIX_.'attribute` a ON (a.`id_attribute` = pac.`id_attribute`)
+                JOIN `'._DB_PREFIX_.'attribute_lang` al ON (a.`id_attribute` = al.`id_attribute` AND al.`id_lang` = '.(int) $idLang.')
+                JOIN `'._DB_PREFIX_.'attribute_group` ag ON (a.id_attribute_group = ag.`id_attribute_group`)
+                WHERE pa.`id_product` IN ('.implode(array_map('intval', $products), ',').') AND ag.`is_color_group` = 1
+                GROUP BY pa.`id_product`, a.`id_attribute`, `group_by`
+                '.($checkStock ? 'HAVING qty > 0' : '').'
+                ORDER BY a.`position` ASC;'
+            )
+            ) {
+                return false;
+            }
+        } catch (\PrestaShopException $e) {
+            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
             return false;
         }
 
