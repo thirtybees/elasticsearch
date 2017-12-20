@@ -334,7 +334,7 @@ class Meta extends ObjectModel
         try {
             $metas = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
                 (new DbQuery())
-                    ->select('m.`code`')
+                    ->select('m.`code`, m.`alias`')
                     ->select($withWeights ? 'm.`weight`' : '')
                     ->from(bqSQL(static::$definition['table']), 'm')
                     ->where('m.`searchable` = 1')
