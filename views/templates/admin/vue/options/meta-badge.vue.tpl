@@ -21,8 +21,12 @@
     window.VueMetaBadge = {
       delimiters: ['%%', '%%'],
       template: "{$smarty.capture.template|escape:'javascript':'UTF-8'}",
-      props: ['meta', 'idLang'],
+      props: ['meta', 'idLang', 'configKey'],
       methods: {
+        isDuplicate: function () {
+          var self = this;
+          return _.size(_.filter(_.map(this.$store.state.config[this.configKey], function (item) { return item.alias; }), function (value) { return value === self.meta.alias; })) > 1;
+        },
         getMetaTypeBadge: function (metaType) {
           switch (metaType) {
             case 'attribute':
@@ -42,6 +46,41 @@
             default:
               return '{l s='prop.' mod='elasticsearch' js=1}';
           }
+        },
+        updateAlias: function () {
+          if (!this.configKey) {
+            return;
+          }
+
+          var self = this;
+          swal({
+            title: 'Change alias',
+            content: {
+              element: 'input',
+              attributes: {
+                placeholder: this.meta.alias,
+                type: 'text',
+              },
+            },
+            showCancelButton: true,
+          })
+            .then(
+              function (inputValue) {
+                if (inputValue === false) {
+                  return false;
+                }
+
+                if (inputValue === '') {
+                  window.showErrorMessage('{l s='You need to write something!' mod='elasticsearch' js=1}');
+                  return false;
+                }
+
+                self.$store.commit('setMetaAlias', {
+                  configKey: self.configKey,
+                  code: self.meta.code,
+                  value: inputValue
+                });
+              });
         }
       }
     };

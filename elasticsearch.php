@@ -353,7 +353,7 @@ class Elasticsearch extends Module
         $this->context->controller->addJS($this->_path.'views/js/bootstrap-select-1.12.4.min.js');
 
         // SweetAlert 2
-        $this->context->controller->addJS($this->_path.'views/js/sweetalert-2.0.6.min.js');
+        $this->context->controller->addJS($this->_path.'views/js/sweetalert-2.1.0.min.js');
 
         // Lodash
         $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
@@ -363,22 +363,33 @@ class Elasticsearch extends Module
         $this->context->controller->addCSS(_PS_JS_DIR_.'ace/aceinput.css');
 
         // Vue.js
-        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
+        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
 
         // Vuex
         $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
 
-        Media::addJsDef(['elasticAjaxUrl' => $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}"]);
+        try {
+            $elasticAjaxUrl = $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}";
+            $configFormValues = $this->getConfigFormValues();
+            $configUpdated = (bool) Configuration::get(static::CONFIG_UPDATED);
+            $languages = Language::getLanguages(false, false, false);
+        } catch (PrestaShopException $e) {
+            $this->context->controller->errors[] = $e->getMessage();
+
+            return '';
+        }
+
+        Media::addJsDef(['elasticAjaxUrl' => $elasticAjaxUrl]);
         $this->context->smarty->assign([
-            'config'         => $this->getConfigFormValues(),
-            'configUpdated'  => (bool) Configuration::get(static::CONFIG_UPDATED),
+            'config'         => $configFormValues,
+            'configUpdated'  => $configUpdated,
             'initialTab'     => 'config',
             'status'         => [
                 'indexed' => IndexStatus::getIndexed(null, $this->context->shop->id),
                 'total'   => (int) IndexStatus::countProducts(null, $this->context->shop->id),
             ],
             'totalProducts'  => IndexStatus::countProducts($this->context->language->id, $this->context->shop->id),
-            'languages'      => Language::getLanguages(false, false, false),
+            'languages'      => $languages,
             'tabGroups' => [
                 [
                     [
@@ -440,8 +451,8 @@ class Elasticsearch extends Module
         $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
 
         // Vue.js
-        $this->context->controller->addJS('https://unpkg.com/vue@2.4.4');
-//        $this->context->controller->addJS($this->_path.'views/js/vue-2.4.4.min.js');
+        $this->context->controller->addJS('https://unpkg.com/vue@2.5.11');
+//        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
 
         try {
             if (Configuration::get(static::INFINITE_SCROLL)) {

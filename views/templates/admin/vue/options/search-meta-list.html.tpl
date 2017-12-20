@@ -64,7 +64,7 @@
               </label>
                 <a class="slide-button btn"></a>
             </span>
-            <meta-badge :meta.once="meta" :id-lang.once="idLang" style="max-width: 200px"></meta-badge>
+            <meta-badge :meta.once="meta" :id-lang.once="idLang" :config-key="configKey" style="max-width: 200px"></meta-badge>
             <div class="col-lg-3 pull-right">
               <label class="control-label col-lg-4" style="margin-right: 5px">{l s='Weight:' mod='elasticsearch'}</label>
               <div class="input-group" style="max-width: 100px">

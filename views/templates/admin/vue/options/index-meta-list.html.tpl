@@ -40,7 +40,7 @@
               style="display: table;"
           >
             <span class="col-lg-2">
-              <meta-badge :meta="meta" id-lang="idLang"></meta-badge>
+              <meta-badge :meta="meta" id-lang="idLang" :config-key="configKey"></meta-badge>
             </span>
 
             <span class="switch prestashop-switch col-lg-2 col-md-3 col-sm-4 col-xs-4"

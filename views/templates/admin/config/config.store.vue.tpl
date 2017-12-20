@@ -129,6 +129,15 @@
 
           checkConfigChange(state);
         },
+        setMetaAlias: function (state, payload) {
+          var target = _.find(state.config[payload.configKey], ['code', payload.code]);
+          console.log(target);
+          if (typeof target !== 'undefined') {
+            target['alias'] = payload.value;
+          }
+
+          checkConfigChange(state);
+        },
         setMetaAggregatable: function(state, payload) {
           var target = _.find(state.config[payload.configKey], ['code', payload.code]);
           if (typeof target !== 'undefined') {

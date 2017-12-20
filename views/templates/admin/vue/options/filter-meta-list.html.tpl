@@ -65,7 +65,7 @@
               </label>
                 <a class="slide-button btn"></a>
             </span>
-            <meta-badge :meta="meta" :id-lang="idLang" style="max-width: 200px"></meta-badge>
+            <meta-badge :meta="meta" :id-lang="idLang" :config-key="configKey" style="max-width: 200px"></meta-badge>
             <div class="pull-right col-lg-8 col-md-4 col-sm-4">
               <div class="col-lg-6">
                 <label class="control-label col-lg-4">{l s= 'Filter items limit:' mod='elasticsearch'}</label>
