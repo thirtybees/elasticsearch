@@ -62,11 +62,16 @@
                 type: 'text',
               },
             },
-            showCancelButton: true,
+            buttons: {
+              cancel: true,
+              confirm: true
+            },
+            closeOnClickOutside: false,
           })
             .then(
               function (inputValue) {
-                if (inputValue === false) {
+                console.log(inputValue);
+                if (inputValue == null) {
                   return false;
                 }
 

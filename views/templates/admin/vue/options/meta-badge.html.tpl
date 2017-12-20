@@ -21,5 +21,5 @@
     @click="updateAlias"
     style="cursor: pointer"
 >
-  %% meta.code %% <i v-if="isDuplicate() || !meta.alias" class="icon icon-exclamation-triangle"></i>
+  %% meta.code %% <i v-if="isDuplicate() || !meta.alias" class="icon icon-exclamation-triangle"></i> <span v-if="meta.alias !== meta.code">(%% meta.alias %%)</span>
 </h4>

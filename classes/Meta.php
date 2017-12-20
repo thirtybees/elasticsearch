@@ -71,6 +71,7 @@ class Meta extends ObjectModel
         'table' => 'elasticsearch_meta',
         'fields' => [
             'meta_type'    => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
+            'alias'        => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => false],
             'code'         => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
             'enabled'      => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
             'elastic_type' => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
@@ -122,7 +123,7 @@ class Meta extends ObjectModel
             if (!isset($metas[(int) $result['id_lang']])) {
                 $metas[(int) $result['id_lang']] = [];
             }
-            $metas[(int) $result['id_lang']][$result['code']] = $result;
+            $metas[(int) $result['id_lang']][$result['alias']] = $result;
         }
 
         return $metas;
@@ -138,8 +139,8 @@ class Meta extends ObjectModel
         // Make metas unique before saving
         $processedKeys = [];
         foreach ($metas as $index => $meta) {
-            if (!in_array($meta['code'], $processedKeys)) {
-                $processedKeys[] = $meta['code'];
+            if (!in_array($meta['alias'], $processedKeys)) {
+                $processedKeys[] = $meta['alias'];
             } else {
                 unset($metas[$index]);
             }
@@ -158,7 +159,7 @@ class Meta extends ObjectModel
         $position = 1;
         $fields = array_keys(static::$definition['fields']);
         foreach ($metas as $meta) {
-            if (isset($existingMetas[$meta['code']])) {
+            if (isset($existingMetas[$meta['alias']])) {
                 // Update
                 $update = [];
                 foreach ($meta as $key => $value) {
@@ -173,13 +174,13 @@ class Meta extends ObjectModel
                     }
                 }
 
-                $update[$metaPrimary] = $existingMetas[$meta['code']][$metaPrimary];
+                $update[$metaPrimary] = $existingMetas[$meta['alias']][$metaPrimary];
                 $update['position'] = $position;
                 try {
                     Db::getInstance()->update(
                         $metaTable,
                         $update,
-                        "`$metaPrimary` = {$existingMetas[$meta['code']][$metaPrimary]}"
+                        "`$metaPrimary` = {$existingMetas[$meta['alias']][$metaPrimary]}"
                     );
                 } catch (\PrestaShopException $e) {
                     \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -223,7 +224,7 @@ class Meta extends ObjectModel
             foreach ($meta['name'] as $idLang => $name) {
                 $primary = '';
                 foreach ($codesAndIds as $codeAndId) {
-                    if ($codeAndId['code'] === $meta['code']) {
+                    if ($codeAndId['code'] === $meta['alias']) {
                         $primary = $codeAndId[$metaPrimary];
 
                         break;
@@ -233,7 +234,7 @@ class Meta extends ObjectModel
                     continue;
                 }
 
-                if (isset($existingMetas[$meta['code']])) {
+                if (isset($existingMetas[$meta['alias']])) {
                     // Update
                     try {
                         Db::getInstance()->update("{$metaTable}_lang", [
@@ -349,7 +350,7 @@ class Meta extends ObjectModel
         $newMetas = [];
         $requiredMetas = ['name'];
         foreach ($metas as $meta) {
-            $newMeta = $meta['code'];
+            $newMeta = $meta['alias'];
             if ($withWeights) {
                 $newMeta .= '^'.$meta['weight'];
             }
@@ -357,7 +358,7 @@ class Meta extends ObjectModel
             $newMetas[] = $newMeta;
 
             // Check if a requirement has been met, remove it from the required array if that is the case
-            $pos = array_search($meta['code'], $requiredMetas);
+            $pos = array_search($meta['alias'], $requiredMetas);
             if ($pos > -1) {
                 unset($requiredMetas[$pos]);
             }

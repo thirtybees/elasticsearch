@@ -356,6 +356,9 @@ class Fetcher
         $elasticProduct = new stdClass();
         $elasticProduct->id = (int) $idProduct;
         $product = new Product($idProduct, true, $idLang);
+        if (!\Validate::isLoadedObject($product)) {
+            return $elasticProduct;
+        }
         $products = [$product];
         static::addColorListHTML($products);
 
@@ -366,7 +369,7 @@ class Fetcher
                     ->select('*')
                     ->from(bqSQL(Meta::$definition['table']))
             ) as $meta) {
-                $metas[$meta['code']] = $meta;
+                $metas[$meta['alias']] = $meta;
             }
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -375,15 +378,18 @@ class Fetcher
         // Default properties
         foreach (static::$attributes as $propName => $propItems) {
             if ($propItems['function'] != null && method_exists($propItems['function'][0], $propItems['function'][1])) {
-                $elasticProduct->$propName = call_user_func($propItems['function'], $product, $idLang);
+                $elasticProduct->{$propName} = call_user_func($propItems['function'], $product, $idLang);
 
+                continue;
+            }
+            if (!$propName) {
                 continue;
             }
 
             if (isset(Product::$definition[$propName]['lang']) == true) {
-                $elasticProduct->$propName = $product->{$propName}[$idLang];
+                $elasticProduct->{$propName} = $product->{$propName}[$idLang];
             } else {
-                $elasticProduct->$propName = $product->{$propName};
+                $elasticProduct->{$propName} = $product->{$propName};
             }
         }
 
@@ -391,9 +397,13 @@ class Fetcher
         try {
             foreach ($product->getFrontFeatures($idLang) as $feature) {
                 $name = Tools::link_rewrite($feature['name']);
+                if (!$name) {
+                    continue;
+                }
+
                 $propItems = $feature['value'];
 
-                $elasticProduct->$name = $propItems;
+                $elasticProduct->{$name} = $propItems;
             }
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -403,6 +413,9 @@ class Fetcher
         try {
             foreach ($product->getAttributesGroups($idLang) as $attribute) {
                 $groupName = Tools::link_rewrite($attribute['group_name']);
+                if (!$groupName) {
+                    continue;
+                }
                 $attributeName = $attribute['attribute_name'];
 
                 if (!isset($elasticProduct->{$groupName}) || !is_array($elasticProduct->{$groupName})) {
@@ -433,7 +446,7 @@ class Fetcher
         // Filter metas
         foreach ($metas as $code => $meta) {
             if (!$meta['enabled'] && isset(static::$attributes[$code]['visible']) && static::$attributes[$code]['visible']) {
-                unset($elasticProduct->$code);
+                unset($elasticProduct->{$code});
             }
         }
 

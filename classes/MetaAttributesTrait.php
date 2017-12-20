@@ -84,6 +84,7 @@ trait MetaAttributesTrait
 
             $property = (object) [
                 'meta_type'         => $type,
+                'alias'             => !empty($metas[$idLang][$id]['alias']) ? $metas[$idLang][$id]['alias'] : '',
                 'code'              => $defaultAttributeName,
                 'name'              => $name,
                 'position'          => $position,
@@ -121,6 +122,7 @@ trait MetaAttributesTrait
                 $property = (object) [
                     'meta_type'         => $type,
                     'code'              => $code,
+                    'alias'             => !empty($metas[$idLang][$id]['alias']) ? $metas[$idLang][$id]['alias'] : '',
                     'name'              => $name,
                     'position'          => $position,
                     'weight'            => (float) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['weight']) ? $metas[$idLang][$id]['weight'] : 1),
@@ -162,6 +164,7 @@ trait MetaAttributesTrait
                 $property = (object) [
                     'meta_type'         => $type,
                     'code'              => $code,
+                    'alias'             => !empty($metas[$idLang][$id]['alias']) ? $metas[$idLang][$id]['alias'] : '',
                     'name'              => $name,
                     'position'          => $position,
                     'weight'            => (float) (isset($metas[$idLang][$id]) && isset($metas[$idLang][$id]['weight']) ? $metas[$idLang][$id]['weight'] : 1),
