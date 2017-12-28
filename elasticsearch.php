@@ -136,7 +136,7 @@ class Elasticsearch extends Module
         $this->displayName = $this->l('Elasticsearch');
         $this->description = $this->l('Elasticsearch module for thirty bees');
 
-        $this->controllers = ['search'];
+        $this->controllers = ['cron', 'proxy', 'search'];
     }
 
     /**
@@ -1342,4 +1342,6 @@ class Elasticsearch extends Module
 
         return $url;
     }
+
+
 }
