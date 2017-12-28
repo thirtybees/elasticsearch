@@ -106,7 +106,11 @@ class IndexStatus extends \ObjectModel
                 (new DbQuery())
                     ->select('COUNT(*)')
                     ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
-                    ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
+                    ->leftJoin(
+                        bqSQL(Product::$definition['table']).'_lang',
+                        'pl',
+                        'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : '')
+                    )
                     ->where('ps.`id_shop` = '.(int) $idShop)
             );
         } catch (\PrestaShopException $e) {
@@ -153,7 +157,10 @@ class IndexStatus extends \ObjectModel
     public static function erase($idShop = null)
     {
         try {
-            return Db::getInstance()->delete(bqSQL(static::$definition['table']), $idShop ? '`id_shop` = '.(int) $idShop : '');
+            return Db::getInstance()->delete(
+                bqSQL(static::$definition['table']),
+                $idShop ? '`id_shop` = '.(int) $idShop : ''
+            );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
@@ -178,10 +185,19 @@ class IndexStatus extends \ObjectModel
         try {
             $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
                 (new DbQuery())
-                    ->select('ps.`id_product`, ps.`id_shop`, pl.`id_lang`, ps.`date_upd` AS `product_updated`, eis.`date_upd` AS `product_indexed`')
+                    ->select('ps.`id_product`, ps.`id_shop`, pl.`id_lang`, ps.`date_upd` AS `product_updated`')
+                    ->select('eis.`date_upd` AS `product_indexed`')
                     ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
-                    ->leftJoin(bqSQL(Product::$definition['table']).'_lang', 'pl', 'pl.`id_product` = ps.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : ''))
-                    ->leftJoin(bqSQL(IndexStatus::$definition['table']), 'eis', 'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`')
+                    ->leftJoin(
+                        bqSQL(Product::$definition['table']).'_lang',
+                        'pl',
+                        'pl.`id_product` = ps.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : '')
+                    )
+                    ->leftJoin(
+                        bqSQL(IndexStatus::$definition['table']),
+                        'eis',
+                        'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`'
+                    )
                     ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
                     ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
                     ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')

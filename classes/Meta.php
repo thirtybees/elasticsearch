@@ -214,7 +214,7 @@ class Meta extends ObjectModel
         try {
             $codesAndIds = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
                 (new DbQuery())
-                    ->select("m.`code`, m.`$metaPrimary`")
+                    ->select("m.`alias`, m.`$metaPrimary`")
                     ->from($metaTable, 'm')
             );
         } catch (\PrestaShopException $e) {
@@ -224,7 +224,7 @@ class Meta extends ObjectModel
             foreach ($meta['name'] as $idLang => $name) {
                 $primary = '';
                 foreach ($codesAndIds as $codeAndId) {
-                    if ($codeAndId['code'] === $meta['alias']) {
+                    if ($codeAndId['alias'] === $meta['alias']) {
                         $primary = $codeAndId[$metaPrimary];
 
                         break;
@@ -296,12 +296,12 @@ class Meta extends ObjectModel
     /**
      * Get the name of a meta
      *
-     * @param string $code
+     * @param string $alias
      * @param int    $idLang
      *
      * @return false|null|string
      */
-    public static function getName($code, $idLang)
+    public static function getName($alias, $idLang)
     {
         try {
             return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
@@ -313,7 +313,7 @@ class Meta extends ObjectModel
                         'm',
                         'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'` AND ml.`id_lang` = '.(int) $idLang
                     )
-                    ->where('m.`code` = \''.pSQL($code).'\'')
+                    ->where('m.`alias` = \''.pSQL($alias).'\'')
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");

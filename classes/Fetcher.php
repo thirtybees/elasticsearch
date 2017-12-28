@@ -757,7 +757,11 @@ class Fetcher
 
         try {
             if ($cover['id_image']) {
-                $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('small'));
+                $imageLink = $link->getImageLink(
+                    $product->link_rewrite[$idLang],
+                    $cover['id_image'],
+                    ImageType::getFormatedName('small')
+                );
             } else {
                 $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-small_default.jpg';
             }
@@ -849,8 +853,16 @@ class Fetcher
                     ->select('c.*, cl.*')
                     ->from('category', 'c')
                     ->join(Shop::addSqlAssociation('category', 'c'))
-                    ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`'.Shop::addSqlRestrictionOnLang('cl'))
-                    ->leftJoin('category_product', 'cp', 'cp.`id_category` = c.`id_category` AND cp.`id_product` = '.(int) $product->id)
+                    ->leftJoin(
+                        'category_lang',
+                        'cl',
+                        'c.`id_category` = cl.`id_category`'.Shop::addSqlRestrictionOnLang('cl')
+                    )
+                    ->leftJoin(
+                        'category_product',
+                        'cp',
+                        'cp.`id_category` = c.`id_category` AND cp.`id_product` = '.(int) $product->id
+                    )
                     ->where('`id_lang` = '.(int) $idLang)
                     ->where('c.`active` = 1')
                     ->orderBy('c.`level_depth` ASC, category_shop.`position` ASC')
@@ -1178,7 +1190,11 @@ class Fetcher
                 (new DbQuery())
                     ->select('ps.`price`')
                     ->from('product', 'p')
-                    ->innerJoin('product_shop', 'ps', 'ps.`id_product` = p.`id_product` AND ps.`id_shop` = '.(int) Context::getContext()->shop->id)
+                    ->innerJoin(
+                        'product_shop',
+                        'ps',
+                        'ps.`id_product` = p.`id_product` AND ps.`id_shop` = '.(int) Context::getContext()->shop->id
+                    )
                     ->where('p.`id_product` = '.(int) $idProduct)
             );
         } catch (\PrestaShopException $e) {
@@ -1303,7 +1319,13 @@ class Fetcher
                 continue;
             }
 
-            $colors[(int) $row['id_product']][] = ['id_product_attribute' => (int) $row['id_product_attribute'], 'color' => $row['color'], 'id_product' => $row['id_product'], 'name' => $row['name'], 'id_attribute' => $row['id_attribute']];
+            $colors[(int) $row['id_product']][] = [
+                'id_product_attribute' => (int) $row['id_product_attribute'],
+                'color' => $row['color'],
+                'id_product' => $row['id_product'],
+                'name' => $row['name'],
+                'id_attribute' => $row['id_attribute']
+            ];
         }
 
         return $colors;

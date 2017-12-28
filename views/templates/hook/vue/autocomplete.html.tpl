@@ -21,7 +21,14 @@
         :key="result._id"
         @click="suggestionClicked(result, $event)"
   >
-    <a :href="result._source.link" v-if="result.highlight" v-html="result.highlight.name[0]"></a>
-    <a :href="result._source.link" v-else="result.highlight">%% result._source.name %%</a>
+    <a :href="result._source.link"
+       v-if="result.highlight"
+       v-html="result.highlight.name[0]"
+       @click="suggestionClicked(result, $event)"
+    ></a>
+    <a :href="result._source.link"
+       v-else="result.highlight"
+       @click="suggestionClicked(result, $event)"
+    >%% result._source.name %%</a>
   </span>
 </div>

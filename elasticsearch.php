@@ -52,7 +52,7 @@ class Elasticsearch extends Module
     const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
     const METAS = 'ELASTICSEARCH_METAS';
 
-    // Serach page
+    // Search page
     const QUERY_JSON = 'ELASTICSEARCH_QUERY_JSON';
     const PRODUCT_LIST = 'ELASTICSEARCH_PRODUCT_LIST';
 

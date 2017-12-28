@@ -49,6 +49,8 @@ class Indexer
 
     /**
      * @param \Product $product
+     *
+     * @throws \PrestaShopException
      */
     public function indexProduct($product)
     {
@@ -109,7 +111,12 @@ class Indexer
                     $link = new \Link();
                     $link = $link->getCategoryLink($cat['id_category'], null, $idLang);
 
-                    $names[] = ['name' => $cat['name'], 'objectID' => $cat['id_category'], 'product_count' => $productCount, 'url' => $link];
+                    $names[] = [
+                        'name' => $cat['name'],
+                        'objectID' => $cat['id_category'],
+                        'product_count' => $productCount,
+                        'url' => $link
+                    ];
                 }
 
                 $results[] = $names;
@@ -123,6 +130,8 @@ class Indexer
      *
      * @param int[]|null $idLangs
      * @param int[]|null $idShops
+     *
+     * @throws \PrestaShopException
      */
     public static function eraseIndices($idLangs = null, $idShops = null)
     {
@@ -137,7 +146,7 @@ class Indexer
 
         // Delete the indices first
         $client = Elasticsearch::getWriteClient();
-        if (!$client) {
+        if (!$client instanceof \Elasticsearch\Client) {
             return;
         }
         foreach ($idShops as $idShop) {
@@ -161,6 +170,8 @@ class Indexer
      *
      * @param int[]|null $idLangs
      * @param int[]|null $idShops
+     *
+     * @throws \PrestaShopException
      */
     public static function createMappings($idLangs = null, $idShops = null)
     {

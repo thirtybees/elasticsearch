@@ -39,9 +39,6 @@ if (!defined('_TB_VERSION_')) {
  */
 trait ModuleAjaxTrait
 {
-    // FRONT OFFICE
-
-
     // BACK OFFICE
     /**
      * Ajax process save module settings
@@ -117,7 +114,9 @@ trait ModuleAjaxTrait
         }
         $input = json_decode(file_get_contents('php://input'), true);
         try {
-            $amount = (int) (isset($input['amount']) ? (int) $input['amount'] : Configuration::get(static::INDEX_CHUNK_SIZE));
+            $amount = (int) (isset($input['amount'])
+                ? (int) $input['amount']
+                : Configuration::get(static::INDEX_CHUNK_SIZE));
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
@@ -220,12 +219,20 @@ trait ModuleAjaxTrait
         $failed = [];
         foreach ($results['items'] as $result) {
             if ((int) substr($result['index']['status'], 0, 1) !== 2) {
-                preg_match('/(?P<index>[a-zA-Z]+)\_(?P<id_shop>\d+)\_(?P<id_lang>\d+)/', $result['index']['_index'], $details);
+                preg_match(
+                    '/(?P<index>[a-zA-Z]+)\_(?P<id_shop>\d+)\_(?P<id_lang>\d+)/',
+                    $result['index']['_index'],
+                    $details
+                );
                 $failed[] = [
                     'id_lang'    => (int) $details['id_lang'],
                     'id_shop'    => (int) $details['id_shop'],
                     'id_product' => (int) $result['index']['_id'],
-                    'error'      => isset($result['index']['error']['reason']) ? $result['index']['error']['reason'].(isset($result['index']['error']['caused_by']['reason']) ? ' '.$result['index']['error']['caused_by']['reason'] : '') : 'Unknown error',
+                    'error'      => isset($result['index']['error']['reason'])
+                        ? $result['index']['error']['reason'].(isset($result['index']['error']['caused_by']['reason'])
+                            ? ' '.$result['index']['error']['caused_by']['reason']
+                            : '')
+                        : 'Unknown error',
                 ];
             }
         }
