@@ -34,7 +34,6 @@
            @keydown.up="suggestionUpHandler"
            @keydown.down="suggestionDownHandler"
            @focus="focusHandler"
-           @blur="blurHandler"
     >
     <span class="input-group-btn">
         <button @click="submitHandler" class="btn btn-primary" type="submit" name="submit-search" title="{l s='Search' mod='elasticsearch'}">
