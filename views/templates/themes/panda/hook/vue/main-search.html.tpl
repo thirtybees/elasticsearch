@@ -35,7 +35,6 @@
              @keydown.up="suggestionUpHandler"
              @keydown.down="suggestionDownHandler"
              @focus="focusHandler"
-             @blur="blurHandler"
       >
       <div class="hidden"
            id="more_prod_string">

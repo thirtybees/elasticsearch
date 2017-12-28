@@ -25,7 +25,6 @@
                    @keydown.up="suggestionUpHandler"
                    @keydown.down="suggestionDownHandler"
                    @focus="focusHandler"
-                   @blur="blurHandler"
             >
             <button type="submit" name="submit_search" class="button-search">
               <span>{l s='Search' mod='blocksearch_mod'}</span>
@@ -68,7 +67,6 @@
                  @keydown.up="suggestionUpHandler"
                  @keydown.down="suggestionDownHandler"
                  @focus="focusHandler"
-                 @blur="blurHandler"
           >
           <button type="submit" name="submit_search" class="button-search">
             <span>{l s='Search' mod='blocksearch_mod'}</span>

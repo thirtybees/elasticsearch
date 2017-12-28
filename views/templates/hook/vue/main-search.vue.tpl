@@ -62,14 +62,12 @@
 
     new Vue({
       created: function() {
-        console.log('created');
         this.$store.commit('initQuery');
       },
       mounted: function () {
         var self = this;
 
         window.addEventListener('click', function (e) {
-          console.log(e.target);
           var suggestions = document.getElementById('elasticsearch-autocomplete');
 
           if (!(self.$el.contains(e.target) || (suggestions && suggestions.contains(e.target)))) {

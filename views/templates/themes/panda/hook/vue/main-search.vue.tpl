@@ -107,6 +107,17 @@
           }
         });
       },
+      mounted: function () {
+        var self = this;
+
+        window.addEventListener('click', function (e) {
+          var suggestions = document.getElementById('elasticsearch-autocomplete');
+
+          if (!(self.$el.contains(e.target) || (suggestions && suggestions.contains(e.target)))) {
+            self.$store.commit('eraseSuggestions');
+          }
+        });
+      },
       delimiters: ['%%', '%%'],
       el: '#es-searchbox',
       template: '{$smarty.capture.template|escape:'javascript':'UTF-8'}',
@@ -191,13 +202,6 @@
         focusHandler: function () {
           this.suggestionIndex = -1;
           this.focused = true;
-        },
-        blurHandler: function () {
-          var elasticsearchResults = document.getElementById('elasticsearch-results');
-          if (typeof elasticsearchResults !== 'undefined' && !matches(elasticsearchResults, ':hover')) {
-            this.$store.commit('eraseSuggestions');
-          }
-          this.focused = false;
         },
         getTaxRate: function (idTaxRulesGroup) {
           var taxRules = {TaxRulesGroup::getAssociatedTaxRatesByIdCountry(Context::getContext()->country->id)|json_encode};
