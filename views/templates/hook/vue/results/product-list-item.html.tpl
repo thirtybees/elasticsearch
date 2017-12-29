@@ -117,7 +117,7 @@
         </div>
 
         <div class="button-container">
-          <a v-if="item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source.in_stock) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
+          <a v-if="item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'htmlall':'UTF-8'}']) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
              class="ajax_add_to_cart_button btn btn-primary"
              style="cursor: pointer"
              rel="nofollow" title="{l s='Add to cart' mod='elasticsearch'}"
