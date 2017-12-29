@@ -35,18 +35,18 @@
         tax: function () {
           var taxes = {$taxes|json_encode};
 
-          if (typeof this.item._source.id_tax_rules_group === 'undefined'
-            || typeof taxes[this.item._source.id_tax_rules_group] === 'undefined') {
+          if (typeof this.item._source.{Elasticsearch::getAlias('id_tax_rules_group')|escape:'javascript':'UTF-8'} === 'undefined'
+            || typeof taxes[this.item._source.{Elasticsearch::getAlias('id_tax_rules_group')|escape:'javascript':'UTF-8'}] === 'undefined') {
             return 1.000;
           }
 
-          return 1 + parseFloat(taxes[this.item._source.id_tax_rules_group]) / 100;
+          return 1 + parseFloat(taxes[this.item._source.{Elasticsearch::getAlias('id_tax_rules_group')|escape:'javascript':'UTF-8'}]) / 100;
         },
         basePriceTaxIncl: function () {
-          return parseFloat(this.item._source.price_tax_excl_group_0) * this.tax * this.currencyConversion;
+          return parseFloat(this.item._source.{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_0) * this.tax * this.currencyConversion;
         },
         priceTaxIncl: function () {
-          return parseFloat(this.item._source['price_tax_excl_group_' + this.idGroup]) * this.tax * this.currencyConversion;
+          return parseFloat(this.item._source['{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_' + this.idGroup]) * this.tax * this.currencyConversion;
         },
         discountPercentage: function () {
           return Math.round((1 - this.priceTaxIncl / this.basePriceTaxIncl) * 100)

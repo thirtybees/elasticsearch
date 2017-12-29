@@ -46,14 +46,14 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('es-category-results');
 
-      if (state.query || state.fixedFilter && _.indexOf(['category', 'categories'], state.fixedFilter.aggregationCode) < 0) {
+      if (state.query || state.fixedFilter && _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], state.fixedFilter.aggregationCode) < 0) {
         mainColumn.style.display = '';
-        if (typeof instantSearchBlock !== 'undefined') {
+        if (_.isElement(instantSearchBlock)) {
           instantSearchBlock.style.display = '';
         }
       } else {
         mainColumn.style.display = 'none';
-        if (typeof instantSearchBlock !== 'undefined') {
+        if (_.isElement(instantSearchBlock)) {
           instantSearchBlock.style.display = '';
         }
       }
@@ -61,7 +61,7 @@
 
     ready(function () {
       var fixedFilter = {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if};
-      if (!fixedFilter || _.indexOf(['category', 'categories'], fixedFilter.aggregationCode) < 0) {
+      if (!fixedFilter || _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], fixedFilter.aggregationCode) < 0) {
         return;
       }
 

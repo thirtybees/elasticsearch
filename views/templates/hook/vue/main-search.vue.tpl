@@ -121,7 +121,7 @@
             && this.$store.state.suggestions[this.suggestionIndex]._source
           ) {
             // Go directly to the select product
-            window.location.href = this.$store.state.suggestions[this.suggestionIndex]._source.link;
+            window.location.href = this.$store.state.suggestions[this.suggestionIndex]._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}'];
           } else {
             // Go to search page
             window.location.href = '{$link->getModuleLink('elasticsearch', 'search', [], true)|escape:'javascript':'UTF-8'}#q=' + this.$store.state.query;

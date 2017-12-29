@@ -47,12 +47,12 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('elasticsearch-results');
 
-      if (state.query || state.fixedFilter && _.indexOf(['category', 'categories'], state.fixedFilter.aggregationCode) < 0) {
+      if (state.query || state.fixedFilter && _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], state.fixedFilter.aggregationCode) < 0) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
         }
-      } else if (!state.fixedFilter || _.indexOf(['category', 'categories'], state.fixedFilter.aggregationCode) > -1) {
+      } else if (!state.fixedFilter || _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], state.fixedFilter.aggregationCode) > -1) {
         mainColumn.style.display = '';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = 'none';

@@ -28,25 +28,25 @@
           sorts: [
             {
               name: '{l s='Product: Newest first' mod='elasticsearch' js=1}',
-              value: 'date_add:desc'
+              value: '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc'
             }, {
               name: '{l s='Price: Lowest first' mod='elasticsearch' js=1}',
-              value: 'price_tax_excl_group_{Context::getContext()->customer->id_default_group|intval}:asc'
+              value: '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_{Context::getContext()->customer->id_default_group|intval}:asc'
             }, {
               name: '{l s='Price: Highest first' mod='elasticsearch' js=1}',
-              value: 'price_tax_excl_group_{Context::getContext()->customer->id_default_group|intval}:desc'
+              value: '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_{Context::getContext()->customer->id_default_group|intval}:desc'
             }, {
               name: '{l s='Product Name: A to Z' mod='elasticsearch' js=1}',
-              value: 'name:asc'
+              value: '{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}:asc'
             }, {
               name: '{l s='Product Name: Z to A' mod='elasticsearch' js=1}',
-              value: 'name:desc'
+              value: '{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}:desc'
             }, {
               name: '{l s='Reference: Lowest first' mod='elasticsearch' js=1}',
-              value: 'reference:asc'
+              value: '{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}:asc'
             }, {
               name: '{l s='Reference: Highest first' mod='elasticsearch' js=1}',
-              value: 'reference:desc'
+              value: '{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}:desc'
             }
           ]
         }

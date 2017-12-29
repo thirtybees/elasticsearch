@@ -101,6 +101,8 @@ trait ModuleAjaxTrait
 
     /**
      * Index remaining products
+     *
+     * @throws \PrestaShopException
      */
     public function ajaxProcessIndexRemaining()
     {
@@ -134,6 +136,8 @@ trait ModuleAjaxTrait
         }
         $idShop = Context::getContext()->shop->id;
         $idLang = Context::getContext()->language->id;
+        $dateUpdAlias = Elasticsearch::getAlias('date_upd');
+        $priceTaxExclAlias = Elasticsearch::getAlias('price_tax_excl');
         $metas = Meta::getAllMetas([$idLang]);
         if (isset($metas[$idLang])) {
             $metas = $metas[$idLang];
@@ -159,17 +163,17 @@ trait ModuleAjaxTrait
         foreach ($products as &$product) {
             $params['body'][] = [
                 'index' => [
-                    '_index' => "{$index}_{$idShop}_{$product->id_lang}",
+                    '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
                     '_type'  => 'product',
                     '_id'     => $product->id,
                 ],
             ];
 
             // Process prices for customer groups
-            foreach ($product->price_tax_excl as $group => $value) {
-                $product->{"price_tax_excl_{$group}"} = $value;
+            foreach ($product->{$priceTaxExclAlias} as $group => $value) {
+                $product->{"{$priceTaxExclAlias}_{$group}"} = $value;
             }
-            unset($product->price_tax_excl);
+            unset($product->{$priceTaxExclAlias});
 
             // Make aggregatable copies of the properties
             // These need to be `link_rewrite`d to make sure they can fit a the friendly URL
@@ -240,8 +244,8 @@ trait ModuleAjaxTrait
             foreach ($failed as $failure) {
                 foreach ($products as $index => $product) {
                     if ((int) $product->id === (int) $failure['id_product']
-                        && (int) $product->id_shop === (int) $failure['id_shop']
-                        && (int) $product->id_lang === (int) $failure['id_lang']
+                        && (int) $product->elastic_id_shop === (int) $failure['id_shop']
+                        && (int) $product->elastic_id_lang === (int) $failure['id_lang']
                     ) {
                         try {
                             Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
@@ -258,7 +262,7 @@ trait ModuleAjaxTrait
         // Insert index status into database
         $values = '';
         foreach ($products as &$product) {
-            $values .=  "('{$product->id}', '{$product->id_lang}', '{$this->context->shop->id}', '{$product->date_upd}', ''),";
+            $values .=  "('{$product->id}', '{$product->elastic_id_lang}', '{$this->context->shop->id}', '{$product->{$dateUpdAlias}}', ''),";
         }
         $values = rtrim($values, ',');
         if ($values) {

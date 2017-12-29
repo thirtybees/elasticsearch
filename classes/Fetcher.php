@@ -19,7 +19,9 @@
 
 namespace ElasticsearchModule;
 
+use AttributeGroup;
 use Category;
+use Configuration;
 use Group;
 use Context;
 use Customer;
@@ -28,8 +30,10 @@ use DbQuery;
 use Image;
 use ImageType;
 use Link;
+use Logger;
 use Manufacturer;
 use Page;
+use PrestaShopException;
 use Product;
 use ProductSale;
 use Shop;
@@ -350,6 +354,7 @@ class Fetcher
      * @param int $idLang
      *
      * @return stdClass
+     * @throws \PrestaShopException
      */
     public static function initProduct($idProduct, $idLang)
     {
@@ -361,6 +366,7 @@ class Fetcher
         }
         $products = [$product];
         static::addColorListHTML($products);
+        $idLangDefault = (int) Configuration::get('PS_LANG_DEFAULT');
 
         $metas = [];
         try {
@@ -371,14 +377,15 @@ class Fetcher
             ) as $meta) {
                 $metas[$meta['alias']] = $meta;
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Default properties
         foreach (static::$attributes as $propName => $propItems) {
+            $propAlias = \Elasticsearch::getAlias($propName);
             if ($propItems['function'] != null && method_exists($propItems['function'][0], $propItems['function'][1])) {
-                $elasticProduct->{$propName} = call_user_func($propItems['function'], $product, $idLang);
+                $elasticProduct->{$propAlias} = call_user_func($propItems['function'], $product, $idLang);
 
                 continue;
             }
@@ -387,9 +394,9 @@ class Fetcher
             }
 
             if (isset(Product::$definition[$propName]['lang']) == true) {
-                $elasticProduct->{$propName} = $product->{$propName}[$idLang];
+                $elasticProduct->{$propAlias} = $product->{$propName}[$idLang];
             } else {
-                $elasticProduct->{$propName} = $product->{$propName};
+                $elasticProduct->{$propAlias} = $product->{$propName};
             }
         }
 
@@ -401,12 +408,22 @@ class Fetcher
                     continue;
                 }
 
+                if ($idLang === $idLangDefault) {
+                    $featureCode = $name;
+                } else {
+                    $frontFeature = array_filter(Product::getFrontFeaturesStatic($idLangDefault, $product->id), function ($item) use ($feature) {
+                        return $item['id_feature'] == $feature['id_feature'];
+                    });
+                    $featureCode = Tools::link_rewrite(current($frontFeature)['name']);
+                }
+                $featureAlias = \Elasticsearch::getAlias($featureCode, 'feature');
+
                 $propItems = $feature['value'];
 
-                $elasticProduct->{$name} = $propItems;
+                $elasticProduct->{$featureAlias} = $propItems;
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Attribute groups
@@ -417,36 +434,43 @@ class Fetcher
                     continue;
                 }
                 $attributeName = $attribute['attribute_name'];
+                if ($idLang === $idLangDefault) {
+                    $attributeCode = $groupName;
+                } else {
+                    $attributeGroup = new AttributeGroup($attribute['id_attribute_group'], $idLangDefault);
+                    $attributeCode = Tools::link_rewrite($attributeGroup->name);
+                }
+                $attributeAlias = \Elasticsearch::getAlias($attributeCode, 'attribute');
 
-                if (!isset($elasticProduct->{$groupName}) || !is_array($elasticProduct->{$groupName})) {
-                    $elasticProduct->{$groupName} = [];
+                if (!isset($elasticProduct->{$attributeAlias}) || !is_array($elasticProduct->{$attributeAlias})) {
+                    $elasticProduct->{$attributeAlias} = [];
                 }
 
                 if (!in_array($attributeName, $elasticProduct->{$groupName})) {
-                    $elasticProduct->{$groupName}[] = $attributeName;
+                    $elasticProduct->{$attributeAlias}[] = $attributeName;
                 }
 
                 if ($attribute['is_color_group']) {
                     // Add a special property for the color group
                     // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
                     // will eventually be in the same order, so that's how you can match them later
-                    if (!isset($elasticProduct->{"{$groupName}_color_code"}) || !is_array($elasticProduct->{"{$groupName}_color_code"})) {
-                        $elasticProduct->{"{$groupName}_color_code"} = [];
+                    if (!isset($elasticProduct->{"{$attributeAlias}_color_code"}) || !is_array($elasticProduct->{"{$attributeAlias}_color_code"})) {
+                        $elasticProduct->{"{$attributeAlias}_color_code"} = [];
                     }
 
-                    if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$groupName}_color_code"})) {
-                        $elasticProduct->{"{$groupName}_color_code"}[] = $attribute['attribute_color'];
+                    if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$attributeAlias}_color_code"})) {
+                        $elasticProduct->{"{$attributeAlias}_color_code"}[] = $attribute['attribute_color'];
                     }
                 }
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         // Filter metas
         foreach ($metas as $code => $meta) {
             if (!$meta['enabled'] && isset(static::$attributes[$code]['visible']) && static::$attributes[$code]['visible']) {
-                unset($elasticProduct->{$code});
+                unset($elasticProduct->{$meta['alias']});
             }
         }
 
@@ -471,8 +495,8 @@ class Fetcher
                     ->where('pa.`id_object` = '.(int) $product->id)
                     ->where('pa.`id_page_type` = '.(int) Page::getPageTypeByName('product'))
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -490,8 +514,8 @@ class Fetcher
     {
         try {
             $sales = ProductSale::getNbrSales($product->id);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -512,8 +536,8 @@ class Fetcher
         $cats = [];
         try {
             $interval = Category::getInterval($idCategory);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             $interval = 0;
         }
@@ -533,8 +557,8 @@ class Fetcher
                         ->where('c.`active` = 1')
                         ->orderBy('c.`level_depth` ASC')
                 );
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
 
             foreach ($categories as $category) {
@@ -563,8 +587,8 @@ class Fetcher
         $cats = [];
         try {
             $interval = Category::getInterval($idCategory);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             $interval = false;
         }
@@ -584,8 +608,8 @@ class Fetcher
                         ->where('c.`active` = 1')
                         ->orderBy('c.`level_depth` ASC')
                 );
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
 
             foreach ($categories as $category) {
@@ -603,8 +627,8 @@ class Fetcher
     {
         try {
             return Product::getQuantity($product->id);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -630,8 +654,8 @@ class Fetcher
                     ->from('order_detail')
                     ->where('`product_id` = '.(int) $product->id)
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -656,8 +680,8 @@ class Fetcher
                 'group_0' => (float) static::getProductBasePrice($product->id),
                 'group_1' => (float) Product::getPriceStatic($product->id, false, null, _TB_PRICE_DATABASE_PRECISION_),
             ];
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return [];
         }
@@ -693,8 +717,8 @@ class Fetcher
                     $idCustomer
                 );
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return [];
         }
@@ -715,20 +739,24 @@ class Fetcher
         $link = new Link();
         try {
             $cover = Image::getCover($product->id);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return '';
         }
 
         try {
             if ($cover['id_image']) {
-                $imageLink = $link->getImageLink($product->link_rewrite[$idLang], $cover['id_image'], ImageType::getFormatedName('large'));
+                $imageLink = $link->getImageLink(
+                    $product->link_rewrite[$idLang],
+                    $cover['id_image'],
+                    ImageType::getFormatedName('large')
+                );
             } else {
                 $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-large_default.jpg';
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return '';
         }
@@ -749,8 +777,8 @@ class Fetcher
         $link = new Link();
         try {
             $cover = Image::getCover($product->id);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return '';
         }
@@ -765,8 +793,8 @@ class Fetcher
             } else {
                 $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-small_default.jpg';
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return '';
         }
@@ -805,8 +833,8 @@ class Fetcher
     {
         try {
             return (bool) Product::isAvailableWhenOutOfStock($product->out_of_stock);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return false;
         }
@@ -867,8 +895,8 @@ class Fetcher
                     ->where('c.`active` = 1')
                     ->orderBy('c.`level_depth` ASC, category_shop.`position` ASC')
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::AddLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::AddLog("Elasticsearch module error: {$e->getMessage()}");
 
             $cats = [];
         }
@@ -1019,8 +1047,8 @@ class Fetcher
     {
         try {
             return Manufacturer::getNameById((int) $product->id_manufacturer);
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return '';
         }
@@ -1169,8 +1197,8 @@ class Fetcher
     {
         try {
             return (bool) Product::getQuantity($product->id) > 0;
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return false;
         }
@@ -1197,8 +1225,8 @@ class Fetcher
                     )
                     ->where('p.`id_product` = '.(int) $idProduct)
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -1227,12 +1255,12 @@ class Fetcher
 
         try {
             Tools::enableCache();
-        } catch (\PrestaShopException $e) {
+        } catch (PrestaShopException $e) {
         }
         foreach ($products as &$product) {
             $colors = false;
             if (count($productsNeedCache)) {
-                $colors = static::getAttributesColorList($productsNeedCache, true, $product->id_lang);
+                $colors = static::getAttributesColorList($productsNeedCache, true, $product->elastic_id_lang);
             }
             $tpl = Context::getContext()->smarty->createTemplate(
                 \Elasticsearch::tpl('front/product-list-colors.tpl'),
@@ -1242,7 +1270,7 @@ class Fetcher
                 $tpl->assign(
                     [
                         'id_product'  => $product->id,
-                        'id_lang'     => $product->id_lang,
+                        'id_lang'     => $product->elastic_id_lang,
                         'colors_list' => $colors[$product->id],
                         'link'        => Context::getContext()->link,
                         'img_col_dir' => _THEME_COL_DIR_,
@@ -1283,9 +1311,9 @@ class Fetcher
         }
 
         try {
-            $checkStock = !\Configuration::get('PS_DISP_UNAVAILABLE_ATTR');
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            $checkStock = !Configuration::get('PS_DISP_UNAVAILABLE_ATTR');
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return false;
         }
@@ -1307,8 +1335,8 @@ class Fetcher
             ) {
                 return false;
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return false;
         }

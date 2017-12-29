@@ -26,7 +26,7 @@
       methods: {
         suggestionClicked: function (result, event) {
           event.preventDefault();
-          window.location.href = result._source.link;
+          window.location.href = result._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}'];
           this.$store.commit('eraseSuggestions');
         }
       }

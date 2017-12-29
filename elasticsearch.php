@@ -211,18 +211,20 @@ class Elasticsearch extends Module
             }
 
             try {
-                Configuration::updateValue(static::STOP_WORDS, $stopWords, false, (int) $shop['id_shop_group'], (int) $shop['id_shop']);
+                Configuration::updateValue(
+                    static::STOP_WORDS,
+                    $stopWords,
+                    false,
+                    (int) $shop['id_shop_group'],
+                    (int) $shop['id_shop']
+                );
             } catch (PrestaShopException $e) {
                 $this->context->controller->errors[] = $this->l('Unable to add stop words during installation, you might have to change these manually.');
             }
         }
 
         $defaultMetas = json_decode(file_get_contents(__DIR__.'/data/defaultmetas.json'), true);
-        try {
-            $attributes = Meta::getAllProperties();
-        } catch (PrestaShopException $e) {
-            $attributes = [];
-        }
+        $attributes = Meta::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT'));
         $metaInserts = [];
         $metaLangInserts = [];
         $langs = Language::getLanguages(false);
@@ -256,7 +258,9 @@ class Elasticsearch extends Module
                 $metaLangInserts[] = [
                     bqSQL(Meta::$definition['primary']) => $i,
                     'id_lang'                           => (int) $lang['id_lang'],
-                    'name'                              => isset($defaultMetas[$attribute->code][$lang['iso_code']]) ? $defaultMetas[$attribute->code][$lang['iso_code']] : $attribute->code,
+                    'name'                              => isset($defaultMetas[$attribute->code][$lang['iso_code']])
+                        ? $defaultMetas[$attribute->code][$lang['iso_code']]
+                        : $attribute->code,
                 ];
             }
             $i++;
@@ -444,6 +448,7 @@ class Elasticsearch extends Module
      * Display top hook
      *
      * @return string
+     * @throws PrestaShopException
      */
     public function hookDisplayTop()
     {
@@ -515,28 +520,28 @@ class Elasticsearch extends Module
 
             // If meta is a slider (display_type = slider/4), then pick the min and max value
             if ((int) $meta['display_type'] === 4) {
-                $aggegrations["{$meta['code']}_min"] = [
+                $aggegrations["{$meta['alias']}_min"] = [
                     'min'  => [
-                        'field' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
+                        'field' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                     ],
                     'meta' => [
                         'name'            => $meta['name'],
-                        'code'            => "{$meta['code']}_min",
-                        'slider_code'     => $meta['code'],
-                        'slider_agg_code' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
+                        'code'            => "{$meta['alias']}_min",
+                        'slider_code'     => $meta['alias'],
+                        'slider_agg_code' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                         'position'        => $meta['position'],
                         'display_type'    => $meta['display_type'],
                     ],
                 ];
-                $aggegrations["{$meta['code']}_max"] = [
+                $aggegrations["{$meta['alias']}_max"] = [
                     'max'  => [
-                        'field' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
+                        'field' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                     ],
                     'meta' => [
                         'name'            => $meta['name'],
-                        'code'            => "{$meta['code']}_max",
-                        'slider_code'     => $meta['code'],
-                        'slider_agg_code' => $meta['code'].'_group_'.(int) Context::getContext()->customer->id_default_group,
+                        'code'            => "{$meta['alias']}_max",
+                        'slider_code'     => $meta['alias'],
+                        'slider_agg_code' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
                         'position'        => $meta['position'],
                         'display_type'    => $meta['display_type'],
                     ],
@@ -547,20 +552,20 @@ class Elasticsearch extends Module
 
             // Pick the meta value and code (via _agg)
             $aggs  = [
-                'name' => ['top_hits' => ['size' => 1, '_source' => ['includes' => [$meta['code']]]]],
-                'code' => ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['code']}_agg"]]]],
+                'name' => ['top_hits' => ['size' => 1, '_source' => ['includes' => [$meta['alias']]]]],
+                'code' => ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['alias']}_agg"]]]],
             ];
 
             // If meta is a color (display_type = color/5), then pick the color code as well
             if ((int) $meta['display_type'] === 5) {
-                $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['code']}_color_code"]]]];
+                $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['alias']}_color_code"]]]];
             }
 
             foreach ($aggs as $aggName => &$agg) {
                 $subAgg = $agg;
                 $agg = [
                     'terms' => [
-                        'field' => $meta['code'].'_agg',
+                        'field' => $meta['alias'].'_agg',
                         'size'  => (int) $meta['result_limit'] ?: 10000,
                     ],
                     'aggs' => [
@@ -570,14 +575,14 @@ class Elasticsearch extends Module
             }
 
             // Name of the aggregation is the display name - the actual code should be retrieved from the top hit
-            $aggegrations[$meta['code']] = [
+            $aggegrations[$meta['alias']] = [
                 // Aggregate on the special aggregate field
 
                 // This part is added to get the actual display name and meta code of the filter value
                 'aggs'  => $aggs,
                 'meta' => [
                     'name'         => $meta['name'],
-                    'code'         => $meta['code'],
+                    'code'         => $meta['alias'],
                     'position'     => $meta['position'],
                     'display_type' => $meta['display_type'],
                 ],
@@ -587,12 +592,12 @@ class Elasticsearch extends Module
         // TODO: find the mandatory fields
         $sources = [];
         foreach ($metas as $meta) {
-            if (!$meta['enabled'] || !$meta['aggregatable'] && !$meta['searchable'] && !in_array($meta['code'], [
-                'name',
-                'price_tax_excl',
-                'id_tax_rules_group',
-                'image_link_small',
-                'image_link_large',
+            if (!$meta['enabled'] || !$meta['aggregatable'] && !$meta['searchable'] && !in_array($meta['alias'], [
+                static::getAlias('name'),
+                static::getAlias('price_tax_excl'),
+                static::getAlias('id_tax_rules_group'),
+                static::getAlias('image_link_small'),
+                static::getAlias('image_link_large'),
             ])) {
                 continue;
             }
@@ -607,13 +612,7 @@ class Elasticsearch extends Module
 
             $autocomplete = false;
         }
-        try {
-            $searchableMetas = Meta::getSearchableMetas();
-        } catch (PrestaShopException $e) {
-            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-            $searchableMetas = [];
-        }
+        $searchableMetas = Meta::getSearchableMetas();
         try {
             $fixedFilter = static::getFixedFilter();
         } catch (PrestaShopException $e) {
@@ -914,7 +913,7 @@ class Elasticsearch extends Module
             foreach ($products as &$product) {
                 $params['body'][] = [
                     'index' => [
-                        '_index' => "{$index}_{$idShop}_{$product->id_lang}",
+                        '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
                         '_type'  => 'product',
                         '_id'    => $product->id,
                     ],
@@ -973,8 +972,8 @@ class Elasticsearch extends Module
                 foreach ($failed as $failure) {
                     foreach ($products as $index => $product) {
                         if ((int) $product->id === (int) $failure['id_product']
-                            && (int) $product->id_shop === (int) $failure['id_shop']
-                            && (int) $product->id_lang === (int) $failure['id_lang']
+                            && (int) $product->elastic_id_shop === (int) $failure['id_shop']
+                            && (int) $product->elastic_id_lang === (int) $failure['id_lang']
                         ) {
                             Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
 
@@ -987,7 +986,7 @@ class Elasticsearch extends Module
             // Insert index status into database
             $values = '';
             foreach ($products as &$product) {
-                $values .= "('{$product->id}', '{$product->id_lang}', '{$this->context->shop->id}', '{$product->date_upd}', ''),";
+                $values .= "('{$product->id}', '{$product->elastic_id_lang}', '{$this->context->shop->id}', '{$product->date_upd}', ''),";
             }
             $values = rtrim($values, ',');
             if ($values) {
@@ -1030,6 +1029,7 @@ class Elasticsearch extends Module
 
     /**
      * @return array
+     * @throws PrestaShopException
      */
     protected function getConfigFormValues()
     {
@@ -1045,7 +1045,7 @@ class Elasticsearch extends Module
             static::SERVERS                 => (array) json_decode(Configuration::get(static::SERVERS), true),
             static::SHARDS                  => (int) Configuration::get(static::SHARDS),
             static::REPLICAS                => (int) Configuration::get(static::REPLICAS),
-            static::METAS                   => Meta::getAllProperties(),
+            static::METAS                   => Meta::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT')),
             static::INDEX_PREFIX            => Configuration::get(static::INDEX_PREFIX),
             static::QUERY_JSON              => Configuration::get(static::QUERY_JSON),
             static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),
@@ -1103,6 +1103,7 @@ class Elasticsearch extends Module
 
     /**
      * @return null|array
+     * @throws PrestaShopException
      */
     protected function getFixedFilter()
     {
@@ -1118,8 +1119,8 @@ class Elasticsearch extends Module
             if (Validate::isLoadedObject($category)) {
                 if (!Configuration::get(static::SEARCH_SUBCATEGORIES)) {
                     return [
-                        'aggregationCode' => 'category',
-                        'aggregationName' => Meta::getName('category', $idLang),
+                        'aggregationCode' => static::getAlias('category'),
+                        'aggregationName' => Meta::getName(static::getAlias('category'), $idLang),
                         'filterCode'      => Tools::link_rewrite($category->name),
                         'filterName'      => $category->name,
                     ];
@@ -1128,8 +1129,8 @@ class Elasticsearch extends Module
                 $categoryPath = \ElasticsearchModule\Fetcher::getCategoryPathArray($category->id, $idLang);
 
                 return [
-                    'aggregationCode' => 'categories',
-                    'aggregationName' => Meta::getName('category', $idLang),
+                    'aggregationCode' => static::getAlias('categories'),
+                    'aggregationName' => Meta::getName(static::getAlias('category'), $idLang),
                     'filterCode'      => Tools::link_rewrite(implode(' /// ', $categoryPath)),
                     'filterName'      => $category->name,
                 ];
@@ -1139,8 +1140,8 @@ class Elasticsearch extends Module
 
             if (Validate::isLoadedObject($manufacturer)) {
                 return [
-                    'aggregationCode' => 'manufacturer',
-                    'aggregationName' => Meta::getName('manufacturer', $idLang),
+                    'aggregationCode' => static::getAlias('manufacturer'),
+                    'aggregationName' => Meta::getName(static::getAlias('manufacturer'), $idLang),
                     'filterCode'      => Tools::link_rewrite($manufacturer->name),
                     'filterName'      => $manufacturer->name,
                 ];
@@ -1150,8 +1151,8 @@ class Elasticsearch extends Module
 
             if (Validate::isLoadedObject($supplier)) {
                 return [
-                    'aggregationCode' => 'supplier',
-                    'aggregationName' => Meta::getName('supplier', Context::getContext()->language->id),
+                    'aggregationCode' => static::getAlias('supplier'),
+                    'aggregationName' => Meta::getName(static::getAlias('supplier'), Context::getContext()->language->id),
                     'filterCode'      => Tools::link_rewrite($supplier->name),
                     'filterName'      => $supplier->name,
                 ];
@@ -1343,5 +1344,20 @@ class Elasticsearch extends Module
         return $url;
     }
 
-
+    /**
+     * @param string $code
+     *
+     * @return string
+     * @throws \PrestaShopException
+     */
+    public static function getAlias($code, $type = 'property')
+    {
+        return (string) \Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            (new \DbQuery())
+                ->select('`alias`')
+                ->from(bqSQL(Meta::$definition['table']))
+                ->where('`code` = \''.$code.'\'')
+                ->where('`meta_type` = \''.pSQL($type).'\'')
+        );
+    }
 }

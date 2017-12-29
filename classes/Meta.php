@@ -123,7 +123,7 @@ class Meta extends ObjectModel
             if (!isset($metas[(int) $result['id_lang']])) {
                 $metas[(int) $result['id_lang']] = [];
             }
-            $metas[(int) $result['id_lang']][$result['alias']] = $result;
+            $metas[(int) $result['id_lang']][$result['code'].$result['meta_type']] = $result;
         }
 
         return $metas;

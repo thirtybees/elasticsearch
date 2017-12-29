@@ -170,7 +170,8 @@
             return false;
           }
 
-          return this.fixedFilter.aggregationCode === aggregationCode || aggregationCode === 'category' && this.fixedFilter.aggregationCode === 'categories';
+          return this.fixedFilter.aggregationCode === aggregationCode || aggregationCode === '{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}'
+            && this.fixedFilter.aggregationCode === '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}';
         }
       }
     });

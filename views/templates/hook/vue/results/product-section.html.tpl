@@ -15,11 +15,11 @@
  * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<section v-if="query && total || fixedFilter && _.indexOf(['manufacturer', 'supplier', 'category', 'categories'], fixedFilter.aggregationCode) > -1">
+<section v-if="query && total || fixedFilter && _.indexOf(['{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('supplier')|escape:'htmlall':'UTF-8'}', '{Elasticsearch::getAlias('category')|escape:'htmlall':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'htmlall':'UTF-8'}'], fixedFilter.aggregationCode) > -1">
   <h2 class="page-heading">
-    <span v-if="query || fixedFilter && _.indexOf(['category', 'categories'], fixedFilter.aggregationCode) > -1">{l s='Products' mod='elasticsearch'}</span>
-    <span v-else-if="fixedFilter.aggregationCode === 'manufacturer'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
-    <span v-else-if="fixedFilter.aggregationCode === 'supplier'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
+    <span v-if="query || fixedFilter && _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'htmlall':'UTF-8'}'], fixedFilter.aggregationCode) > -1">{l s='Products' mod='elasticsearch'}</span>
+    <span v-else-if="fixedFilter.aggregationCode === '{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
+    <span v-else-if="fixedFilter.aggregationCode === '{Elasticsearch::getAlias('supplier')|escape:'javascript':'UTF-8'}'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span class="pull-right">
         <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
         <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>

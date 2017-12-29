@@ -20,7 +20,7 @@
     var initialFixedFilter = {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if};
 
     // Pending ajax search requests - cancel these with every new search
-    var pendingRequests = {ldelim}{rdelim};
+    var pendingRequests = { };
 
     // Round robin function
     // Credits to  JP Richardson (https://github.com/jprichardson/rr)
@@ -58,7 +58,7 @@
 
     function normalizeAggregations(aggs) {
       // The main list
-      var aggregations = {ldelim}{rdelim};
+      var aggregations = { };
 
       // Iterating the aggregations returned by Elasticsearch and starting the normalization process
       _.forEach(aggs, function (agg, aggCode) {
@@ -247,7 +247,7 @@
           selectedFilters[fixedFilter.aggregationCode] = {
             code: fixedFilter.aggregationCode,
             name: fixedFilter.aggregationName,
-            operator: fixedFilter.aggregationCode === 'categories' ? 'OR' : 'AND',
+            operator: fixedFilter.aggregationCode === '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}' ? 'OR' : 'AND',
             display_type: fixedFilter.displayType,
             values: [
               {
@@ -264,12 +264,11 @@
     }
 
     // Initialize the ElasticsearchModule object if it does not exist
-    window.ElasticsearchModule = window.ElasticsearchModule || {ldelim}{rdelim};
+    window.ElasticsearchModule = window.ElasticsearchModule || { };
     window.ElasticsearchModule.hosts = {Elasticsearch::getFrontendHosts()|json_encode};
 
-    {literal}
     function filtersToUrl(properties) {
-      var instantSearch = {/literal}{if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};{literal}
+      var instantSearch = {if Configuration::get(Elasticsearch::INSTANT_SEARCH) || $smarty.get.controller === 'search' && $smarty.get.module === 'elasticsearch'}true{else}false{/if};
       if (!instantSearch) {
         return;
       }
@@ -296,8 +295,8 @@
       if (properties.limit && _.indexOf([24, 60, 'all'], properties.limit) > -1) {
         hash += '/n=' + properties.limit;
       }
-      if (properties.sort && properties.sort !== 'date_add:desc') {
-        if (properties.sort.substring(0, 21) === 'price_tax_excl_group_') {
+      if (properties.sort && properties.sort !== '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc') {
+        if (properties.sort.substring(0, 21) === '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_') {
           var props = properties.sort.split(':');
           if (props.length === 2) {
             hash += '/sort=price:' + props[1];
@@ -315,7 +314,7 @@
 
         // Rename price_tax_excl to just price
         var aggregationCode = aggregation.code;
-        if (aggregationCode === 'price_tax_excl') {
+        if (aggregationCode === '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}') {
           aggregationCode = 'price';
         }
 
@@ -357,7 +356,7 @@
     function filtersFromUrl(state) {
       var properties = {
         query: '',
-        selectedFilters: {}
+        selectedFilters: { }
       };
 
       // Take the hash and iterate over every section separated by /
@@ -390,13 +389,13 @@
             return;
           case 'sort':
             if (_.indexOf([
-                'date_add:desc',
+                '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc',
                 'price:asc',
                 'price:desc',
-                'name:asc',
-                'name:desc',
-                'reference:asc',
-                'reference:desc',
+                '{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}:asc',
+                '{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}:desc',
+                '{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}:asc',
+                '{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}:desc',
               ], filterElems[1])) {
               properties.sort = filterElems[1];
             }
@@ -404,13 +403,13 @@
             if (properties.sort.substring(0, 5) === 'price') {
               var props = properties.sort.split(':');
               if (props.length === 2) {
-                properties.sort = 'price_tax_excl_group_{/literal}{Context::getContext()->customer->id_default_group|intval}{literal}:' + props[1];
+                properties.sort = '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_{Context::getContext()->customer->id_default_group|intval}:' + props[1];
               }
             }
 
             return;
           case 'price':
-            aggregationCode = 'price_tax_excl';
+            aggregationCode = '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}';
 
             break;
         }
@@ -485,14 +484,14 @@
      * @fixme: use normalized format
      */
     function findAggregatedFilters(aggregations) {
-      var foundFilters = {};
+      var foundFilters = { };
 
       _.forEach(aggregations, function (aggregation) {
         var category = null;
         _.forEach(aggregation.buckets, function (bucket) {
           if (!category) {
             category = Object.keys(bucket.name.hits.hits[0]._source)[0];
-            foundFilters[category] = {};
+            foundFilters[category] = { };
           }
           foundFilters[category][bucket.key] = true;
         })
@@ -504,9 +503,9 @@
     /**
      * Builds the matches part of the query
      *
-     * @param {array} selectedFilters
-     * @param {string} exclude
-     * @returns {object}
+     * @param { array } selectedFilters
+     * @param { string } exclude
+     * @returns { object }
      */
     function buildFilterQuery(selectedFilters, exclude) {
       // A filter query consists of a main bool of which the subfilters must all be true
@@ -521,7 +520,7 @@
         return filterQuery;
       }
 
-      var filterGroups = {};
+      var filterGroups = { };
 
       _.forEach(selectedFilters, function (filters, filterName) {
         // Skip the excluded filter
@@ -532,11 +531,11 @@
         if (parseInt(filters.display_type, 10) === 4) {
           // Special case: price slider
           var aggregationCode = filters.code;
-          if (aggregationCode === 'price_tax_excl') {
-            aggregationCode += '_group_{/literal}{Context::getContext()->customer->id_default_group|intval}{literal}';
+          if (aggregationCode === '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}') {
+            aggregationCode += '_group_{Context::getContext()->customer->id_default_group|intval}';
           }
 
-          var range = {};
+          var range = { };
           range[aggregationCode] = {
             gte: filters.values.min_tax_excl,
             lte: filters.values.max_tax_excl
@@ -554,7 +553,7 @@
           // If the filter has the AND operator, just add it directly to the subquery...
           _.forEach(filters.values, function (filter) {
             if (filters.operator === 'AND') {
-              var term = {};
+              var term = { };
               term[filterName + '_agg'] = filter.code;
 
               filterQuery.bool.must.push({
@@ -584,7 +583,7 @@
           };
 
           _.forEach(filterCodes, function (filterCode) {
-            var term = {};
+            var term = { };
             term[filterName + '_agg'] = filterCode;
 
             subfilterQuery.bool.should.push({
@@ -598,7 +597,6 @@
 
       return filterQuery;
     }
-    {/literal}
 
     function updateResults(state, query, queryObject, showSuggestions, callback) {
       // Check if this request should be proxied
@@ -788,13 +786,13 @@
         results: [],
         total: 0,
         maxScore: 0,
-        sort: 'date_add:desc',
+        sort: '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc',
         suggestions: [],
-        aggregations: {ldelim}{rdelim},
+        aggregations: { },
         limit: 12,
         offset: 0,
         fixedFilter: {if $fixedFilter}{$fixedFilter|json_encode}{else}null{/if},
-        selectedFilters: {ldelim}{rdelim},
+        selectedFilters: { },
         metas: {$metas|json_encode},
         layoutType: null,
         tax: {$defaultTax|floatval},

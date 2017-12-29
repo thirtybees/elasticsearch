@@ -42,7 +42,7 @@ trait MetaAttributesTrait
     {
         $searchable = [];
 
-        foreach (static::getAllProperties() as $key => $value) {
+        foreach (static::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT')) as $key => $value) {
             if ($value->checked) {
                 $searchable[$key] = $value->name;
             }
@@ -54,18 +54,23 @@ trait MetaAttributesTrait
     /**
      * Get all attributes
      *
+     * @param int|null $idLang Language ID
+     *
      * @return array
      */
-    public static function getAllProperties()
+    public static function getAllProperties($idLang = null)
     {
-        $idLang = Context::getContext()->language->id;
+        if (!$idLang) {
+            $idLang = Context::getContext()->language->id;
+        }
+
         $properties = [];
         $deferredProperties = [];
         $metas = static::getAllMetas();
 
         $type = 'property';
         foreach (Fetcher::$attributes as $defaultAttributeName => $defaultAttribute) {
-            $id = $defaultAttributeName;
+            $id = "{$defaultAttributeName}property";
             $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
             $name = [];
             try {
@@ -138,6 +143,7 @@ trait MetaAttributesTrait
         try {
             foreach (\Feature::getFeatures($idLang) as $feature) {
                 $id = Tools::link_rewrite($feature['name']);
+                $id = "{$id}feature";
                 $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
                 $name = [];
                 foreach (Language::getLanguages(false, false, true) as $language) {
@@ -153,7 +159,9 @@ trait MetaAttributesTrait
                     'alias'             => (string) isset($metas[$idLang][$id]['alias'])
                         ? $metas[$idLang][$id]['alias']
                         : '',
-                    'name'              => (string) $name,
+                    'name'              => (string) isset($metas[$idLang][$id]['name'])
+                        ? $metas[$idLang][$id]['name']
+                        : '',
                     'position'          => (int) $position,
                     'weight'            => (float) isset($metas[$idLang][$id]['weight'])
                         ? $metas[$idLang][$id]['weight']
@@ -206,6 +214,7 @@ trait MetaAttributesTrait
         try {
             foreach (static::getAttributes($idLang) as $tbAttribute) {
                 $id = Tools::link_rewrite($tbAttribute['attribute_group']);
+                $id = "{$id}attribute";
                 $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
                 $name = [];
                 foreach (Language::getLanguages(false, false, true) as $language) {

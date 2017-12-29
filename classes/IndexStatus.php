@@ -211,15 +211,9 @@ class IndexStatus extends \ObjectModel
 
         $products = [];
         foreach ($results as &$result) {
-            try {
-                $product = Fetcher::initProduct($result['id_product'], $result['id_lang']);
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-                continue;
-            }
-            $product->id_lang = $result['id_lang'];
-            $product->id_shop = $result['id_shop'];
+            $product = Fetcher::initProduct($result['id_product'], $result['id_lang']);
+            $product->elastic_id_lang = $result['id_lang'];
+            $product->elastic_id_shop = $result['id_shop'];
 
             $products[] = $product;
         }

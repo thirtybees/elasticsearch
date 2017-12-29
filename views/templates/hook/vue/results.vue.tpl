@@ -47,12 +47,12 @@
 
       if (state.query || state.fixedFilter) {
         mainColumn.style.display = 'none';
-        if (instantSearchBlock) {
+        if (_.isElement(instantSearchBlock)) {
           instantSearchBlock.style.display = '';
         }
       } else {
         mainColumn.style.display = '';
-        if (instantSearchBlock) {
+        if (_.isElement(instantSearchBlock)) {
           instantSearchBlock.style.display = 'none';
         }
       }
@@ -76,7 +76,7 @@
         window.ElasticsearchModule.classList = mainColumn.classList.value;
       }
 
-      if (typeof target !== 'undefined' || !target) {
+      if (typeof target === 'undefined' || !target) {
         new Vue({
           beforeUpdate: function () {
             // Not `undefined` means we're dealing with instant search
