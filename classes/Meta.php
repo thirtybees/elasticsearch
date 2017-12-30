@@ -99,7 +99,7 @@ class Meta extends ObjectModel
     {
         if (!is_array($idLangs) || !empty($idLangs)) {
             try {
-                $idLangs = Language::getLanguages(false, null, true);
+                $idLangs = Language::getLanguages(true, null, true);
             } catch (\PrestaShopException $e) {
                 \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 

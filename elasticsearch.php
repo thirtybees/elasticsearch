@@ -204,7 +204,7 @@ class Elasticsearch extends Module
             $stopWords = [];
 
             try {
-                foreach (Language::getLanguages(false) as $language) {
+                foreach (Language::getLanguages(true) as $language) {
                     $stopWords[(int) $language['id_lang']] = static::getStopWordLang(strtolower($language['iso_code']));
                 }
             } catch (PrestaShopException $e) {
@@ -227,7 +227,7 @@ class Elasticsearch extends Module
         $attributes = Meta::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT'));
         $metaInserts = [];
         $metaLangInserts = [];
-        $langs = Language::getLanguages(false);
+        $langs = Language::getLanguages(true);
         foreach ($langs as &$lang) {
             if (!isset($defaultMetas['name'][$lang['iso_code']])) {
                 // Use the default language
@@ -376,7 +376,7 @@ class Elasticsearch extends Module
             $elasticAjaxUrl = $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}";
             $configFormValues = $this->getConfigFormValues();
             $configUpdated = (bool) Configuration::get(static::CONFIG_UPDATED);
-            $languages = Language::getLanguages(false, false, false);
+            $languages = Language::getLanguages(true, false, false);
         } catch (PrestaShopException $e) {
             $this->context->controller->errors[] = $e->getMessage();
 

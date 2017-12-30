@@ -47,22 +47,6 @@ class Indexer
         $this->fetcher = new Fetcher();
     }
 
-    /**
-     * @param \Product $product
-     *
-     * @throws \PrestaShopException
-     */
-    public function indexProduct($product)
-    {
-        if (!$product->active == false) {
-            return;
-        }
-
-        foreach (\Language::getLanguages() as $language) {
-            $object = $this->fetcher->initProduct($product->id, $language);
-        }
-    }
-
     private function getCategories($idLang)
     {
         $cats = \Category::getNestedCategories(null, $idLang);
@@ -138,7 +122,7 @@ class Indexer
         $indexPrefix = Configuration::get(Elasticsearch::INDEX_PREFIX);
 
         if (!is_array($idLangs) || empty($idLangs)) {
-            $idLangs = Language::getLanguages(false, false, true);
+            $idLangs = Language::getLanguages(true, false, true);
         }
         if (!is_array($idShops) || empty($idShops)) {
             $idShops = Shop::getShops(false, null, true);
@@ -178,7 +162,7 @@ class Indexer
         $indexPrefix = Configuration::get(Elasticsearch::INDEX_PREFIX);
 
         if (!is_array($idLangs) || empty($idLangs)) {
-            $idLangs = Language::getLanguages(false, false, true);
+            $idLangs = Language::getLanguages(true, false, true);
         }
         if (!is_array($idShops) || empty($idShops)) {
             $idShops = Shop::getShops(false, null, true);

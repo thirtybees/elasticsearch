@@ -20,6 +20,7 @@
 namespace ElasticsearchModule;
 
 use Context;
+use Configuration;
 use Language;
 use Shop;
 use Tools;
@@ -37,6 +38,7 @@ trait MetaAttributesTrait
      * Get searchable attributes
      *
      * @return array
+     * @throws \PrestaShopException
      */
     public static function getSearchableProperties()
     {
@@ -74,7 +76,7 @@ trait MetaAttributesTrait
             $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
             $name = [];
             try {
-                foreach (Language::getLanguages(false, false, true) as $language) {
+                foreach (Language::getLanguages(true, false, true) as $language) {
                     $name[(int) $language] = isset($metas[$language][$id]['name'])
                         ? $metas[$language][$id]['name']
                         : $defaultAttributeName;
@@ -146,7 +148,7 @@ trait MetaAttributesTrait
                 $id = "{$id}feature";
                 $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
                 $name = [];
-                foreach (Language::getLanguages(false, false, true) as $language) {
+                foreach (Language::getLanguages(true, false, true) as $language) {
                     $name[(int) $language] = isset($metas[$language][$id]['name'])
                         ? $metas[$language][$id]['name']
                         : $feature['name'];
@@ -217,7 +219,7 @@ trait MetaAttributesTrait
                 $id = "{$id}attribute";
                 $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
                 $name = [];
-                foreach (Language::getLanguages(false, false, true) as $language) {
+                foreach (Language::getLanguages(true, false, true) as $language) {
                     $name[(int) $language] = isset($metas[$language][$id]['name'])
                         ? $metas[$language][$id]['name']
                         : $tbAttribute['attribute_group'];

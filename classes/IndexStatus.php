@@ -111,6 +111,7 @@ class IndexStatus extends \ObjectModel
                         'pl',
                         'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : '')
                     )
+                    ->join(!$idLang ? 'INNER JOIN `'._DB_PREFIX_.'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
                     ->where('ps.`id_shop` = '.(int) $idShop)
             );
         } catch (\PrestaShopException $e) {
@@ -136,9 +137,10 @@ class IndexStatus extends \ObjectModel
         try {
             return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
-                    ->select('COUNT(*)')
-                    ->from(bqSQL(Language::$definition['table']).'_shop')
-                    ->where('`id_shop` = '.(int) $idShop)
+                    ->select('COUNT(ls.*)')
+                    ->from(bqSQL(Language::$definition['table']).'_shop', 'ls')
+                    ->innerJoin(bqSQL(Language::$definition['table']), 'l', 'ls.`id_lang` = l.`id_lang` AND l.`active` = 1')
+                    ->where('ls.`id_shop` = '.(int) $idShop)
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -175,6 +177,7 @@ class IndexStatus extends \ObjectModel
      * @param int|null $idShop
      *
      * @return array
+     * @throws \PrestaShopException
      */
     public static function getProductsToIndex($limit = 0, $offset = 0, $idLang = null, $idShop = null)
     {
@@ -198,6 +201,7 @@ class IndexStatus extends \ObjectModel
                         'eis',
                         'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`'
                     )
+                    ->join(!$idLang ? 'INNER JOIN `'._DB_PREFIX_.'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
                     ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
                     ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
                     ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
@@ -244,7 +248,7 @@ class IndexStatus extends \ObjectModel
         $cmscatroutes = 'PS_ROUTE_cms_category_rule';
         $moduleroutes = 'PS_ROUTE_module';
         try {
-            foreach (Language::getLanguages(false) as $lang) {
+            foreach (Language::getLanguages(true) as $lang) {
                 foreach (Dispatcher::getInstance()->default_routes as $id => $route) {
                     switch ($id) {
                         case 'product_rule':
