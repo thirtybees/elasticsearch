@@ -367,10 +367,12 @@ class Elasticsearch extends Module
         $this->context->controller->addCSS(_PS_JS_DIR_.'ace/aceinput.css');
 
         // Vue.js
-        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
+        $this->context->controller->addJS('https://unpkg.com/vue@2.5.11');
+//        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
 
         // Vuex
-        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
+        $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
+//        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
 
         try {
             $elasticAjaxUrl = $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}";
@@ -891,12 +893,13 @@ class Elasticsearch extends Module
         if (!$amount) {
             $amount = 100;
         }
-        $index = Configuration::get(Elasticsearch::INDEX_PREFIX);
+        $index = Configuration::get(static::INDEX_PREFIX);
         $idLang = Context::getContext()->language->id;
         $metas = Meta::getAllMetas([$idLang]);
         if (isset($metas[$idLang])) {
             $metas = $metas[$idLang];
         }
+        $priceTaxExclAlias = static::getAlias('price_tax_excl');
 
         while ($chunks > 0) {
             // Check which products are available for indexing
@@ -915,15 +918,15 @@ class Elasticsearch extends Module
                     'index' => [
                         '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
                         '_type'  => 'product',
-                        '_id'    => $product->id,
+                        '_id'     => $product->id,
                     ],
                 ];
 
                 // Process prices for customer groups
-                foreach ($product->price_tax_excl as $group => $value) {
-                    $product->{"price_tax_excl_{$group}"} = $value;
+                foreach ($product->{$priceTaxExclAlias} as $group => $value) {
+                    $product->{"{$priceTaxExclAlias}_{$group}"} = $value;
                 }
-                unset($product->price_tax_excl);
+                unset($product->{$priceTaxExclAlias});
 
                 // Make aggregatable copies of the properties
                 // These need to be `link_rewrite`d to make sure they can fit a the friendly URL
@@ -937,10 +940,22 @@ class Elasticsearch extends Module
                     if (isset($metas[$name]) && in_array($metas[$name]['elastic_type'], ['string', 'text'])) {
                         if (is_array($var)) {
                             foreach ($var as &$item) {
-                                $item = Tools::link_rewrite($item);
+                                try {
+                                    $item = Tools::link_rewrite($item);
+                                } catch (\PrestaShopException $e) {
+                                    \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+                                    continue;
+                                }
                             }
                         } else {
-                            $var = Tools::link_rewrite($var);
+                            try {
+                                $var = Tools::link_rewrite($var);
+                            } catch (\PrestaShopException $e) {
+                                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+
+                                continue;
+                            }
                         }
                     }
 
@@ -984,9 +999,10 @@ class Elasticsearch extends Module
             }
 
             // Insert index status into database
+            $dateUpdAlias = static::getAlias('date_upd');
             $values = '';
             foreach ($products as &$product) {
-                $values .= "('{$product->id}', '{$product->elastic_id_lang}', '{$this->context->shop->id}', '{$product->date_upd}', ''),";
+                $values .= "('{$product->id}', '{$product->elastic_id_lang}', '{$this->context->shop->id}', '{$product->{$dateUpdAlias}}', ''),";
             }
             $values = rtrim($values, ',');
             if ($values) {
@@ -1038,6 +1054,7 @@ class Elasticsearch extends Module
             $idLang = (int) $language['id_lang'];
             $stopWords[$idLang] = (string) Configuration::get(static::STOP_WORDS, $idLang);
         }
+
 
         return [
             static::LOGGING_ENABLED         => (int) Configuration::get(static::LOGGING_ENABLED),
@@ -1346,9 +1363,10 @@ class Elasticsearch extends Module
 
     /**
      * @param string $code
+     * @param string $type
      *
      * @return string
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
     public static function getAlias($code, $type = 'property')
     {
@@ -1359,5 +1377,34 @@ class Elasticsearch extends Module
                 ->where('`code` = \''.$code.'\'')
                 ->where('`meta_type` = \''.pSQL($type).'\'')
         );
+    }
+
+    /**
+     * @param string[] $codes
+     * @param string   $type
+     *
+     * @return string[]
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public static function getAliases($codes, $type = 'property')
+    {
+        if (!is_array($codes) || !count($codes)) {
+            return [];
+        }
+
+        $results = \Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            (new \DbQuery())
+                ->select('`code`, `alias`')
+                ->from(bqSQL(Meta::$definition['table']))
+                ->where('`code` IN (\''.implode('\',\'', array_map('pSQL', $codes)).'\')')
+                ->where('`meta_type` = \''.pSQL($type).'\'')
+        );
+
+        if (!is_array($results)) {
+            return $results;
+        }
+
+        return array_combine(array_column($results, 'code'), array_column($results, 'alias'));
     }
 }

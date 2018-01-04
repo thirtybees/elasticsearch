@@ -91,7 +91,7 @@ trait ModuleAjaxTrait
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
-        // Reponse status
+        // Response status
         die(json_encode([
             'success' => true,
             'indexed' => 0,
@@ -125,7 +125,7 @@ trait ModuleAjaxTrait
             $amount = false;
         }
         if (!$amount) {
-            $amount = 10;
+            $amount = 100;
         }
         try {
             $index = Configuration::get(Elasticsearch::INDEX_PREFIX);

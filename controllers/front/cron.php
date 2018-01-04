@@ -17,21 +17,31 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-
 if (!defined('_TB_VERSION_')) {
     if (php_sapi_name() !== 'cli') {
         exit;
     } else {
+        $first = true;
         foreach ($argv as $arg) {
+            if ($first) {
+                $first = false;
+                continue;
+            }
+
+            $arg = substr($arg, 2); // --
             $e = explode('=', $arg);
             if (count($e) == 2) {
                 $_GET[$e[0]] = $e[1];
             } else {
-                $_GET[$e[0]] = 0;
+                $_GET[$e[0]] = true;
             }
         }
+        $_GET['module'] = 'cronjobs';
+        $_GET['fc'] = 'module';
+        $_GET['controller'] = 'cron';
 
         require_once __DIR__.'/../../../../config/config.inc.php';
+        require_once __DIR__.'/../../elasticsearch.php';
     }
 }
 
