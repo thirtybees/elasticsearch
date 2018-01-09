@@ -177,7 +177,8 @@ class Meta extends ObjectModel
                         (new DbQuery())
                             ->select('`'.bqSQL(static::$definition['primary']).'`')
                             ->from(bqSQL(static::$definition['table']))
-                            ->where('`code` = \''.pSQL($insert['code']).'\' AND `meta_type` = \''.pSQL($meta['meta_type']).'\'')
+                            ->where('`code` = \''.pSQL($insert['code']).'\'')
+                            ->where('`meta_type` = \''.pSQL($insert['meta_type']).'\'')
                     )) {
                         unset($insert['position']);
 
