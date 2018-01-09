@@ -67,7 +67,7 @@
       mounted: function () {
         var self = this;
 
-        window.addEventListener('click', function (e) {
+        document.addEventListener('click', function (e) {
           var suggestions = document.getElementById('elasticsearch-autocomplete');
 
           if (!(self.$el.contains(e.target) || (suggestions && suggestions.contains(e.target)))) {
