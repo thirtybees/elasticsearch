@@ -385,7 +385,12 @@ class Fetcher
         $propertyAliases = \Elasticsearch::getAliases(array_keys(static::$attributes));
         foreach (static::$attributes as $propName => $propItems) {
             $propAlias = $propertyAliases[$propName];
-            if (!$metas[$propAlias]['enabled'] && !in_array($propName, ['date_add', 'date_upd', 'price_tax_excl', 'id_tax_rules_group'])) {
+            if (!$metas[$propAlias]['enabled'] && !in_array($propName, [
+                $propertyAliases['date_add'],
+                $propertyAliases['date_upd'],
+                $propertyAliases['price_tax_excl'],
+                $propertyAliases['id_tax_rules_group'],
+            ])) {
                 continue;
             }
 
