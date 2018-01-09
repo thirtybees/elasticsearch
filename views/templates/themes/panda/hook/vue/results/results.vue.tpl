@@ -47,7 +47,12 @@
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('elasticsearch-results');
 
-      if (state.query || state.fixedFilter && _.indexOf(['category', 'categories', 'manufacturer', 'supplier'], state.fixedFilter.aggregationCode) > -1) {
+      if (state.query || state.fixedFilter && _.indexOf([
+          '{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}',
+          '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}',
+          '{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}',
+          '{Elasticsearch::getAlias('supplier')|escape:'javascript':'UTF-8'}'
+        ], state.fixedFilter.aggregationCode) > -1) {
         mainColumn.style.display = 'none';
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
