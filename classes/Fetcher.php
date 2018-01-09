@@ -67,6 +67,14 @@ class Fetcher
      * @var array $attributes
      */
     public static $attributes = [
+        'active'                  => [
+            'function'      => null,
+            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+            'elastic_types' => [
+                Meta::ELASTIC_TYPE_BOOLEAN,
+            ],
+            'visible'       => false,
+        ],
         'name'                    => [
             'function'      => null,
             'default'       => Meta::ELASTIC_TYPE_TEXT,
