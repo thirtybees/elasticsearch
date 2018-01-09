@@ -161,9 +161,7 @@ trait MetaAttributesTrait
                     'alias'             => (string) isset($metas[$idLang][$id]['alias'])
                         ? $metas[$idLang][$id]['alias']
                         : '',
-                    'name'              => (string) isset($metas[$idLang][$id]['name'])
-                        ? $metas[$idLang][$id]['name']
-                        : '',
+                    'name'              => $name,
                     'position'          => (int) $position,
                     'weight'            => isset($metas[$idLang][$id]['weight'])
                         ? (float) $metas[$idLang][$id]['weight']
