@@ -133,10 +133,12 @@ class Meta extends ObjectModel
      * Save metas
      *
      * @param array $metas
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public static function saveMetas($metas)
     {
-        // Make metas unique before saving
         $processedKeys = [];
         foreach ($metas as $index => $meta) {
             if (!in_array($meta['alias'], $processedKeys)) {
@@ -148,64 +150,46 @@ class Meta extends ObjectModel
 
         $metaPrimary = bqSQL(Meta::$definition['primary']);
         $metaTable = bqSQL(Meta::$definition['table']);
-        $idLang = Context::getContext()->language->id;
-        $existingMetas = static::getAllMetas();
-        if (isset($existingMetas[$idLang])) {
-            $existingMetas = $existingMetas[$idLang];
-        }
-
         $inserts = [];
         $langInserts = [];
         $position = 1;
         $fields = array_keys(static::$definition['fields']);
         foreach ($metas as $meta) {
-            if (isset($existingMetas[$meta['alias']])) {
-                // Update
-                $update = [];
-                foreach ($meta as $key => $value) {
-                    if ($key === 'name' || !in_array($key, $fields)) {
-                        continue;
-                    }
-
-                    if (in_array(static::$definition['fields'][$key]['type'], [static::TYPE_BOOL, static::TYPE_INT])) {
-                        $update[$key] = (int) $value;
-                    } else {
-                        $update[$key] = $value;
-                    }
+            // Insert
+            $insert = [];
+            foreach ($meta as $key => $value) {
+                if ($key === 'name' || !in_array($key, $fields)) {
+                    continue;
                 }
 
-                $update[$metaPrimary] = $existingMetas[$meta['alias']][$metaPrimary];
-                $update['position'] = $position;
-                try {
-                    Db::getInstance()->update(
-                        $metaTable,
-                        $update,
-                        "`$metaPrimary` = {$existingMetas[$meta['alias']][$metaPrimary]}"
-                    );
-                } catch (\PrestaShopException $e) {
-                    \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-                }
-            } else {
-                // Insert
-                $insert = [];
-                foreach ($meta as $key => $value) {
-                    if ($key === 'name' || !in_array($key, $fields)) {
-                        continue;
-                    }
-
-                    $insert[$key] = $value;
-                }
-                $insert['position'] = $position;
-
-                $inserts[] = $insert;
+                $insert[$key] = $value;
             }
+            $insert['position'] = $position;
 
+            $inserts[] = $insert;
             $position++;
         }
 
         if (!empty($inserts)) {
             try {
-                Db::getInstance()->insert($metaTable, $inserts);
+                foreach ($inserts as $insert) {
+                    if ($id = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+                        (new DbQuery())
+                            ->select('`'.bqSQL(static::$definition['primary']).'`')
+                            ->from(bqSQL(static::$definition['table']))
+                            ->where('`code` = \''.pSQL($insert['code']).'\' AND `meta_type` = \''.pSQL($meta['meta_type']).'\'')
+                    )) {
+                        unset($insert['position']);
+
+                        Db::getInstance()->update(
+                            $metaTable,
+                            $insert,
+                            '`'.bqSQL(static::$definition['primary']).'` = '.(int) $id
+                        );
+                    } else {
+                        Db::getInstance()->insert($metaTable, $insert);
+                    }
+                }
             } catch (\PrestaShopException $e) {
                 \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
@@ -234,28 +218,17 @@ class Meta extends ObjectModel
                     continue;
                 }
 
-                if (isset($existingMetas[$meta['alias']])) {
-                    // Update
-                    try {
-                        Db::getInstance()->update("{$metaTable}_lang", [
-                            $metaPrimary => $primary,
-                            'id_lang'    => $idLang,
-                            'name'       => $meta['name'][$idLang],
-                        ], "`$metaPrimary` = $primary AND `id_lang` = $idLang");
-                    } catch (\PrestaShopException $e) {
-                        \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-                    }
-                } else {
-                    // Insert
-                    $langInserts[] = [
-                        $metaPrimary => $primary,
-                        'id_lang'    => $idLang,
-                        'name'       => $meta['name'][$idLang],
-                    ];
-                }
+
+                // Insert
+                $langInserts[] = [
+                    $metaPrimary => $primary,
+                    'id_lang'    => $idLang,
+                    'name'       => $meta['name'][$idLang],
+                ];
             }
         }
         if (!empty($langInserts)) {
+            Db::getInstance()->delete("{$metaTable}_lang");
             try {
                 Db::getInstance()->insert("{$metaTable}_lang", $langInserts);
             } catch (\PrestaShopException $e) {
