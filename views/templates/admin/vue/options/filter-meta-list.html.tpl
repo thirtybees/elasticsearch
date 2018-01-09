@@ -85,7 +85,7 @@
                     {*<option value="3" :selected="parseInt(meta.display_type) === 3">{l s='Drop-down list' mod='elasticsearch'}</option>*}
                     <option value="4"
                             :selected.once="parseInt(meta.display_type) === 4"
-                            v-if="meta.code === 'price_tax_excl'"
+                            v-if="meta.code === '{Elasticsearch::getAlias(price_tax_excl)|escape:'javascript':'UTF-8'}'"
                     >
                       {l s='Slider' mod='elasticsearch'}
                     </option>
