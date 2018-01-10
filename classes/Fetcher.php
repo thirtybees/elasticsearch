@@ -996,62 +996,60 @@ class Fetcher
      * @param int     $idLang
      *
      * @return array
+     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
      */
     protected static function getCategoriesNames($product, $idLang)
     {
-        $categories = static::getNestedCategoriesData($idLang, $product);
+        if (!$idLang) {
+            $idLang = Context::getContext()->language->id;
+        }
+        $idLang = (int) $idLang;
 
-        $results = [];
-
-        static::getNestedCats(0, $categories[2], '', $results);
-
-        $finalResults = [];
-
-        foreach ($results as $key => $value) {
-            $finalResults["$key"] = $value;
+        // Avoid these categories (root and home)
+        static $avoidCategories = null;
+        if (!$avoidCategories) {
+            $avoidCategories = [
+                Configuration::get('PS_HOME_CATEGORY'),
+                Configuration::get('PS_ROOT_CATEGORY'),
+            ];
+        }
+        // Cached category paths
+        static $cachedCategoryPaths = [];
+        if (!array_key_exists($idLang, $cachedCategoryPaths)) {
+            $cachedCategoryPaths[$idLang] = [];
         }
 
-        return $finalResults;
-    }
+        $categoryPaths = [];
+        $intervals = array_filter(array_map(function ($idCategory) use(&$categoryPaths, $idLang, $cachedCategoryPaths) {
+            if (!empty($cachedCategoryPaths[$idLang][(int) $idCategory])) {
+                $categoryPaths[] = $cachedCategoryPaths[$idLang][(int) $idCategory];
 
-    /**
-     * @param $key
-     * @param $value
-     * @param $prefix
-     * @param $solution
-     *
-     * @return string
-     */
-    protected static function getNestedCats($key, $value, $prefix, &$solution)
-    {
-        if (!is_array($solution)) {
-            $solution = [];
+                return null;
+            }
+
+            $interval = Category::getInterval((int) $idCategory);
+            $interval['id_category'] = (int) $idCategory;
+
+            return $interval;
+        }, $product->getCategories()));
+
+        foreach ($intervals as $interval) {
+            $sql = new DbQuery();
+            $sql->select('`name`');
+            $sql->from('category', 'c');
+            $sql->leftJoin('category_lang', 'cl', 'c.id_category = cl.id_category AND id_lang = '.(int) $idLang.Shop::addSqlRestrictionOnLang('cl'));
+            $sql->where('c.`nleft` <= '.(int) $interval['nleft']);
+            $sql->where('c.`nright` >= '.(int) $interval['nright']);
+            $sql->where('c.`id_category` NOT IN ('.implode(',', array_map('intval', $avoidCategories)).')');
+            $sql->orderBy('c.`level_depth`');
+
+            $result = implode(' /// ', array_column((array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
+            $cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
+            $categoryPaths[] = $result;
         }
 
-        if (is_string($key) && $key == "name") {
-            if ($value == 'Home') {
-                return '';
-            }
-
-            if (empty($prefix)) {
-                $prefix .= "$value";
-            } else {
-                $prefix .= " /// $value";
-            }
-
-            array_push($solution, $prefix);
-
-            return $prefix;
-        } else { // $key is numeric or children and value is an array
-            $p = $prefix;
-            if (is_numeric($key) || $key == 'children') {
-                foreach ($value as $k => $v) {
-                    $prefix = static::getNestedCats($k, $v, $prefix, $solution);
-                }
-            }
-
-            return $p;
-        }
+        return array_values(array_filter($categoryPaths));
     }
 
     /**
