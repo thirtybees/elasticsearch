@@ -55,6 +55,12 @@ if (!defined('_TB_VERSION_')) {
  */
 class Fetcher
 {
+    // Cached category paths
+    static $cachedCategoryPaths = [];
+
+    // Avoid these categories (root and home)
+    static $avoidCategories = null;
+
     /**
      * Properties array
      *
