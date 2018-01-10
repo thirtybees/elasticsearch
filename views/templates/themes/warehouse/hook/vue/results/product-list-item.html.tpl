@@ -23,16 +23,16 @@
 *  International Registered Trademark & Property of PrestaShop SA
 *}
 {*define numbers of product per line in other page for desktop*}
-{capture name="nbItemsPerLineLarge"}{hook h='calculateGrid' size='large'}{/capture}
-{capture name="nbItemsPerLine"}{hook h='calculateGrid' size='medium'}{/capture}
-{capture name="nbItemsPerLineTablet"}{hook h='calculateGrid' size='small'}{/capture}
-{capture name="nbItemsPerLineMobile"}{hook h='calculateGrid' size='mediumsmall'}{/capture}
-{capture name="nbItemsPerLineMobileS"}{hook h='calculateGrid' size='xtrasmall'}{/capture}
+{capture name="nbItemsPerLineDesktop"}3{/capture}
+{capture name="nbItemsPerLine"}3{/capture}
+{capture name="nbItemsPerLineTablet"}4{/capture}
+{capture name="nbItemsPerLineMobile"}6{/capture}
+{capture name="nbItemsPerLinePortrait"}12{/capture}
 
 {*define numbers of product per line in other page for tablet*}
-{assign var='nbLi' value=$products|@count}
-{math equation="nbLi/nbItemsPerLine" nbLi=$nbLi nbItemsPerLine=$smarty.capture.nbItemsPerLine assign=nbLines}
-{math equation="nbLi/nbItemsPerLineTablet" nbLi=$nbLi nbItemsPerLineTablet=$smarty.capture.nbItemsPerLineTablet assign=nbLinesTablet}
+{*{assign var='nbLi' value=$products|@count}*}
+{*{math equation="nbLi/nbItemsPerLine" nbLi=$nbLi nbItemsPerLine=$smarty.capture.nbItemsPerLine assign=nbLines}*}
+{*{math equation="nbLi/nbItemsPerLineTablet" nbLi=$nbLi nbItemsPerLineTablet=$smarty.capture.nbItemsPerLineTablet assign=nbLinesTablet}*}
 
 {if isset($image_type) && isset($image_types[$image_type])}
   {assign var='imageSize' value=$image_types[$image_type].name}
@@ -48,13 +48,13 @@
         {*{if (isset($product.quantity) && $product.quantity > 0) || (isset($product.quantity_all_versions) && $product.quantity_all_versions > 0)}*}
           {*{hook h='displayProductAttributesPL' productid=$product.id_product}*}
         {*{/if}*}
-        <a class="product_img_link" :href.once="item._source[{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']" >
+        <a class="product_img_link" :href.once="item._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']" >
           <img class="replace-2x img-responsive img_0 lazy"
             {*{if (isset($iqit_lazy_load)  && $iqit_lazy_load) || (isset($warehouse_vars.iqit_lazy_load)  && $warehouse_vars.iqit_lazy_load == 1)}*}
               {*:data-original.once="item._source.image_link_large"*}
               {*src="{$img_dir|escape:'htmlall':'UTF-8'}blank.gif"*}
             {*{else}*}
-            :src.once="'//' + item._source['{Elasticsearch::getAlias('image_link_large')|escape:'javascript':'UTF-8'}'"
+            :src.once="'//' + item._source['{Elasticsearch::getAlias('image_link_large')|escape:'javascript':'UTF-8'}']"
             {*{/if}*}
             :alt.once="item._source['{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}']"
             :title.once="item._source['{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}']"
@@ -77,11 +77,11 @@
 
         <div v-if="{if !PS_CATALOG_MODE}true{else}false{/if} && item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}']"
              class="product-flags">
-          <span v-if="item._source'{Elasticsearch::getAlias('online_only')|escape:'javascript':'UTF-8'}']"
+          <span v-if="item._source['{Elasticsearch::getAlias('online_only')|escape:'javascript':'UTF-8'}']"
                 :class.once="'online_label' + (item._source['{Elasticsearch::getAlias('new')|escape:'javascript':'UTF-8'}'] ? ' online-label2' : '')"
           >{l s='Online only' mod='elasticsearch'}
           </span>
-          <span v-else-if="item._source'{Elasticsearch::getAlias('new')|escape:'javascript':'UTF-8'}']"
+          <span v-else-if="item._source['{Elasticsearch::getAlias('new')|escape:'javascript':'UTF-8'}']"
                 class="product-label product-label-new"
           >
             {l s='New' mod='elasticsearch'}
@@ -164,7 +164,8 @@
       <p class="product-desc" >
         %% item._source['{Elasticsearch::getAlias('description_short')|escape:'javascript':'UTF-8'}'] %%
       </p>
-      <div v-if="{if !isset($restricted_country_mode)}true{else}false{/if} && item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}']" itemscope class="content_price">
+      <div v-if="item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'htmlall':'UTF-8'}']) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
+           itemscope class="content_price">
         <span  class="price product-price">
           {* TODO: find a way to restore hooks *}
           {*{hook h="displayProductPriceBlock" product=$product type="before_price"}*}
@@ -185,17 +186,18 @@
       {* TODO: find a way to restore hooks *}
       {*{hook h='displayProductListReviews' product=$product}*}
       <div class="button-container">
-            <a v-if="{if isset($add_prod_display) && $add_prod_display && !isset($restricted_country_mode) && !$PS_CATALOG_MODE}true{else}false{/if} && (!item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'])"
+            <a v-if="item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'htmlall':'UTF-8'}']) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
                class="button ajax_add_to_cart_button btn btn-default"
-               href="{$link->getPageLink('cart', true, NULL, $smarty.capture.default, false)|escape:'html':'UTF-8'}"
+               href="{$link->getPageLink('cart', true, NULL, NULL, false)|escape:'html':'UTF-8'}"
                rel="nofollow"
                title="{l s='Add to cart' mod='elasticsearch'}"
                :data-id-product.once="item._id"
                :data-minimal_quantity.once="item._source['{Elasticsearch::getAlias('minimal_quantity')|escape:'javascript':'UTF-8'}'] ? item._source['{Elasticsearch::getAlias('minimal_quantity')|escape:'javascript':'UTF-8'}'] : 1">
               <span>{l s='Add to cart'}</span>
             </a>
-            <div v-if="{if isset($add_prod_display) && $add_prod_display && !isset($restricted_country_mode) && !$PS_CATALOG_MODE}true{else}false{/if} && (!item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'])"
+            <div v-if="item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'htmlall':'UTF-8'}']) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
                  class="pl-quantity-input-wrapper"
+                 style="margin-top: -4px"
             >
               <input type="text"
                      name="qty"

@@ -44,7 +44,7 @@
 <div id="search_block_top_content"
      class="col-xs-12 col-sm-{4-$warehouse_vars.logo_width / 2} {if isset($warehouse_vars.logo_position) && !$warehouse_vars.logo_position} col-sm-pull-{4+$warehouse_vars.logo_width} disable_center{/if}">
   <div class="elasticsearch-block-top">
-    <div id="elasticsearch_block_top" class="search_block_top {if $iqitsearch_text !=''}issearchcontent{/if} iqit-search">
+    <div id="elasticsearch_block_top" class="search_block_top {if isset($iqitsearch_text) && $iqitsearch_text !=''}issearchcontent{/if} iqit-search">
       <form method="get" action="{$link->getModuleLink('elasticsearch', 'search', [], true)|escape:'html':'UTF-8'}"
             id="searchbox">
         <input type="hidden" name="controller" value="search"/>

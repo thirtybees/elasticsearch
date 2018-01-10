@@ -15,47 +15,46 @@
  * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<section v-if="query && total || fixedFilter && _.indexOf(['manufacturer', 'supplier', 'category', 'categories'], fixedFilter.aggregationCode) > -1">
+<section v-if="query && total || fixedFilter && _.includes(['{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('supplier')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], fixedFilter.aggregationCode)">
   <h2 class="page-heading">
-    <span v-if="query || fixedFilter && _.indexOf(['category', 'categories'], fixedFilter.aggregationCode) > -1">{l s='Products' mod='elasticsearch'}</span>
-    <span v-else-if="fixedFilter.aggregationCode === 'manufacturer'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
-    <span v-else-if="fixedFilter.aggregationCode === 'supplier'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
+    <span v-if="fixedFilter && _.includes(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], fixedFilter.aggregationCode)">{l s='Category' mod='elasticsearch'}: %% fixedFilter.filterName %%</span>
+    <span v-else-if="fixedFilter && fixedFilter.aggregationCode === '{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
+    <span v-else-if="fixedFilter && fixedFilter.aggregationCode === '{Elasticsearch::getAlias('supplier')|escape:'javascript':'UTF-8'}'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span class="pull-right">
         <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
         <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>
       </span>
   </h2>
-  <div class="content_sortPagiBar clearfix">
-    <div class="form-inline sortPagiBar clearfix">
-      <div id="product-list-switcher" class="form-group display">
-        <label class="visible-xs">{l s='Display product list as:' mod='elasticsearch'}</label>
-        <div class="view-and-count">
-          <div class="display" aria-label="Product list display type">
-            {*<li style="list-style-type: none" :class="layoutType === 'grid' ? 'selected' : ''">*}
-              {*<a id="es-grid"*}
-                   {*rel="nofollow"*}
-                   {*@click="setLayoutType('grid')"*}
-                   {*title="{l s='Grid' mod='elasticsearch'}"*}
-                   {*style="cursor: pointer"*}
-              {*>*}
-                {*<i class="icon icon-th-large"></i>*}
-                {*<span class="visible-xs">{l s='Grid' mod='elasticsearch'}</span>*}
-              {*</a>*}
-            {*</li>*}
-            {*<li style="list-style-type: none" :class="layoutType === 'list' ? 'selected' : ''">*}
-              {*<a id="es-list"*}
-                   {*rel="nofollow"*}
-                   {*@click="setLayoutType('list')"*}
-                   {*title="{l s='List' mod='elasticsearch'}"*}
-                   {*style="cursor: pointer"*}
-              {*>*}
-                {*<i class="icon icon-th-list"></i>*}
-                {*<span class="visible-xs">{l s='List' mod='elasticsearch'}</span>*}
-              {*</a>*}
-            {*</li>*}
-          </div>
+  <div class="form-inline sortPagiBar clearfix">
+    <div id="product-list-switcher" class="form-group display">
+      <label class="visible-xs">{l s='Display product list as:' mod='elasticsearch'}</label>
+      <div class="view-and-count">
+        <div class="display" aria-label="Product list display type">
+          {*<li style="list-style-type: none" :class="layoutType === 'grid' ? 'selected' : ''">*}
+          {*<a id="es-grid"*}
+          {*rel="nofollow"*}
+          {*@click="setLayoutType('grid')"*}
+          {*title="{l s='Grid' mod='elasticsearch'}"*}
+          {*style="cursor: pointer"*}
+          {*>*}
+          {*<i class="icon icon-th-large"></i>*}
+          {*<span class="visible-xs">{l s='Grid' mod='elasticsearch'}</span>*}
+          {*</a>*}
+          {*</li>*}
+          {*<li style="list-style-type: none" :class="layoutType === 'list' ? 'selected' : ''">*}
+          {*<a id="es-list"*}
+          {*rel="nofollow"*}
+          {*@click="setLayoutType('list')"*}
+          {*title="{l s='List' mod='elasticsearch'}"*}
+          {*style="cursor: pointer"*}
+          {*>*}
+          {*<i class="icon icon-th-list"></i>*}
+          {*<span class="visible-xs">{l s='List' mod='elasticsearch'}</span>*}
+          {*</a>*}
+          {*</li>*}
         </div>
       </div>
+    </div>
 
       <product-sort></product-sort>
 
@@ -91,16 +90,16 @@
   </div>
 
   {*define numbers of product per line in other page for desktop*}
-  {capture name="nbItemsPerLineLarge"}{hook h='calculateGrid' size='large'}{/capture}
-  {capture name="nbItemsPerLine"}{hook h='calculateGrid' size='medium'}{/capture}
-  {capture name="nbItemsPerLineTablet"}{hook h='calculateGrid' size='small'}{/capture}
-  {capture name="nbItemsPerLineMobile"}{hook h='calculateGrid' size='mediumsmall'}{/capture}
-  {capture name="nbItemsPerLineMobileS"}{hook h='calculateGrid' size='xtrasmall'}{/capture}
+  {capture name="nbItemsPerLineDesktop"}3{/capture}
+  {capture name="nbItemsPerLine"}3{/capture}
+  {capture name="nbItemsPerLineTablet"}4{/capture}
+  {capture name="nbItemsPerLineMobile"}6{/capture}
+  {capture name="nbItemsPerLinePortrait"}12{/capture}
 
   {*define numbers of product per line in other page for tablet*}
-  {assign var='nbLi' value=$products|@count}
-  {math equation="nbLi/nbItemsPerLine" nbLi=$nbLi nbItemsPerLine=$smarty.capture.nbItemsPerLine assign=nbLines}
-  {math equation="nbLi/nbItemsPerLineTablet" nbLi=$nbLi nbItemsPerLineTablet=$smarty.capture.nbItemsPerLineTablet assign=nbLinesTablet}
+  {*{assign var='nbLi' value=$products|@count}*}
+  {*{math equation="nbLi/nbItemsPerLine" nbLi=$nbLi nbItemsPerLine=$smarty.capture.nbItemsPerLine assign=nbLines}*}
+  {*{math equation="nbLi/nbItemsPerLineTablet" nbLi=$nbLi nbItemsPerLineTablet=$smarty.capture.nbItemsPerLineTablet assign=nbLinesTablet}*}
 
   {if isset($image_type) && isset($image_types[$image_type])}
     {assign var='imageSize' value=$image_types[$image_type].name}
@@ -109,15 +108,15 @@
   {/if}
 
 
-  {math equation="(total%perLine)" total=$smarty.foreach.products.total perLine=$smarty.capture.nbItemsPerLine assign=totModulo}
-  {math equation="(total%perLineT)" total=$smarty.foreach.products.total perLineT=$smarty.capture.nbItemsPerLineTablet assign=totModuloTablet}
-  {math equation="(total%perLineT)" total=$smarty.foreach.products.total perLineT=$smarty.capture.nbItemsPerLineMobile assign=totModuloMobile}
-  {if $totModulo == 0}{assign var='totModulo' value=$smarty.capture.nbItemsPerLine}{/if}
-  {if $totModuloTablet == 0}{assign var='totModuloTablet' value=$smarty.capture.nbItemsPerLineTablet}{/if}
-  {if $totModuloMobile == 0}{assign var='totModuloMobile' value=$smarty.capture.nbItemsPerLineMobile}{/if}
-  <ul{if isset($id) && $id} id="{$id}"{/if} class="product_list grid row{if isset($class) && $class} {$class}{/if}">
+  {*{math equation="(total%perLine)" total=$smarty.foreach.products.total perLine=$smarty.capture.nbItemsPerLine assign=totModulo}*}
+  {*{math equation="(total%perLineT)" total=$smarty.foreach.products.total perLineT=$smarty.capture.nbItemsPerLineTablet assign=totModuloTablet}*}
+  {*{math equation="(total%perLineT)" total=$smarty.foreach.products.total perLineT=$smarty.capture.nbItemsPerLineMobile assign=totModuloMobile}*}
+  {*{if $totModulo == 0}{assign var='totModulo' value=$smarty.capture.nbItemsPerLine}{/if}*}
+  {*{if $totModuloTablet == 0}{assign var='totModuloTablet' value=$smarty.capture.nbItemsPerLineTablet}{/if}*}
+  {*{if $totModuloMobile == 0}{assign var='totModuloMobile' value=$smarty.capture.nbItemsPerLineMobile}{/if}*}
+  <ul{if isset($id) && $id} id="{$id}"{/if} :class="'product_list row{if isset($class) && $class} {$class}{/if} ' + (layoutType === 'grid' ? 'grid' :'list')">
     <li v-for="(result, index) in results" :key.once="result._id"
-        :class.once="'ajax_block_product col-xs-{$smarty.capture.nbItemsPerLineMobileS} col-ms-{$smarty.capture.nbItemsPerLineMobile} col-sm-{$smarty.capture.nbItemsPerLineTablet} col-md-{$smarty.capture.nbItemsPerLine} col-lg-{$smarty.capture.nbItemsPerLineLarge} ' + (index % (results.length / {$smarty.capture.nbItemsPerLine|intval})  === 1 ? ' last-in-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLine|intval}) === 0 ? ' first-in-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineTablet|intval})  === 1 ? ' last-item-of-tablet-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineTablet|intval}) === 0 ? ' first-item-of-tablet-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineMobile|intval})  === 1 ? ' last-item-of-mobile-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineMobile|intval}) === 0 ? ' first-item-of-mobile-line' : '') + (index > (results.length + {$smarty.capture.nbItemsPerLine|intval}) ? ' last-line' : '') + (index > (results.length + {$smarty.capture.nbItemsPerLineMobile|intval}) ? ' last-mobile-line' : '')"
+        :class.once="'ajax_block_product ' + (layoutType === 'grid' ? 'col-xs-{$smarty.capture.nbItemsPerLineMobile}' : 'col-xs-12 clearfix ') + (layoutType === 'grid' ? ' col-sm-{$smarty.capture.nbItemsPerLineTablet} col-md-{$smarty.capture.nbItemsPerLine} ' : 'col-xs-12') + (index % (results.length / {$smarty.capture.nbItemsPerLine|intval})  === 1 ? ' last-in-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLine|intval}) === 0 ? ' first-in-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineTablet|intval})  === 1 ? ' last-item-of-tablet-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineTablet|intval}) === 0 ? ' first-item-of-tablet-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineMobile|intval})  === 1 ? ' last-item-of-mobile-line' : '') + (index % (results.length / {$smarty.capture.nbItemsPerLineMobile|intval}) === 0 ? ' first-item-of-mobile-line' : '') + (index > (results.length + {$smarty.capture.nbItemsPerLine|intval}) ? ' last-line' : '') + (index > (results.length + {$smarty.capture.nbItemsPerLineMobile|intval}) ? ' last-mobile-line' : '')"
     >
       <product-list-item :item="result"></product-list-item>
     </li>

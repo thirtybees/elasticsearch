@@ -15,7 +15,7 @@
  * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *}
-<section v-if="!_.isEmpty(selectedFilters) || query">
+<section class="elasticsearch-column" v-if="!_.isEmpty(selectedFilters) || query">
   <nav>
     <div id="layered_form" class="block">
       <h2 class="title_block section-title-column">{l s='Catalog' mod='elasticsearch'}</h2>
@@ -84,21 +84,41 @@
             </li>
           </ul>
           <ul v-else class="layered_filter_ul">
-            <li v-for="bucket in aggregation.buckets" class="nomargin hiddable" :key="aggregation.code + bucket.code">
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox"
-                         :checked="isFilterChecked(aggregation.code, bucket.code)"
-                         @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
-                  >
-                  <a class="pointer"
-                     data-rel="nofollow"
-                  >
-                    %% bucket.name %%<span> (%% bucket.total %%)</span>
-                  </a>
-                </label>
-              </div>
+            <li v-for="bucket in aggregation.buckets"
+                :key="aggregation.code + bucket.code"
+                class="nomargin col-xs-12"
+            >
+              <span>
+                <input type="checkbox"
+                       :checked="isFilterChecked(aggregation.code, bucket.code)"
+                       @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
+                       data-no-uniform="true"
+                >
+              </span>
+              <label class="layered_nocolor pointer">
+                <a data-rel="nofollow"
+                   style="margin-left: 10px; cursor: pointer"
+                   @click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"
+                >
+                  %% bucket.name %%<span> (%% bucket.total %%)</span>
+                </a>
+              </label>
             </li>
+            {*<li v-for="bucket in aggregation.buckets" class="nomargin hiddable" >*}
+              {*<div class="checkbox">*}
+                {*<label>*}
+                  {*<input type="checkbox"*}
+                         {*:checked="isFilterChecked(aggregation.code, bucket.code)"*}
+                         {*@click="toggleFilter(aggregation.code, aggregation.name, bucket.code, bucket.name)"*}
+                  {*>*}
+                  {*<a class="pointer"*}
+                     {*data-rel="nofollow"*}
+                  {*>*}
+                    {*%% bucket.name %%<span> (%% bucket.total %%)</span>*}
+                  {*</a>*}
+                {*</label>*}
+              {*</div>*}
+            {*</li>*}
           </ul>
         </div>
       </div>
