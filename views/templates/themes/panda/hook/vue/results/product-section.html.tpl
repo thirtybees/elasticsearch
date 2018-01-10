@@ -97,6 +97,7 @@
   {capture name="nbItemsPerLine"}3{/capture}
   {capture name="nbItemsPerLineTablet"}4{/capture}
   {capture name="nbItemsPerLineMobile"}6{/capture}
+  {capture name="nbItemsPerLineMobileS"}6{/capture}
   {capture name="nbItemsPerLinePortrait"}12{/capture}
 
   {if isset($image_type) && isset($image_types[$image_type])}
