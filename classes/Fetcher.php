@@ -557,62 +557,19 @@ class Fetcher
      * @param int $idCategory
      * @param int $idLang
      *
-     * @return array
+     * @return string
+     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
      */
-    public static function getCategoryPathArray($idCategory, $idLang)
+    public static function getCategoryPath($idCategory, $idLang)
     {
-        $cats = [];
-        try {
-            $interval = Category::getInterval($idCategory);
-        } catch (PrestaShopException $e) {
-            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-            $interval = 0;
+        if (!static::$avoidCategories) {
+            static::$avoidCategories = [
+                Configuration::get('PS_HOME_CATEGORY'),
+                Configuration::get('PS_ROOT_CATEGORY'),
+            ];
         }
 
-        if ($interval) {
-            try {
-                $categories = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                    (new DbQuery())
-                        ->select('c.*, cl.*')
-                        ->from('category', 'c')
-                        ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
-                        ->join(Shop::addSqlRestrictionOnLang('cl'))
-                        ->join(Shop::addSqlAssociation('category', 'c'))
-                        ->where('c.`nleft` <= '.(int) $interval['nleft'])
-                        ->where('c.`nright` >= '.(int) $interval['nright'])
-                        ->where('cl.`id_lang` = '.(int) $idLang)
-                        ->where('c.`active` = 1')
-                        ->orderBy('c.`level_depth` ASC')
-                );
-            } catch (PrestaShopException $e) {
-                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-            }
-
-            foreach ($categories as $category) {
-                $cats[] = $category;
-            }
-        }
-
-        static::getNestedCats(0, $cats, '', $results);
-        if (count($results) < 3) {
-            return [];
-        }
-
-        return array_splice($results, 1);
-    }
-
-    /**
-     * Get category path
-     *
-     * @param int $idCategory
-     * @param int $idLang
-     *
-     * @return array
-     */
-    protected static function getCategoryPath($idCategory, $idLang)
-    {
-        $cats = [];
         try {
             $interval = Category::getInterval($idCategory);
         } catch (PrestaShopException $e) {
@@ -634,18 +591,18 @@ class Fetcher
                         ->where('c.`nright` >= '.(int) $interval['nright'])
                         ->where('cl.`id_lang` = '.(int) $idLang)
                         ->where('c.`active` = 1')
+                        ->where('c.`id_category` NOT IN ('.implode(',', array_map('intval', static::$avoidCategories)).')')
                         ->orderBy('c.`level_depth` ASC')
                 );
+
+                return implode(' /// ', array_column((array) $categories, 'name'));
             } catch (PrestaShopException $e) {
                 Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
 
-            foreach ($categories as $category) {
-                $cats[] = $category;
-            }
         }
 
-        return $cats;
+        return '';
     }
 
     /**
@@ -882,111 +839,14 @@ class Fetcher
      * @param int     $idLang
      *
      * @return array
+     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
      */
     protected static function getCategoriesNamesWithoutPath($product, $idLang)
     {
-        $categories = static::getNestedCategoriesData($idLang, $product);
-
-        $results = [];
-        static::getNestedCatsWithoutPath($categories, $results, $idLang);
-
-        return $results;
-    }
-
-    /**
-     * Get nested categories data
-     *
-     * @param int     $idLang
-     * @param Product $product
-     *
-     * @return array
-     */
-    protected static function getNestedCategoriesData($idLang, $product)
-    {
-        try {
-            $cats = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                (new DbQuery())
-                    ->select('c.*, cl.*')
-                    ->from('category', 'c')
-                    ->join(Shop::addSqlAssociation('category', 'c'))
-                    ->leftJoin(
-                        'category_lang',
-                        'cl',
-                        'c.`id_category` = cl.`id_category`'.Shop::addSqlRestrictionOnLang('cl')
-                    )
-                    ->leftJoin(
-                        'category_product',
-                        'cp',
-                        'cp.`id_category` = c.`id_category` AND cp.`id_product` = '.(int) $product->id
-                    )
-                    ->where('`id_lang` = '.(int) $idLang)
-                    ->where('c.`active` = 1')
-                    ->orderBy('c.`level_depth` ASC, category_shop.`position` ASC')
-            );
-        } catch (PrestaShopException $e) {
-            Logger::AddLog("Elasticsearch module error: {$e->getMessage()}");
-
-            $cats = [];
-        }
-
-        $categories = [];
-        $buff = [];
-
-        if (!isset($rootCategory)) {
-            $rootCategory = Category::getRootCategory()->id;
-        }
-
-        foreach ($cats as $row) {
-            foreach (static::getCategoryPath($row['id_category'], $idLang) as $other) {
-                $cats[] = $other;
-            }
-        }
-
-        $cats = array_intersect_key($cats, array_unique(array_map('serialize', $cats)));
-
-        usort($cats, function ($a, $b) {
-            if ($a['level_depth'] < $b['level_depth']) {
-                return -1;
-            }
-            if ($a['level_depth'] > $b['level_depth']) {
-                return 1;
-            }
-
-            return 0;
-        });
-
-        foreach ($cats as $row) {
-            $current = &$buff[$row['id_category']];
-            $current = $row;
-
-            if ($row['id_category'] == $rootCategory) {
-                $categories[$row['id_category']] = &$current;
-            } else {
-                $buff[$row['id_parent']]['children'][$row['id_category']] = &$current;
-            }
-        }
-
-        return $categories;
-    }
-
-    /**
-     * Get nested categories without paths
-     *
-     * @param array $cats
-     * @param array $results
-     * @param int   $idLang
-     */
-    protected static function getNestedCatsWithoutPath($cats, &$results, $idLang)
-    {
-        foreach ($cats as $cat) {
-            if (isset($cat['children']) && is_array($cat['children']) && count($cat['children']) > 0) {
-                static::getNestedCatsWithoutPath($cat['children'], $results, $idLang);
-            } else {
-                if ($cat['is_root_category'] == 0) {
-                    $results[] = $cat['name'];
-                }
-            }
-        }
+        return array_values(array_filter(array_unique(array_map(function ($fullCategory) {
+            return end(array_pad(explode(' /// ', $fullCategory), 1, ''));
+        }, static::getCategoriesNames($product, $idLang)))));
     }
 
     /**

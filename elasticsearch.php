@@ -1143,12 +1143,12 @@ class Elasticsearch extends Module
                     ];
                 }
 
-                $categoryPath = \ElasticsearchModule\Fetcher::getCategoryPathArray($category->id, $idLang);
+                $categoryPath = \ElasticsearchModule\Fetcher::getCategoryPath($category->id, $idLang);
 
                 return [
                     'aggregationCode' => static::getAlias('categories'),
                     'aggregationName' => Meta::getName(static::getAlias('category'), $idLang),
-                    'filterCode'      => Tools::link_rewrite(implode(' /// ', $categoryPath)),
+                    'filterCode'      => Tools::link_rewrite($categoryPath),
                     'filterName'      => $category->name,
                 ];
             }
