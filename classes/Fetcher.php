@@ -872,24 +872,20 @@ class Fetcher
         }
         $idLang = (int) $idLang;
 
-        // Avoid these categories (root and home)
-        static $avoidCategories = null;
-        if (!$avoidCategories) {
-            $avoidCategories = [
+        if (!static::$avoidCategories) {
+            static::$avoidCategories = [
                 Configuration::get('PS_HOME_CATEGORY'),
                 Configuration::get('PS_ROOT_CATEGORY'),
             ];
         }
-        // Cached category paths
-        static $cachedCategoryPaths = [];
-        if (!array_key_exists($idLang, $cachedCategoryPaths)) {
-            $cachedCategoryPaths[$idLang] = [];
+        if (!array_key_exists($idLang, static::$cachedCategoryPaths)) {
+            static::$cachedCategoryPaths[$idLang] = [];
         }
 
         $categoryPaths = [];
-        $intervals = array_filter(array_map(function ($idCategory) use(&$categoryPaths, $idLang, $cachedCategoryPaths) {
-            if (!empty($cachedCategoryPaths[$idLang][(int) $idCategory])) {
-                $categoryPaths[] = $cachedCategoryPaths[$idLang][(int) $idCategory];
+        $intervals = array_filter(array_map(function ($idCategory) use(&$categoryPaths, $idLang) {
+            if (!empty(static::$cachedCategoryPaths[$idLang][(int) $idCategory])) {
+                $categoryPaths[] = static::$cachedCategoryPaths[$idLang][(int) $idCategory];
 
                 return null;
             }
@@ -907,11 +903,11 @@ class Fetcher
             $sql->leftJoin('category_lang', 'cl', 'c.id_category = cl.id_category AND id_lang = '.(int) $idLang.Shop::addSqlRestrictionOnLang('cl'));
             $sql->where('c.`nleft` <= '.(int) $interval['nleft']);
             $sql->where('c.`nright` >= '.(int) $interval['nright']);
-            $sql->where('c.`id_category` NOT IN ('.implode(',', array_map('intval', $avoidCategories)).')');
+            $sql->where('c.`id_category` NOT IN ('.implode(',', array_map('intval', static::$avoidCategories)).')');
             $sql->orderBy('c.`level_depth`');
 
             $result = implode(' /// ', array_column((array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
-            $cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
+            static::$cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
             $categoryPaths[] = $result;
         }
 
