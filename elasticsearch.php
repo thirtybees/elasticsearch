@@ -367,12 +367,10 @@ class Elasticsearch extends Module
         $this->context->controller->addCSS(_PS_JS_DIR_.'ace/aceinput.css');
 
         // Vue.js
-        $this->context->controller->addJS('https://unpkg.com/vue@2.5.11');
-//        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
+        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
 
         // Vuex
-        $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
-//        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
+        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
 
         try {
             $elasticAjaxUrl = $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}";
@@ -458,8 +456,7 @@ class Elasticsearch extends Module
         $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
 
         // Vue.js
-        $this->context->controller->addJS('https://unpkg.com/vue@2.5.11');
-//        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
+        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
 
         try {
             if (Configuration::get(static::INFINITE_SCROLL)) {
@@ -470,8 +467,7 @@ class Elasticsearch extends Module
         }
 
         // Vuex
-        $this->context->controller->addJS('https://unpkg.com/vuex@2.5.0');
-//        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
+        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
 
         // Elasticsearch client
         $this->context->controller->addJS($this->_path.'views/js/elasticsearch.13.3.1.min.js');
