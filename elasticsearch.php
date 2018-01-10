@@ -174,7 +174,7 @@ class Elasticsearch extends Module
             }
         }
 
-        Configuration::updateGlobalValue(static::INDEX_CHUNK_SIZE, 10);
+        Configuration::updateGlobalValue(static::INDEX_CHUNK_SIZE, 100);
         Configuration::updateGlobalValue(static::INDEX_PREFIX, 'thirtybees');
         Configuration::updateGlobalValue(static::PROXY, true);
         Configuration::updateGlobalValue(static::SHARDS, 3);
