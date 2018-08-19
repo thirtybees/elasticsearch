@@ -8,26 +8,72 @@ Community Members that helped fund the module:
 
 Name
 Ali Alkhawaher
+
+
 Emanuel Schiendorfer
+
+
 Vassil Moskov
+
+
 David Patterson
+
+
 Laura Verderame
+
+
 Vincent Schillevoort
+
+
 Stephanie Walsh
+
+
 Ian Hobday
+
+
 Elizabeth Santeix
+
+
 Kauri Tervashonka
+
+
 Yaniv Mirel
+
+
 Rubén Rubiales
+
+
 Freeborn & Associates Inc.
+
+
 Vincent Schillevoort
+
+
 Chiel Vesluijs
+
+
 Michael Yu
+
+
 Lori Kennedy
+
+
 lixo Tuka
+
+
 Robert Ramirez
+
+
 Robert Andersson
+
+
 Tomas Sipos
+
+
 Bertrand Dahi
+
+
 Ian Hobday
+
+
 Lesley Paone
