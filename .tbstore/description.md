@@ -4,76 +4,55 @@ either on your server or a server dedicated just to searching. Then you can conn
 and use it with your site. This module comes with templates that are compatible with Warehouse, Panda, Transformer, 
 and the default thirty bees theme. 
 
-Community Members that helped fund the module:
+**Community Members that helped fund the module:**
 
 Name
-Ali Alkhawaher
 
+
+Ali Alkhawaher
 
 Emanuel Schiendorfer
 
-
 Vassil Moskov
-
 
 David Patterson
 
-
 Laura Verderame
 
-
 Vincent Schillevoort
-
 
 Stephanie Walsh
 
-
 Ian Hobday
-
 
 Elizabeth Santeix
 
-
 Kauri Tervashonka
-
 
 Yaniv Mirel
 
-
 Rubén Rubiales
-
 
 Freeborn & Associates Inc.
 
-
 Vincent Schillevoort
-
 
 Chiel Vesluijs
 
-
 Michael Yu
-
 
 Lori Kennedy
 
-
 lixo Tuka
-
 
 Robert Ramirez
 
-
 Robert Andersson
-
 
 Tomas Sipos
 
-
 Bertrand Dahi
 
-
 Ian Hobday
-
 
 Lesley Paone
