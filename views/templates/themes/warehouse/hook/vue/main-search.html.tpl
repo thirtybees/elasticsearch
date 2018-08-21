@@ -61,7 +61,7 @@
                  spellcheck="false"
                  required
                  aria-label="{l s='Search our site' mod='elasticsearch'}"
-                 :value="query"
+                 :value="decodeURI(query)"
                  @input="queryChangedHandler"
                  @keydown.enter="submitHandler"
                  @keydown.up="suggestionUpHandler"

@@ -22,7 +22,7 @@
         %% fixedFilter.filterName %%
       </span>
       <span v-else-if="query" class="cat-name">
-        {l s='Search:' mod='elasticsearch'} <strong>%% query %%</strong>
+        {l s='Search:' mod='elasticsearch'} <strong>%% decodeURI(query) %%</strong>
       </span>
     </h1>
   </section>
