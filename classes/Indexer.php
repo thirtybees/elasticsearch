@@ -223,16 +223,13 @@ class Indexer
                     'index' => "{$indexPrefix}_{$idShop}_{$idLang}",
                     'body'  => [
                         'settings' => [
-                            'number_of_shards'   => (int) Configuration::get(Elasticsearch::SHARDS),
-                            'number_of_replicas' => (int) Configuration::get(Elasticsearch::REPLICAS),
+                            'index' => [
+                                'number_of_shards'   => (int) Configuration::get(Elasticsearch::SHARDS),
+                                'number_of_replicas' => (int) Configuration::get(Elasticsearch::REPLICAS),
+                            ]
                         ],
                         'mappings' => [
-                            'product' => [
-                                '_source'    => [
-                                    'enabled' => true,
-                                ],
-                                'properties' => $properties,
-                            ],
+                            'properties' => $properties,
                         ],
                     ],
                 ];
