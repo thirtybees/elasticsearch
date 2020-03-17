@@ -422,6 +422,11 @@ class Fetcher
             } else {
                 $elasticProduct->{$propAlias} = $product->{$propName};
             }
+
+            if ($propItems['default'] == Meta::ELASTIC_TYPE_BOOLEAN) {
+                $val = $elasticProduct->{$propAlias};
+                $elasticProduct->{$propAlias} = (bool)$val ? 'true' : 'false';
+            }
         }
 
         // Features
