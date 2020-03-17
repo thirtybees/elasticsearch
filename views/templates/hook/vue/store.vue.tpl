@@ -729,9 +729,11 @@
         } else {
           filterQuery = buildFilterQuery(state.selectedFilters, aggName);
         }
-        filterQuery.bool.must.push({
-          terms: agg.terms
-        });
+        if (agg.terms != null && agg.terms.length > 0) {
+          filterQuery.bool.must.push({
+            terms: agg.terms
+          });
+        }
         delete agg.terms;
 
         agg.filter = filterQuery;
