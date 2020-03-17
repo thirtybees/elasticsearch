@@ -21,8 +21,8 @@
     <span v-else-if="fixedFilter.aggregationCode === '{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span v-else-if="fixedFilter.aggregationCode === '{Elasticsearch::getAlias('supplier')|escape:'javascript':'UTF-8'}'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span class="pull-right">
-        <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
-        <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>
+        <span v-if="parseInt(total.value, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total.value %% {l s='product.' mod='elasticsearch'}</span>
+        <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total.value %% {l s='products.' mod='elasticsearch'}</span>
       </span>
   </h2>
   <div class="content_sortPagiBar clearfix">
