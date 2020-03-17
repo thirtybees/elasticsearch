@@ -913,7 +913,6 @@ class Elasticsearch extends Module
                 $params['body'][] = [
                     'index' => [
                         '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
-                        '_type'  => 'product',
                         '_id'     => $product->id,
                     ],
                 ];
