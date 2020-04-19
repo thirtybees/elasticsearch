@@ -40,7 +40,9 @@
 
     function indexProducts(self, callback) {
       var request = new XMLHttpRequest();
-      request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=indexRemaining', true);
+      // To prevent XMLHttpRequest to be cached, we use a random number each time
+      var rand = Math.random();
+      request.open('GET', window.elasticAjaxUrl + '&ajax=1&action=indexRemaining&rand=' + rand, true);
 
       request.onreadystatechange = function() {
         if (this.readyState === 4) {
