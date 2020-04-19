@@ -47,6 +47,7 @@ class Elasticsearch extends Module
     // Connection page
     const SERVERS = 'ELASTICSEARCH_SERVERS';
     const PROXY = 'ELASTICSEARCH_PROXY';
+    const CONNECTION_RETRY_MAX = 'ELASTICSEARCH_CONNECTION_RETRY_MAX';
 
     // Indexing page
     const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
@@ -179,6 +180,7 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::PROXY, true);
         Configuration::updateGlobalValue(static::SHARDS, 3);
         Configuration::updateGlobalValue(static::SERVERS, json_encode([['url' => 'http://localhost:9200', 'read' => true, 'write' => true]]));
+        Configuration::updateGlobalValue(static::CONNECTION_RETRY_MAX, 3);
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
@@ -294,6 +296,7 @@ class Elasticsearch extends Module
     {
         foreach ([
             static::SERVERS,
+            static::CONNECTION_RETRY_MAX,
             static::PROXY,
             static::LOGGING_ENABLED,
             static::INDEX_CHUNK_SIZE,
@@ -383,7 +386,10 @@ class Elasticsearch extends Module
             return '';
         }
 
-        Media::addJsDef(['elasticAjaxUrl' => $elasticAjaxUrl]);
+        Media::addJsDef([
+            'elasticAjaxUrl' => $elasticAjaxUrl,
+            'elasticMaxRetries' => (int) Configuration::get(static::CONNECTION_RETRY_MAX),
+        ]);
         $this->context->smarty->assign([
             'config'         => $configFormValues,
             'configUpdated'  => $configUpdated,
@@ -1055,6 +1061,7 @@ class Elasticsearch extends Module
             static::LOGGING_ENABLED         => (int) Configuration::get(static::LOGGING_ENABLED),
             static::PROXY                   => (int) Configuration::get(static::PROXY),
             static::SERVERS                 => (array) json_decode(Configuration::get(static::SERVERS), true),
+            static::CONNECTION_RETRY_MAX    => (int) Configuration::get(static::CONNECTION_RETRY_MAX),
             static::SHARDS                  => (int) Configuration::get(static::SHARDS),
             static::REPLICAS                => (int) Configuration::get(static::REPLICAS),
             static::METAS                   => Meta::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT')),

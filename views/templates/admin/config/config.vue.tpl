@@ -20,7 +20,7 @@
     {* If dev mode, enable Vue dev mode as well *}
     {if $smarty.const._PS_MODE_DEV_}Vue.config.devtools = true;{/if}
 
-    var ajaxAttempts = 3;
+    var ajaxAttempts = window.elasticMaxRetries;
 
     function addClass(el, className) {
       if (el.classList) {
@@ -91,7 +91,7 @@
               ajaxAttempts -= 1;
             } else {
               // ...reset otherwise
-              ajaxAttempts = 3;
+              ajaxAttempts = window.elasticMaxRetries;
             }
 
             indexProducts(self);
@@ -285,7 +285,7 @@
           this.$store.commit('setIndexing', true);
 
           // Reset the amount of ajax attempts
-          ajaxAttempts = 3;
+          ajaxAttempts = window.elasticMaxRetries;
           indexProducts(this);
         },
         cancelIndexing: function () {
