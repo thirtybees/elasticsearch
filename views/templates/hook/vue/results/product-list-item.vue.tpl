@@ -40,7 +40,7 @@
             return 1.000;
           }
 
-          return 1 + parseFloat(taxes[this.item._source.{Elasticsearch::getAlias('id_tax_rules_group')|escape:'javascript':'UTF-8'}]) / 100;
+          return 1  {*+ parseFloat(taxes[this.item._source.{Elasticsearch::getAlias('id_tax_rules_group')|escape:'javascript':'UTF-8'}]) / 100*};
         },
         basePriceTaxIncl: function () {
           return parseFloat(this.item._source.{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_0) * this.tax * this.currencyConversion;
@@ -49,7 +49,11 @@
           return parseFloat(this.item._source['{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_' + this.idGroup]) * this.tax * this.currencyConversion;
         },
         discountPercentage: function () {
-          return Math.round((1 - this.priceTaxIncl / this.basePriceTaxIncl) * 100)
+          percent = Math.round((1 - this.priceTaxIncl / this.basePriceTaxIncl) * 100);
+		  if (percent=='12' || percent=='13') return '12.5';
+		  if (this.idGroup=='28' && percent=='2') return '3';
+		  if (this.idGroup=='32' && percent=='3') return '2';
+		  else return percent;
         },
         layoutType: function () {
           return this.$store.state.layoutType;

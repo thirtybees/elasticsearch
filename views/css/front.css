@@ -4,25 +4,7 @@
 
 #elasticsearch-block-top {
     position: relative;
-    margin-top: 30px;
-}
-
-@media (max-width: 767px) {
-    #elasticsearch-block-top {
-        margin-top: 15px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-    #elasticsearch-block-top {
-        margin-top: 10px;
-    }
-}
-
-@media (min-width: 992px) and (max-width: 1199px) {
-    #elasticsearch-block-top {
-        margin-top: 20px;
-    }
+    margin-top: 7px;
 }
 
 #elasticsearch-autocomplete {
@@ -103,7 +85,7 @@
 }
 
 ul.layered_filter_ul {
-    max-height: 200px;
+    max-height: 500px;
     overflow-x: auto;
 }
 
@@ -457,11 +439,6 @@ ul.layered_filter_ul {
     filter: alpha(opacity=50);
 }
 
-ul.layered_filter_ul {
-    max-height: 200px;
-    overflow-x: auto;
-}
-
 .layered_subtitle {
     display: block;
     margin-bottom: 5px;
@@ -514,9 +491,23 @@ ul.layered_filter_ul {
 }
 
 .layered_filter {
-    border-bottom: 1px solid #eee;
+	border-bottom: 1px solid #eee;
+	margin-bottom: 10px;
+	padding-bottom: 7px;
 }
 
 .layered_filter label {
     font-weight: normal;
+}
+
+#layered_block_left h2.section-title-column {
+	display: none;
+}
+
+#layered_block_left .nomargin .checkbox {
+	margin: 0;
+}
+
+#layered_block_left .checkbox .pointer {
+	line-height: 20px;
 }

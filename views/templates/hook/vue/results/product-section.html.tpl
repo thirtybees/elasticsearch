@@ -21,9 +21,9 @@
     <span v-else-if="fixedFilter.aggregationCode === '{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}'">{l s='List of products by manufacturer' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span v-else-if="fixedFilter.aggregationCode === '{Elasticsearch::getAlias('supplier')|escape:'javascript':'UTF-8'}'">{l s='List of products by supplier:' mod='elasticsearch'} <strong>%% fixedFilter.filterName %%</strong></span>
     <span class="pull-right">
-        <span v-if="parseInt(total, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total %% {l s='product.' mod='elasticsearch'}</span>
-        <span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total %% {l s='products.' mod='elasticsearch'}</span>
-      </span>
+		<span v-if="parseInt(total.value, 10) === 1" class="heading-counter badge">{l s='There is' mod='elasticsearch'} %% total.value %% {l s='product.' mod='elasticsearch'}</span>
+		<span v-else class="heading-counter badge">{l s='There are' mod='elasticsearch'} %% total.value %% {l s='products.' mod='elasticsearch'}</span>
+	</span>
   </h2>
   <div class="content_sortPagiBar clearfix">
     <div class="form-inline sortPagiBar clearfix">
@@ -50,6 +50,20 @@
             <i class="icon icon-fw icon-bars"></i>
             <span class="visible-xs">{l s='List' mod='elasticsearch'}</span>
           </a>
+		{if $is_logged}
+			<a id="images" class="btn btn-default" rel="nofollow" title="{l s='Images'}">
+			  <i class="icon icon-fw icon-picture-o" aria-hidden="true"></i>
+			  <span class="visible-xs">{l s='Images'}</span>
+			</a>
+			<a id="dispo" class="btn btn-default" rel="nofollow" title="{l s='Dispo'}">
+			  <i class="icon icon-fw icon-stack-overflow" aria-hidden="true"></i>
+			  <span class="visible-xs">{l s='Dispo'}</span>
+			</a>
+			<a id="prix" class="btn btn-default {if (isset($showPrice) && $showPrice=='No')}active{/if}" rel="nofollow" title="{l s='Prix'}">
+			  <i class="icon icon-fw icon-eur" aria-hidden="true"></i>
+			  <span class="visible-xs">{l s='Prix'}</span>
+			</a>
+		{/if}
         </div>
       </div>
 
@@ -74,20 +88,10 @@
 
       <product-count :limit="limit" :offset="offset" :total="total"></product-count>
     </div>
-    {* TODO: restore product comparison functionality *}
-    {*<div class="form-group compare-form">*}
-    {*<form method="post" action="https://thirtybees.example.com/products-comparison">*}
-    {*<button type="submit" class="btn btn-success bt_compare bt_compare" disabled="disabled">*}
-    {*<span>Compare (<strong class="total-compare-val">0</strong>) »</span>*}
-    {*</button>*}
-    {*<input type="hidden" name="compare_product_count" class="compare_product_count" value="0">*}
-    {*<input type="hidden" name="compare_product_list" class="compare_product_list" value="">*}
-    {*</form>*}
-    {*</div>*}
   </div>
 
-  <ul :class="'product_list list-grid row ' + layoutType">
-    <li v-for="result in results" class="ajax_block_product col-xs-12 col-sm-6 col-md-4" :key="result['_id']">
+  <ul :class="'product_list list-grid list-group ' + layoutType">
+    <li v-for="result in results" class="ajax_block_product list-group-item col-xs-6 col-sm-4 col-md-3 col-lg-5ths" :key="result['_id']">
       <product-list-item :item="result"></product-list-item>
     </li>
   </ul>
@@ -98,21 +102,12 @@
       <show-all></show-all>
       <product-count :limit="limit" :offset="offset" :total="total"></product-count>
     </div>
-    {* TODO: restore compare functionality *}
-    {*<div class="form-group compare-form">*}
-    {*<form method="post" action="https://thirtybees.example.com/products-comparison">*}
-    {*<button type="submit" class="btn btn-success bt_compare bt_compare" disabled="disabled">*}
-    {*<span>Compare (<strong class="total-compare-val">0</strong>) »</span>*}
-    {*</button>*}
-    {*<input type="hidden" name="compare_product_count" class="compare_product_count" value="0">*}
-    {*<input type="hidden" name="compare_product_list" class="compare_product_list" value="">*}
-    {*</form>*}
-    {*</div>*}
   </div>
   <infinite-loading @infinite="loadMoreProducts" v-if="infiniteScroll">
       <span slot="no-more">
         {l s='You\'ve reached the end of the list' mod='elasticsearch'}
       </span>
+	  <span slot="no-results"></span>
   </infinite-loading>
 </section>
 <section v-else-if="!query">

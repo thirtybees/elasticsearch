@@ -80,6 +80,9 @@
             if (typeof agg.color_code !== 'undefined') {
               bucket.color_code = agg.color_code.buckets[index].color_code;
             }
+			if (typeof agg.color_id_attribute !== 'undefined') {
+              bucket.color_id_attribute = agg.color_id_attribute.buckets[index].color_id_attribute;
+            }
 
             buckets.push(bucket);
           });
@@ -120,7 +123,6 @@
             // Ensure we have a names array
             var position = 0;
             var key = bucket.key;
-
             var codes = bucket.code.hits.hits[0]._source[aggCode + '_agg'];
             if (!_.isArray(codes)) {
               codes = [codes];
@@ -142,9 +144,15 @@
               colorCodes = [colorCodes];
             }
 
+			var colorCodesIds = bucket.color_id_attribute.hits.hits[0]._source[aggCode + '_color_id_attribute'];
+            if (!_.isArray(colorCodesIds)) {
+              colorCodesIds = [colorCodesIds];
+            }
+
             var code = codes[position];
             var name = names[position];
             var colorCode = colorCodes[position];
+			var colorCodeId = colorCodesIds[position];
 
             // Check if bucket already exists
             var newBucket = _.find(aggregation.buckets, ['code', code]);
@@ -155,6 +163,7 @@
                 code: code,
                 name: name,
                 color_code: colorCode,
+				color_id_attribute: colorCodeId,
                 total: bucket.doc_count
               });
             }
@@ -295,7 +304,7 @@
       if (properties.limit && _.indexOf([24, 60, 'all'], properties.limit) > -1) {
         hash += '/n=' + properties.limit;
       }
-      if (properties.sort && properties.sort !== '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc') {
+      if (properties.sort && properties.sort !== '{Elasticsearch::getAlias('stock_qty')|escape:'javascript':'UTF-8'}:desc') {
         if (properties.sort.substring(0, 21) === '{Elasticsearch::getAlias('price_tax_excl')|escape:'javascript':'UTF-8'}_group_') {
           var props = properties.sort.split(':');
           if (props.length === 2) {
@@ -389,6 +398,7 @@
             return;
           case 'sort':
             if (_.indexOf([
+				'{Elasticsearch::getAlias('stock_qty')|escape:'javascript':'UTF-8'}:desc',
                 '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc',
                 'price:asc',
                 'price:desc',
@@ -729,9 +739,11 @@
         } else {
           filterQuery = buildFilterQuery(state.selectedFilters, aggName);
         }
-        filterQuery.bool.must.push({
-          terms: agg.terms
-        });
+		if (agg.terms != null && agg.terms.length > 0) {
+          filterQuery.bool.must.push({
+            terms: agg.terms
+          });
+        }
         delete agg.terms;
 
         agg.filter = filterQuery;
@@ -786,7 +798,7 @@
         results: [],
         total: 0,
         maxScore: 0,
-        sort: '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc',
+        sort: 'score',
         suggestions: [],
         aggregations: { },
         limit: 12,
@@ -971,7 +983,7 @@
       getters: {
         elasticQuery: function (state) {
           return JSON.parse('{ElasticSearch::jsonEncodeQuery(Configuration::get(ElasticSearch::QUERY_JSON))|escape:'javascript':'UTF-8'}'
-            .replace('||QUERY||', '"' + state.query + '"')
+            .replace('||QUERY||', '"' + decodeURI(state.query) + '"')
             .replace('||FIELDS||', JSON.stringify({$fields|json_encode})));
         }
       }

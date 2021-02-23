@@ -32,41 +32,38 @@
              :title.once="item._source['{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}']"
         >
       </a>
-
-      {if isset($quick_view) && $quick_view}
-        <a class="quick-view show-if-product-item-hover" :href="item._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']"
-           title="{l s='Open quick view window' mod='elasticsearch'}" :rel="item._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']">
-          <i class="icon icon-eye-open"></i>
-        </a>
-      {/if}
-
-      {* TODO: add show_price and available_for_order properties to indexed product and add this constraint *}
-      <div v-if="{if !$PS_CATALOG_MODE && !isset($restricted_country_mode)}true{else}false{/if} && item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}']" class="content_price show-if-product-grid-hover">
-        <span class="price product-price">
-          {* TODO: find a way to restore dynamic hooks *}
-          {*{hook h="displayProductPriceBlock" product=$product type="before_price"}*}
-          %% formatCurrency(priceTaxIncl) %%
-        </span>
-        {* TODO: find a way to handle discounts *}
-        <span v-if="basePriceTaxIncl > priceTaxIncl">
-          {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
-          <span class="old-price product-price">%% formatCurrency(basePriceTaxIncl) %%</span>&nbsp;
-          <span class="price-percent-reduction">-%% discountPercentage %%%</span>
-        </span>
-        {* TODO: find a way to restore dynamic hooks *}
-        {*{hook h="displayProductPriceBlock" product=$product type="price"}*}
-        {*{hook h="displayProductPriceBlock" product=$product type="unit_price"}*}
-        {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
-      </div>
-
-      <div v-if="{if !PS_CATALOG_MODE}true{else}false{/if} && item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}']" class="product-label-container">
-        <span v-if="item._source['{Elasticsearch::getAlias('online_only')|escape:'javascript':'UTF-8'}']" class="product-label product-label-online">{l s='Online only' mod='elasticsearch'}</span>
-        <span v-else-if="item._source['{Elasticsearch::getAlias('new')|escape:'javascript':'UTF-8'}']" class="product-label product-label-new">{l s='New' mod='elasticsearch'}</span>
-        <span v-else-if="item._source['{Elasticsearch::getAlias('on_sale')|escape:'javascript':'UTF-8'}']" class="product-label product-label-sale">{l s='Sale!' mod='elasticsearch'}</span>
-        <span v-else-if="basePriceTaxIncl > priceTaxIncl" class="product-label product-label-discount">{l s='Reduced price!' mod='elasticsearch'}</span>
-      </div>
+	  
+	  <div class="brandname">
+	    %% item._source['{Elasticsearch::getAlias('manufacturer')|escape:'javascript':'UTF-8'}'] %%
+	  </div>
 
     </div>
+	
+	<div class="availability" v-if="item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && {if !isset($restricted_country_mode)}true{else}false{/if}">	
+		<template v-if="item._source['{Elasticsearch::getAlias('stock_qty')|escape:'javascript':'UTF-8'}'] <= 0">
+			<span v-if="item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_later')|escape:'javascript':'UTF-8'}']" class="label label-warning"> Pré-commande </span>
+			<span v-else class="label label-danger"> Hors stock </span>
+		</template>
+		<template v-else>
+			<span class="label label-success"> En stock </span>
+		</template>	
+	</div>
+	
+	<div class="product-reference-container">
+		<p id="product_reference">
+			<a class="product-name" 
+				:href.once="item._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']" 
+				:title.once="item._source['{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}']" itemprop="url">
+				<span class="editable" itemprop="sku" 
+				:content.once="item._source['{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}']">%% item._source['{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}'] %%</span>
+			</a>
+		</p>
+		<div class="prixderef">
+			<p class="price_reference" v-if="item._source ['{Elasticsearch::getAlias('price_reference')|escape:'javascript':'UTF-8'}'] !== '0,00'">
+				<span class="smaller">Prix public ttc:</span>%% item._source['{Elasticsearch::getAlias('price_reference')|escape:'javascript':'UTF-8'}'] %% €
+			</p>
+		</div>
+	</div>
 
     <div class="product-description-container">
       <h3 class="h4 product-name">
@@ -77,31 +74,18 @@
           %% item._source['{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}'] %%
         </a>
       </h3>
-
-      {* TODO: handle reviews *}
-      {*{capture name='displayProductListReviews'}{hook h='displayProductListReviews' product=$product}{/capture}*}
-      {*{if $smarty.capture.displayProductListReviews}*}
-        {*<div class="hook-reviews">*}
-          {*{hook h='displayProductListReviews' product=$product}*}
-        {*</div>*}
-      {*{/if}*}
-
-      {* TODO: handle dynamic hooks *}
-      {*{if isset($product.is_virtual) && !$product.is_virtual}{hook h="displayProductDeliveryTime" product=$product}{/if}*}
-      {*{hook h="displayProductPriceBlock" product=$product type="weight"}*}
-
       <p class="product-desc hide-if-product-grid" v-html="item._source['{Elasticsearch::getAlias('description_short')|escape:'javascript':'UTF-8'}']"></p>
     </div>
 
-    <div class="product-actions-container">
+    <div v-if="idGroup != 1" class="product-actions-container">
       <div class="product-price-button-wrapper">
-          <div v-if="{if !$PS_CATALOG_MODE}true{else}false{/if} && item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}']" class="content_price">
+		<div v-if="{if !$PS_CATALOG_MODE}true{else}false{/if} && item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}']" class="content_price">
             {* TODO: find a way to restore dynamic hooks *}
             {*{hook h="displayProductPriceBlock" product=$product type='before_price'}*}
             <span v-if="item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] && {if !isset($restricted_country_mode)}true{else}false{/if}"
                   class="price product-price">
               %% formatCurrency(priceTaxIncl) %%
-            </span>
+			</span>
             <span v-if="item._source['{Elasticsearch::getAlias('show_price')|escape:'javascript':'UTF-8'}'] && {if !isset($restricted_country_mode)}true{else}false{/if} && basePriceTaxIncl > priceTaxIncl">
               {* TODO: find a way to restore dynamic hooks *}
               {*{hook h="displayProductPriceBlock" product=$product type="old_price"}*}
@@ -116,8 +100,8 @@
             {*{hook h="displayProductPriceBlock" product=$product type='after_price'}*}
         </div>
 
-        <div class="button-container">
-          <a v-if="item._source['{Elasticsearch::getAlias('in_stock')|escape:'javascript':'UTF-8'}'] && item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'htmlall':'UTF-8'}']) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
+        <div class="button-container" v-if="!item._source['{Elasticsearch::getAlias('color_list')|escape:'javascript':'UTF-8'}']">
+          <a v-if="item._source['{Elasticsearch::getAlias('available_for_order')|escape:'javascript':'UTF-8'}'] && !item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}'] && (item._source['{Elasticsearch::getAlias('allow_oosp')|escape:'javascript':'UTF-8'}'] || item._source['{Elasticsearch::getAlias('in_stock')|escape:'htmlall':'UTF-8'}']) && {if !isset($restricted_country_mode)}true{else}false{/if} && {if !$PS_CATALOG_MODE}true{else}false{/if}"
              class="ajax_add_to_cart_button btn btn-primary"
              style="cursor: pointer"
              rel="nofollow" title="{l s='Add to cart' mod='elasticsearch'}"
@@ -130,38 +114,19 @@
           <span v-else class="ajax_add_to_cart_button btn btn-primary disabled">
             <span>{l s='Add to cart' mod='elasticsearch'}</span>
           </span>
-          <a class="btn btn-default" :href="item._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']" title="{l s='View' mod='elasticsearch'}">
-            <span v-if="item._source['{Elasticsearch::getAlias('customization_required')|escape:'javascript':'UTF-8'}']">
-             {l s='Customize' mod='elasticsearch'}
-            </span>
-            <span v-else>
-              {l s='More' mod='elasticsearch'}
-            </span>
-          </a>
         </div>
-      </div>
-
-      <div v-if="item._source['{Elasticsearch::getAlias('color_list')|escape:'javascript':'UTF-8'}']" v-html="item._source['{Elasticsearch::getAlias('color_list')|escape:'javascript':'UTF-8'}']" class="color-list-container"></div>
-          <stock-badge :item.once="item"></stock-badge>
-      {* TODO: restore show_functional_buttons variable *}
-      {*{if $show_functional_buttons}*}
-        {*<div class="functional-buttons clearfix show-if-product-grid-hover">*}
-          {* TODO: find a way to restore dynamic hooks *}
-          {*{hook h='displayProductListFunctionalButtons' product=$product}*}
-
-          {* TODO: find a way to restore product comparison *}
-          {*{if isset($comparator_max_item) && $comparator_max_item}*}
-            {*<div class="compare">*}
-              {*<a class="add_to_compare"*}
-                 {*:href="item._source.link"*}
-                 {*:data-id-product="item['_id']">*}
-                {*<i class="icon icon-plus"></i> {l s='Add to Compare' mod='elasticsearch'}*}
-              {*</a>*}
-            {*</div>*}
-          {*{/if}*}
-        {*</div>*}
-      {*{/if}*}
+      
+		<div class="button-container" v-else>
+		  <a class="btn btn-primary" 
+			:href.once="item._source['{Elasticsearch::getAlias('link')|escape:'javascript':'UTF-8'}']"
+			:title.once="item._source['{Elasticsearch::getAlias('name')|escape:'javascript':'UTF-8'}']">
+			<span>Voir le produit</span>
+		  </a>
+        </div>	
+	  
+	  </div>
+	 
+      <div v-html="item._source['{Elasticsearch::getAlias('color_list')|escape:'javascript':'UTF-8'}']" class="color-list-container"></div>
     </div>
-
   </div>
 </article>

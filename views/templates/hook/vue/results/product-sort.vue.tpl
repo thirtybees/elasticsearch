@@ -27,6 +27,9 @@
         return {
           sorts: [
             {
+              name: '-',
+              value: ''
+            }, {
               name: '{l s='Product: Newest first' mod='elasticsearch' js=1}',
               value: '{Elasticsearch::getAlias('date_add')|escape:'javascript':'UTF-8'}:desc'
             }, {
@@ -47,7 +50,10 @@
             }, {
               name: '{l s='Reference: Highest first' mod='elasticsearch' js=1}',
               value: '{Elasticsearch::getAlias('reference')|escape:'javascript':'UTF-8'}:desc'
-            }
+            }, {
+			  name: '{l s='Stock: Highest first' mod='elasticsearch' js=1}',
+			  value: '{Elasticsearch::getAlias('stock_qty')|escape:'javascript':'UTF-8'}:desc'
+			}
           ]
         }
       },

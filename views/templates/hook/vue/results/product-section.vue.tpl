@@ -22,6 +22,14 @@
 {include file=ElasticSearch::tpl('hook/vue/results/pagination.vue.tpl')}
 {include file=ElasticSearch::tpl('hook/vue/results/product-list-item.vue.tpl')}
 
+{* Adding some var showprice from cookies on my B2B website to show price only to registered customers *}
+{if isset($smarty.cookies.thirtybees_showprice) && $smarty.cookies.thirtybees_showprice!=''}
+	{assign var='showPrice' value=$smarty.cookies.thirtybees_showprice}
+{elseif !$islogged} 
+	{assign var='showPrice' value='NO'}
+{/if}
+
+
 {* Template file *}
 {capture name="template"}{include file=ElasticSearch::tpl('hook/vue/results/product-section.html.tpl')}{/capture}
 <script type="text/javascript">

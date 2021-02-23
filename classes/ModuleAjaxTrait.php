@@ -164,7 +164,6 @@ trait ModuleAjaxTrait
             $params['body'][] = [
                 'index' => [
                     '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
-                    '_type'  => 'product',
                     '_id'     => $product->id,
                 ],
             ];
@@ -180,7 +179,7 @@ trait ModuleAjaxTrait
             foreach (get_object_vars($product) as $name => $var) {
                 // Do not create an aggregatable copy for color codes
                 // Color codes are meta data for aggregations
-                if (substr($name, -11) === '_color_code') {
+                if (substr($name, -11) === '_color_code' || substr($name, -11) === '_color_id_attribute') {
                     continue;
                 }
 

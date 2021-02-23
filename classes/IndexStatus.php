@@ -113,6 +113,8 @@ class IndexStatus extends \ObjectModel
                     )
                     ->join(!$idLang ? 'INNER JOIN `'._DB_PREFIX_.'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
                     ->where('ps.`id_shop` = '.(int) $idShop)
+					->where('ps.`active` = 1')
+					->where('ps.`visibility` != "none"')
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -202,6 +204,8 @@ class IndexStatus extends \ObjectModel
                         'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`'
                     )
                     ->join(!$idLang ? 'INNER JOIN `'._DB_PREFIX_.'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
+					->where('ps.`active` = 1')
+					->where('ps.`visibility` != "none"')
                     ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
                     ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
                     ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
@@ -221,6 +225,7 @@ class IndexStatus extends \ObjectModel
 
             $products[] = $product;
         }
+		
 
         return $products;
     }

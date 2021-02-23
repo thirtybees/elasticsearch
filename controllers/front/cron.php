@@ -17,10 +17,7 @@
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-if (!defined('_TB_VERSION_')) {
-    if (php_sapi_name() !== 'cli') {
-        exit;
-    } else {
+if (isset($_GET['key']) && $_GET['key'] == "MbkW3jRT4wF8GsLraab6bMxSm6uWpb5xs2ajN6mk") {
         $first = true;
         foreach ($argv as $arg) {
             if ($first) {
@@ -42,7 +39,12 @@ if (!defined('_TB_VERSION_')) {
 
         require_once __DIR__.'/../../../../config/config.inc.php';
         require_once __DIR__.'/../../elasticsearch.php';
-    }
+		
+		echo 'GOOD';
+}
+
+else {
+	echo 'NOT GOOD';
 }
 
 /**
@@ -93,9 +95,12 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
         /** @var Elasticsearch $module */
         $module = Module::getInstanceByName('elasticsearch');
         $module->cronProcessRemainingProducts($chunks, $idShop);
-    }
+
+	}
+	
 }
 
-if (php_sapi_name() === 'cli') {
+if (isset($_GET['key']) && $_GET['key'] == "MbkW3jRT4wF8GsLraab6bMxSm6uWpb5xs2ajN6mk") {
     new ElasticsearchcronModuleFrontController();
+	echo 'TASK ENDED';
 }

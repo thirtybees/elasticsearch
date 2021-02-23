@@ -55,6 +55,10 @@
     "en": "Date updated",
     "nl": "Datum bijgewerkt"
   },
+  "price_reference": {
+    "en": "Public price",
+    "nl": "Public price"
+  },
   "description": {
     "en": "Description",
     "nl": "Beschrijving"
