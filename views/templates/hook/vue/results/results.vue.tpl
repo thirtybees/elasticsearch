@@ -46,14 +46,21 @@
 
     function manageSearchBlockVisibility(state) {
       var instantSearchBlock = document.getElementById('elasticsearch-results');
+      var left_column = document.getElementById('left_column');
 
       if (state.query || state.fixedFilter && _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], state.fixedFilter.aggregationCode) < 0) {
         mainColumn.style.display = 'none';
+        if (left_column != null) {
+            left_column.style.display = '';
+        }
         if (instantSearchBlock) {
           instantSearchBlock.style.display = '';
         }
       } else if (!state.fixedFilter || _.indexOf(['{Elasticsearch::getAlias('category')|escape:'javascript':'UTF-8'}', '{Elasticsearch::getAlias('categories')|escape:'javascript':'UTF-8'}'], state.fixedFilter.aggregationCode) > -1) {
         mainColumn.style.display = '';
+        if (left_column != null) {
+            left_column.style.display = '';
+        }
         if (instantSearchBlock) {
           instantSearchBlock.style.display = 'none';
         }
@@ -70,7 +77,7 @@
       // Check if the Elasticsearch module should be hooked
       var target = document.getElementById('elasticsearch-results');
       if (typeof target === 'undefined' || !target) {
-        mainColumn = document.querySelector('#main_column, #center_column');
+        mainColumn = document.querySelector('#top_column, #main_column, #center_column');
         if (!mainColumn) {
           return;
         }
@@ -117,7 +124,7 @@
           store: window.ElasticsearchModule.store,
           computed: {
             query: function () {
-              return this.$store.state.query;
+              return decodeURI(this.$store.state.query);
             },
             layoutType: function () {
               return this.$store.state.layoutType;

@@ -48,6 +48,7 @@ class Elasticsearch extends Module
     // Connection page
     const SERVERS = 'ELASTICSEARCH_SERVERS';
     const PROXY = 'ELASTICSEARCH_PROXY';
+    const CONNECTION_RETRY_MAX = 'ELASTICSEARCH_CONNECTION_RETRY_MAX';
 
     // Indexing page
     const BLACKLISTED_FIELDS = 'ELASTICSEARCH_BLACKLISTED_FIELDS';
@@ -183,6 +184,7 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::PROXY, true);
         Configuration::updateGlobalValue(static::SHARDS, 3);
         Configuration::updateGlobalValue(static::SERVERS, json_encode([['url' => 'http://localhost:9200', 'read' => true, 'write' => true]]));
+        Configuration::updateGlobalValue(static::CONNECTION_RETRY_MAX, 3);
         Configuration::updateGlobalValue(static::REPLICAS, 2);
         Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__ . '/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
@@ -298,6 +300,7 @@ class Elasticsearch extends Module
     {
         foreach ([
                      static::SERVERS,
+                     static::CONNECTION_RETRY_MAX,
                      static::PROXY,
                      static::LOGGING_ENABLED,
                      static::INDEX_CHUNK_SIZE,
@@ -388,7 +391,10 @@ class Elasticsearch extends Module
             return '';
         }
 
-        Media::addJsDef(['elasticAjaxUrl' => $elasticAjaxUrl]);
+        Media::addJsDef([
+            'elasticAjaxUrl' => $elasticAjaxUrl,
+            'elasticMaxRetries' => (int)Configuration::get(static::CONNECTION_RETRY_MAX),
+        ]);
         $this->context->smarty->assign([
             'config' => $configFormValues,
             'configUpdated' => $configUpdated,
@@ -562,6 +568,7 @@ class Elasticsearch extends Module
             // If meta is a color (display_type = color/5), then pick the color code as well
             if ((int)$meta['display_type'] === 5) {
                 $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['alias']}_color_code"]]]];
+                $aggs['color_id_attribute'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['alias']}_color_id_attribute"]]]];
             }
 
             foreach ($aggs as $aggName => &$agg) {
@@ -892,7 +899,6 @@ class Elasticsearch extends Module
                 $params['body'][] = [
                     'index' => [
                         '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
-                        '_type' => 'product',
                         '_id' => $product->id,
                     ],
                 ];
@@ -1035,6 +1041,7 @@ class Elasticsearch extends Module
             static::LOGGING_ENABLED => (int)Configuration::get(static::LOGGING_ENABLED),
             static::PROXY => (int)Configuration::get(static::PROXY),
             static::SERVERS => (array)json_decode(Configuration::get(static::SERVERS), true),
+            static::CONNECTION_RETRY_MAX => (int)Configuration::get(static::CONNECTION_RETRY_MAX),
             static::SHARDS => (int)Configuration::get(static::SHARDS),
             static::REPLICAS => (int)Configuration::get(static::REPLICAS),
             static::METAS => Meta::getAllProperties((int)Configuration::get('PS_LANG_DEFAULT')),
@@ -1157,7 +1164,7 @@ class Elasticsearch extends Module
         $xunressub = 'a-zA-Z\d\-._~\!$&\'()*+,;=';
         $xpchar = $xunressub . ':@%';
 
-        $xscheme = '([a-zA-Z][a-zA-Z\d+-.]*)';
+        $xscheme = '([a-zA-Z][a-zA-Z\d+\-.]*)';
 
         $xuserinfo = '(([' . $xunressub . '%]*)' . '(:([' . $xunressub . ':%]*))?)';
 
@@ -1165,7 +1172,7 @@ class Elasticsearch extends Module
 
         $xipv6 = '(\[([a-fA-F\d.:]+)\])';
 
-        $xhostName = '([a-zA-Z\d-.%]+)';
+        $xhostName = '([a-zA-Z\d\-.%]+)';
 
         $xhost = '(' . $xhostName . '|' . $xipv4 . '|' . $xipv6 . ')';
         $xport = '(\d*)';

@@ -25,7 +25,7 @@
         {l s='Search' mod='elasticsearch'}
       </span>
       <span v-else class="cat-name">
-        {l s='Search:' mod='elasticsearch'} <strong>%% decodeURI(query) %%</strong>
+        {l s='Search:' mod='elasticsearch'} <strong>%% query %%</strong>
       </span>
     </h1>
   </section>

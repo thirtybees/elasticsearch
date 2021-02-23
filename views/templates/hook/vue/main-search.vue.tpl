@@ -81,7 +81,7 @@
       store: window.ElasticsearchModule.store,
       computed: {
         query: function () {
-          return this.$store.state.query;
+          return decodeURI(this.$store.state.query);
         },
         results: function () {
           return this.$store.state.results;

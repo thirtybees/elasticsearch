@@ -71,8 +71,8 @@
               <input :class="'color-option' + (isFilterChecked(aggregation.code, bucket.code) ? ' on' : '')"
                      type="button"
                      :aria-label.once="bucket.name"
-                     :style.once="'background: ' + bucket.color_code"
-              >
+                     :style.once="'background: center / contain no-repeat url(../../../img/co/'+bucket.color_id_attribute+'.jpg) '+bucket.color_code+';'"
+			>
               <label class="layered_color"
                      :aria-label="bucket.name"
                      style="cursor: pointer"

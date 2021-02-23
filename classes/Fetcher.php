@@ -101,7 +101,7 @@ class Fetcher
             ],
         ],
         'reference' => [
-            'function' => [__CLASS__, 'getTrimmedRef'],
+            'function' => null,
             'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 META::ELASTIC_TYPE_KEYWORD,
@@ -391,6 +391,7 @@ class Fetcher
         if (!Validate::isLoadedObject($product)) {
             return $elasticProduct;
         }
+
         $products = [$product];
         static::addColorListHTML($products);
         $idLangDefault = (int)Configuration::get('PS_LANG_DEFAULT');
@@ -435,6 +436,11 @@ class Fetcher
             } else {
                 $elasticProduct->{$propAlias} = $product->{$propName};
             }
+
+            if ($propItems['default'] == Meta::ELASTIC_TYPE_BOOLEAN) {
+                $val = $elasticProduct->{$propAlias};
+                $elasticProduct->{$propAlias} = (bool)$val ? 'true' : 'false';
+            }
         }
 
         // Features
@@ -459,6 +465,8 @@ class Fetcher
                 }
 
                 $propItems = $feature['value'];
+
+                if (strpos($propItems, ', ') !== false) $propItems = explode(', ', $propItems);
 
                 $elasticProduct->{$featureAlias} = $propItems;
             }
@@ -502,10 +510,40 @@ class Fetcher
                         // will eventually be in the same order, so that's how you can match them later
                         if (!isset($elasticProduct->{"{$attributeAlias}_color_code"}) || !is_array($elasticProduct->{"{$attributeAlias}_color_code"})) {
                             $elasticProduct->{"{$attributeAlias}_color_code"} = [];
+                            $elasticProduct->{"{$attributeAlias}_color_id_attribute"} = [];
                         }
 
                         if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$attributeAlias}_color_code"})) {
                             $elasticProduct->{"{$attributeAlias}_color_code"}[] = $attribute['attribute_color'];
+                            $elasticProduct->{"{$attributeAlias}_color_id_attribute"}[] = $attribute['id_attribute'];
+                        }
+                    }
+                }
+            } else {
+                foreach ($attributeGroups as $attribute) {
+
+                    if ($attribute['is_color_group']) {
+                        $attributeName = $attribute['attribute_name'];
+                        if ($idLang === $idLangDefault) {
+                            $attributeCode = $groupName;
+                        } else {
+                            $attributeGroup = new AttributeGroup($attribute['id_attribute_group'], $idLangDefault);
+                            $attributeCode = Tools::link_rewrite($attributeGroup->name);
+                        }
+                        $attributeAlias = \Elasticsearch::getAlias($attributeCode, 'attribute');
+
+                        if (!isset($elasticProduct->{$attributeAlias}) || !is_array($elasticProduct->{$attributeAlias})) {
+                            $elasticProduct->{$attributeAlias} = [];
+                        }
+
+                        if (!in_array($attributeName, $elasticProduct->{$attributeAlias})) {
+                            $elasticProduct->{$attributeAlias}[] = $attributeName;
+
+                            // Add a special property for the color group
+                            // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
+                            // will eventually be in the same order, so that's how you can match them later
+                            $elasticProduct->{"{$attributeAlias}_color_code"}[] = $attribute['attribute_color'];
+                            $elasticProduct->{"{$attributeAlias}_color_id_attribute"}[] = $attribute['id_attribute'];
                         }
                     }
                 }
@@ -898,21 +936,24 @@ class Fetcher
         }
         $idLang = (int)$idLang;
 
-        if (!static::$avoidCategories) {
-            static::$avoidCategories = [
+        // Avoid these categories (root and home)
+        static $avoidCategories = null;
+        if (!$avoidCategories) {
+            $avoidCategories = [
                 Configuration::get('PS_HOME_CATEGORY'),
                 Configuration::get('PS_ROOT_CATEGORY'),
             ];
         }
-        if (!array_key_exists($idLang, static::$cachedCategoryPaths)) {
-            static::$cachedCategoryPaths[$idLang] = [];
+        // Cached category paths
+        static $cachedCategoryPaths = [];
+        if (!array_key_exists($idLang, $cachedCategoryPaths)) {
+            $cachedCategoryPaths[$idLang] = [];
         }
 
         $categoryPaths = [];
-        $intervals = array_filter(array_map(function ($idCategory) use (&$categoryPaths, $idLang) {
-            if (!empty(static::$cachedCategoryPaths[$idLang][(int)$idCategory])) {
-                $categoryPaths[] = static::$cachedCategoryPaths[$idLang][(int)$idCategory];
-
+        $intervals = array_filter(array_map(function ($idCategory) use (&$categoryPaths, $idLang, $cachedCategoryPaths) {
+            if (!empty($cachedCategoryPaths[$idLang][(int)$idCategory])) {
+                $categoryPaths[] = $cachedCategoryPaths[$idLang][(int)$idCategory];
                 return null;
             }
 
@@ -934,6 +975,7 @@ class Fetcher
 
             $result = implode(' /// ', array_column((array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
             static::$cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
+            $cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
             $categoryPaths[] = $result;
         }
 
@@ -1242,9 +1284,8 @@ class Fetcher
                 JOIN `' . _DB_PREFIX_ . 'attribute_lang` al ON (a.`id_attribute` = al.`id_attribute` AND al.`id_lang` = ' . (int)$idLang . ')
                 JOIN `' . _DB_PREFIX_ . 'attribute_group` ag ON (a.id_attribute_group = ag.`id_attribute_group`)
                 WHERE pa.`id_product` IN (' . implode(array_map('intval', $products), ',') . ') AND ag.`is_color_group` = 1
-                GROUP BY pa.`id_product`, a.`id_attribute`, `group_by`
-                ' . ($checkStock ? 'HAVING qty > 0' : '') . '
-                ORDER BY a.`position` ASC;'
+                GROUP BY pa.`id_product`, a.`id_attribute`
+                ORDER BY al.`name` ASC;'
             )
             ) {
                 return false;
