@@ -1175,7 +1175,7 @@ class Fetcher
         foreach ($products as &$product) {
             $colors = false;
             if (count($productsNeedCache)) {
-                $colors = static::getAttributesColorList($productsNeedCache, true, $product->elastic_id_lang);
+                $colors = static::getAttributesColorList($productsNeedCache, $product->elastic_id_lang);
             }
             $tpl = Context::getContext()->smarty->createTemplate(
                 Elasticsearch::tpl('front/product-list-colors.tpl'),
@@ -1208,14 +1208,13 @@ class Fetcher
 
     /**
      * @param array $products
-     * @param bool $haveStock
-     *
+     * @param null $idLang
      * @return array|bool
      *
      * @since   1.0.0
      * @version 1.0.0 Initial version
      */
-    protected static function getAttributesColorList(array $products, $haveStock = true, $idLang = null)
+    protected static function getAttributesColorList(array $products, $idLang = null)
     {
         if (!count($products)) {
             return [];
