@@ -1029,20 +1029,6 @@ class Fetcher
     }
 
     /**
-     * Get trimmed reference
-     *
-     * @param Product $product
-     *
-     * @return string
-     *
-     * @todo: figure out if we can also use an untrimmed reference
-     */
-    protected static function getTrimmedRef($product)
-    {
-        return (string)substr($product->reference, 3, strlen($product->reference));
-    }
-
-    /**
      * Get is_virtual flag
      *
      * @param Product $product
