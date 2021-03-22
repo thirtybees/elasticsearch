@@ -44,6 +44,7 @@ use SmartyException;
 use stdClass;
 use Tools;
 use Validate;
+use Exception;
 
 if (!defined('_TB_VERSION_')) {
     return;
@@ -60,6 +61,7 @@ if (!defined('_TB_VERSION_')) {
  */
 class Fetcher
 {
+    const CATEGORY_DELIMITER = ' /// ';
     /**
      * Cached category paths
      * @var array
@@ -643,7 +645,7 @@ class Fetcher
                         ->orderBy('c.`level_depth` ASC')
                 );
 
-                return implode(' /// ', array_column((array)$categories, 'name'));
+                return implode(static::CATEGORY_DELIMITER, array_column((array)$categories, 'name'));
             } catch (PrestaShopException $e) {
                 Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
@@ -906,9 +908,18 @@ class Fetcher
      */
     protected static function getCategoriesNamesWithoutPath($product, $idLang)
     {
-        return array_values(array_filter(array_unique(array_map(function ($fullCategory) {
-            return end(array_pad(explode(' /// ', $fullCategory), 1, ''));
-        }, static::getCategoriesNames($product, $idLang)))));
+        $categoriesNames = static::getCategoriesNames($product, $idLang);
+
+        $endCategories = [];
+        foreach ($categoriesNames as $fullCategory) {
+            $parts = explode(static::CATEGORY_DELIMITER, $fullCategory);
+            $cnt = count($parts);
+            if (count($parts) > 0) {
+                $category = $parts[$cnt - 1];
+                $endCategories[$category] = 1;
+            }
+        }
+        return array_keys($endCategories);
     }
 
     /**
@@ -956,7 +967,7 @@ class Fetcher
             $sql->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::getCategoriesToAvoid())) . ')');
             $sql->orderBy('c.`level_depth`');
 
-            $result = implode(' /// ', array_column((array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
+            $result = implode(static::CATEGORY_DELIMITER, array_column((array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
             static::$cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
             $categoryPaths[] = $result;
         }
