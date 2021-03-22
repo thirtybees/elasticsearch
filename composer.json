@@ -2,7 +2,8 @@
     "name": "thirtybees/elasticsearch",
     "description": "Elasticsearch module for thirty bees platform",
     "require": {
-        "elasticsearch/elasticsearch": "^7.0"
+        "elasticsearch/elasticsearch": "^7.0",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
