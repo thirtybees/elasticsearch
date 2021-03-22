@@ -51,7 +51,7 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
             header('access-control-allow-methods:GET,HEAD,OPTIONS,POST,PUT');
             header('access-control-allow-origin: *');
             // Prepare the Elasticsearch client -- every action should be read
-            $this->client = Elasticsearch::getWriteClient();
+            $this->client = Elasticsearch::getClient();
             if (!$this->client) {
                 die(json_encode([
                     'success'  => false,

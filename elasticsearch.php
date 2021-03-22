@@ -21,6 +21,7 @@ use Elasticsearch\Client;
 use Elasticsearch\ClientBuilder;
 use ElasticsearchModule\IndexStatus;
 use ElasticsearchModule\Meta;
+use ElasticsearchModule\ModuleAjaxTrait;
 
 if (!defined('_TB_VERSION_')) {
     return;
@@ -34,7 +35,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 class Elasticsearch extends Module
 {
     // Include ajax functions
-    use \ElasticsearchModule\ModuleAjaxTrait;
+    use ModuleAjaxTrait;
 
     // Config page
     const INDEX_CHUNK_SIZE = 'ELASTICSEARCH_ICHUNK_SIZE';
@@ -102,9 +103,9 @@ class Elasticsearch extends Module
         'tr' => '_turkish_',
     ];
 
-    /** @var \Elasticsearch\Client $readClient */
+    /** @var Client $readClient */
     protected static $readClient;
-    /** @var \Elasticsearch\Client $writeClient */
+    /** @var Client $writeClient */
     protected static $writeClient;
     /**
      * Hooks
@@ -698,33 +699,6 @@ class Elasticsearch extends Module
     }
 
     /**
-     * Get ElasticSearch Client with read access
-     *
-     * @return \Elasticsearch\Client|null
-     *
-     * @throws \Exception
-     */
-    public static function getReadClient()
-    {
-        if (!isset(static::$readClient)) {
-            try {
-                $client = ClientBuilder::create()
-                    ->setHosts(static::getReadHosts())
-                    ->build();
-
-                // Check connection, throws an exception if something's wrong
-                $client->cluster()->stats();
-
-                static::$readClient = $client;
-            } catch (Exception $e) {
-                return null;
-            }
-        }
-
-        return static::$readClient;
-    }
-
-    /**
      * Get write hosts
      *
      * @return array
@@ -762,9 +736,9 @@ class Elasticsearch extends Module
     /**
      * Get ElasticSearch Client with write access
      *
-     * @return \Elasticsearch\Client|null
+     * @return Client|null
      */
-    public static function getWriteClient()
+    public static function getClient()
     {
         if (!isset(static::$writeClient)) {
             try {
@@ -781,10 +755,8 @@ class Elasticsearch extends Module
                 if (isset($context->employee->id) && $context->employee->id) {
                     $context->controller->errors[] = $e->getMessage();
                 }
-
                 return null;
             }
-
         }
 
         return static::$writeClient;
@@ -886,7 +858,7 @@ class Elasticsearch extends Module
     public function cronProcessRemainingProducts($chunks, $idShop)
     {
         /** @var Client $client */
-        $client = static::getWriteClient();
+        $client = static::getClient();
         if (!$client) {
             die(json_encode([
                 'success' => false,
@@ -1086,17 +1058,7 @@ class Elasticsearch extends Module
      */
     protected function getElasticVersion()
     {
-        try {
-            $client = static::getWriteClient();
-        } catch (Exception $e) {
-            $context = Context::getContext();
-            if (isset($context->employee->id) && $context->employee->id) {
-                $context->controller->errors[] = sprintf(
-                    $this->l('Unable to initialize Elasticsearch: %s'),
-                    strip_tags($e->getMessage())
-                );
-            }
-        }
+        $client = static::getClient();
 
         if (isset($client)) {
             try {
@@ -1375,8 +1337,8 @@ class Elasticsearch extends Module
      */
     public static function getAlias($code, $type = 'property')
     {
-        return (string)\Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new \DbQuery())
+        return (string)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            (new DbQuery())
                 ->select('`alias`')
                 ->from(bqSQL(Meta::$definition['table']))
                 ->where('`code` = \'' . $code . '\'')
@@ -1398,8 +1360,8 @@ class Elasticsearch extends Module
             return [];
         }
 
-        $results = \Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-            (new \DbQuery())
+        $results = Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            (new DbQuery())
                 ->select('`code`, `alias`')
                 ->from(bqSQL(Meta::$definition['table']))
                 ->where('`code` IN (\'' . implode('\',\'', array_map('pSQL', $codes)) . '\')')

@@ -111,8 +111,8 @@ class Indexer
         }
 
         // Delete the indices first
-        $client = Elasticsearch::getWriteClient();
-        if (!$client instanceof Elasticsearch\Client) {
+        $client = Elasticsearch::getClient();
+        if (!$client) {
             return;
         }
         foreach ($idShops as $idShop) {
@@ -195,7 +195,7 @@ class Indexer
         }
 
         // Push the mappings to Elasticsearch
-        $client = Elasticsearch::getWriteClient();
+        $client = Elasticsearch::getClient();
         if (!$client) {
             return;
         }

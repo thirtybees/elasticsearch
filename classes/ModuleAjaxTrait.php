@@ -120,7 +120,7 @@ trait ModuleAjaxTrait
     {
         header('Content-Type: application/json; charset=utf-8');
         /** @var Client $client */
-        $client = static::getWriteClient();
+        $client = static::getClient();
         if (!$client) {
             die(json_encode([
                 'success' => false,
