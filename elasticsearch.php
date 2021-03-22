@@ -1225,6 +1225,8 @@ class Elasticsearch extends Module
             return false;
         }
 
+        $parts = [];
+
         if (!empty($m[2])) {
             $parts['scheme'] = strtolower($m[2]);
         }

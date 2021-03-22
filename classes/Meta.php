@@ -200,15 +200,11 @@ class Meta extends ObjectModel
             }
         }
 
-        try {
-            $codesAndIds = (array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                (new DbQuery())
-                    ->select("m.`alias`, m.`$metaPrimary`")
-                    ->from($metaTable, 'm')
-            );
-        } catch (PrestaShopException $e) {
-            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-        }
+        $codesAndIds = (array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            (new DbQuery())
+                ->select("m.`alias`, m.`$metaPrimary`")
+                ->from($metaTable, 'm')
+        );
         foreach ($metas as $meta) {
             foreach ($meta['name'] as $idLang => $name) {
                 $primary = '';

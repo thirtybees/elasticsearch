@@ -97,6 +97,8 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
         /** @var Elasticsearch $module */
         $module = Module::getInstanceByName('elasticsearch');
         $module->cronProcessRemainingProducts($chunks, $idShop);
+
+        parent::__construct();
     }
 }
 
