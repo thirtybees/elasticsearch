@@ -3,3 +3,4 @@ vendor/
 *elasticsearch*.zip
 *.bak
 views/templates/themes/minikneet-bootstrap
+config*.xml
