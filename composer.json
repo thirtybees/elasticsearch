@@ -2,7 +2,7 @@
     "name": "thirtybees/elasticsearch",
     "description": "Elasticsearch module for thirty bees platform",
     "require": {
-        "elasticsearch/elasticsearch": "^5.3"
+        "elasticsearch/elasticsearch": "^7.0"
     },
     "autoload": {
         "psr-4": {
