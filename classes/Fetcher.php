@@ -479,74 +479,54 @@ class Fetcher
         // Attribute groups
         try {
             $attributeGroups = $product->getAttributesGroups($idLang);
-            $groupNames = array_map(function ($attribute) {
-                return Tools::link_rewrite($attribute['group_name']);
-            }, $attributeGroups);
-            $attributeAliases = Elasticsearch::getAliases($groupNames, 'attribute');
-            if (count($groupNames) === count($attributeAliases)) {
-                foreach (array_combine($attributeAliases, $attributeGroups) as $groupName => $attribute) {
-                    if (!$metas[$groupName]['enabled']) {
-                        continue;
-                    }
 
-                    $attributeName = $attribute['attribute_name'];
-                    if ($idLang === $idLangDefault) {
-                        $attributeCode = $groupName;
-                    } else {
-                        $attributeGroup = new AttributeGroup($attribute['id_attribute_group'], $idLangDefault);
-                        $attributeCode = Tools::link_rewrite($attributeGroup->name);
-                    }
-                    $attributeAlias = Elasticsearch::getAlias($attributeCode, 'attribute');
-
-                    if (!isset($elasticProduct->{$attributeAlias}) || !is_array($elasticProduct->{$attributeAlias})) {
-                        $elasticProduct->{$attributeAlias} = [];
-                    }
-
-                    if (!in_array($attributeName, $elasticProduct->{$groupName})) {
-                        $elasticProduct->{$attributeAlias}[] = $attributeName;
-                    }
-
-                    if ($attribute['is_color_group']) {
-                        // Add a special property for the color group
-                        // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
-                        // will eventually be in the same order, so that's how you can match them later
-                        if (!isset($elasticProduct->{"{$attributeAlias}_color_code"}) || !is_array($elasticProduct->{"{$attributeAlias}_color_code"})) {
-                            $elasticProduct->{"{$attributeAlias}_color_code"} = [];
-                            $elasticProduct->{"{$attributeAlias}_color_id_attribute"} = [];
-                        }
-
-                        if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$attributeAlias}_color_code"})) {
-                            $elasticProduct->{"{$attributeAlias}_color_code"}[] = $attribute['attribute_color'];
-                            $elasticProduct->{"{$attributeAlias}_color_id_attribute"}[] = $attribute['id_attribute'];
-                        }
-                    }
-                }
-            } else {
+            // optimization for default language
+            $groupNames = [];
+            if ($idLang === $idLangDefault)  {
                 foreach ($attributeGroups as $attribute) {
+                    $groupNames[$attribute['id_attribute_group']] = Tools::link_rewrite($attribute['group_name']);
+                }
+                $attributeAliases = Elasticsearch::getAliases($groupNames, 'attribute');
+            } else {
+                $attributeAliases = [];
+            }
 
-                    if ($attribute['is_color_group']) {
-                        $attributeName = $attribute['attribute_name'];
-                        if ($idLang === $idLangDefault) {
-                            $attributeCode = $groupName;
-                        } else {
-                            $attributeGroup = new AttributeGroup($attribute['id_attribute_group'], $idLangDefault);
-                            $attributeCode = Tools::link_rewrite($attributeGroup->name);
-                        }
-                        $attributeAlias = \Elasticsearch::getAlias($attributeCode, 'attribute');
+            foreach ($attributeGroups as $attribute) {
+                $attributeName = $attribute['attribute_name'];
+                if ($idLang === $idLangDefault) {
+                    $attributeCode = $groupNames[$attribute['id_attribute_group']];
+                } else {
+                    $attributeGroup = new AttributeGroup($attribute['id_attribute_group'], $idLangDefault);
+                    $attributeCode = Tools::link_rewrite($attributeGroup->name);
+                }
+                $attributeAlias = isset($attributeAliases[$attributeCode])
+                    ? $attributeAliases[$attributeCode]
+                    : Elasticsearch::getAlias($attributeCode, 'attribute');
 
-                        if (!isset($elasticProduct->{$attributeAlias}) || !is_array($elasticProduct->{$attributeAlias})) {
-                            $elasticProduct->{$attributeAlias} = [];
-                        }
+                if (!$metas[$attributeAlias]['enabled']) {
+                    continue;
+                }
 
-                        if (!in_array($attributeName, $elasticProduct->{$attributeAlias})) {
-                            $elasticProduct->{$attributeAlias}[] = $attributeName;
+                if (!isset($elasticProduct->{$attributeAlias}) || !is_array($elasticProduct->{$attributeAlias})) {
+                    $elasticProduct->{$attributeAlias} = [];
+                }
 
-                            // Add a special property for the color group
-                            // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
-                            // will eventually be in the same order, so that's how you can match them later
-                            $elasticProduct->{"{$attributeAlias}_color_code"}[] = $attribute['attribute_color'];
-                            $elasticProduct->{"{$attributeAlias}_color_id_attribute"}[] = $attribute['id_attribute'];
-                        }
+                if (!in_array($attributeName, $elasticProduct->{$attributeAlias})) {
+                    $elasticProduct->{$attributeAlias}[] = $attributeName;
+                }
+
+                if ($attribute['is_color_group']) {
+                    // Add a special property for the color group
+                    // We assume [ yes, we are assuming something, I know :) ] that the color names and color codes
+                    // will eventually be in the same order, so that's how you can match them later
+                    if (!isset($elasticProduct->{"{$attributeAlias}_color_code"}) || !is_array($elasticProduct->{"{$attributeAlias}_color_code"})) {
+                        $elasticProduct->{"{$attributeAlias}_color_code"} = [];
+                        $elasticProduct->{"{$attributeAlias}_color_id_attribute"} = [];
+                    }
+
+                    if (!in_array($attribute['attribute_color'], $elasticProduct->{"{$attributeAlias}_color_code"})) {
+                        $elasticProduct->{"{$attributeAlias}_color_code"}[] = $attribute['attribute_color'];
+                        $elasticProduct->{"{$attributeAlias}_color_id_attribute"}[] = $attribute['id_attribute'];
                     }
                 }
             }

@@ -218,9 +218,8 @@ class IndexStatus extends ObjectModel
                     ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
                     ->limit($limit, $offset)
             );
-        } catch (PrestaShopException $e) {
+        } catch (Exception $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
             $results = false;
         }
 

@@ -349,6 +349,7 @@ class Elasticsearch extends Module
     /**
      * @return string
      * @throws ReflectionException
+     * @throws PrestaShopException
      */
     public function getContent()
     {
@@ -1379,6 +1380,10 @@ class Elasticsearch extends Module
             return $results;
         }
 
-        return array_combine(array_column($results, 'code'), array_column($results, 'alias'));
+        $output = [];
+        foreach ($results as $row) {
+            $output[$row['code']] = $row['alias'];
+        }
+        return $output;
     }
 }
