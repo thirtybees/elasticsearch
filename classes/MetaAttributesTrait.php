@@ -19,9 +19,14 @@
 
 namespace ElasticsearchModule;
 
-use Context;
 use Configuration;
+use Context;
+use Db;
+use DbQuery;
+use Feature;
 use Language;
+use Logger;
+use PrestaShopException;
 use Shop;
 use Tools;
 
@@ -38,7 +43,7 @@ trait MetaAttributesTrait
      * Get searchable attributes
      *
      * @return array
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
     public static function getSearchableProperties()
     {
@@ -81,8 +86,8 @@ trait MetaAttributesTrait
                         ? $metas[$language][$id]['name']
                         : $defaultAttributeName;
                 }
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
                 return [];
             }
@@ -143,7 +148,7 @@ trait MetaAttributesTrait
 
         $type = 'feature';
         try {
-            foreach (\Feature::getFeatures($idLang) as $feature) {
+            foreach (Feature::getFeatures($idLang) as $feature) {
                 $id = Tools::link_rewrite($feature['name']);
                 $id = "{$id}feature";
                 $position = isset($metas[$idLang][$id]['position']) ? $metas[$idLang][$id]['position'] : 0;
@@ -204,8 +209,8 @@ trait MetaAttributesTrait
                 }
                 unset($property);
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return [];
         }
@@ -271,8 +276,8 @@ trait MetaAttributesTrait
                 }
                 unset($property);
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return [];
         }
@@ -297,8 +302,8 @@ trait MetaAttributesTrait
     public static function getAttributes($idLang)
     {
         try {
-            return (array)\Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
-                (new \DbQuery())
+            return (array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+                (new DbQuery())
                     ->select('DISTINCT agl.`id_attribute_group` as `id`, agl.`name` AS `attribute_group`')
                     ->from('attribute_group', 'ag')
                     ->leftJoin(
@@ -316,8 +321,8 @@ trait MetaAttributesTrait
                     ->join(Shop::addSqlAssociation('attribute', 'a'))
                     ->orderBy('agl.`name` ASC, a.`position` ASC')
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return [];
         }

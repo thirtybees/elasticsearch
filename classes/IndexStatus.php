@@ -19,14 +19,19 @@
 
 namespace ElasticsearchModule;
 
+use Adapter_Exception;
 use Configuration;
 use Context;
 use Db;
 use DbQuery;
 use Dispatcher;
 use Language;
+use Logger;
+use ObjectModel;
+use PrestaShopException;
 use Product;
 use Shop;
+use SmartyException;
 
 if (!defined('_TB_VERSION_')) {
     return;
@@ -37,7 +42,7 @@ if (!defined('_TB_VERSION_')) {
  *
  * @package ElasticsearchModule
  */
-class IndexStatus extends \ObjectModel
+class IndexStatus extends ObjectModel
 {
     /**
      * Indicates whether the dispatcher has been prepared to handle
@@ -80,8 +85,8 @@ class IndexStatus extends \ObjectModel
                     ->where($idLang ? 'eis.`id_lang` = ' . (int)$idLang : '')
                     ->where($idShop ? 'eis.`id_shop` = ' . (int)$idShop : '')
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -114,8 +119,8 @@ class IndexStatus extends \ObjectModel
                     ->join(!$idLang ? 'INNER JOIN `' . _DB_PREFIX_ . 'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
                     ->where('ps.`id_shop` = ' . (int)$idShop)
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -142,8 +147,8 @@ class IndexStatus extends \ObjectModel
                     ->innerJoin(bqSQL(Language::$definition['table']), 'l', 'ls.`id_lang` = l.`id_lang` AND l.`active` = 1')
                     ->where('ls.`id_shop` = ' . (int)$idShop)
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return 0;
         }
@@ -163,8 +168,8 @@ class IndexStatus extends \ObjectModel
                 bqSQL(static::$definition['table']),
                 $idShop ? '`id_shop` = ' . (int)$idShop : ''
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return false;
         }
@@ -177,7 +182,9 @@ class IndexStatus extends \ObjectModel
      * @param int|null $idShop
      *
      * @return array
-     * @throws \PrestaShopException
+     * @throws Adapter_Exception
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public static function getProductsToIndex($limit = 0, $offset = 0, $idLang = null, $idShop = null)
     {
@@ -207,8 +214,8 @@ class IndexStatus extends \ObjectModel
                     ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
                     ->limit($limit, $offset)
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             $results = false;
         }
@@ -291,8 +298,8 @@ class IndexStatus extends \ObjectModel
                     );
                 }
             }
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
 
         static::$dispatcherPrepared = true;

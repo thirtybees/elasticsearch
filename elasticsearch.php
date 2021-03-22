@@ -143,6 +143,9 @@ class Elasticsearch extends Module
      * Install this module
      *
      * @return bool
+     * @throws Adapter_Exception
+     * @throws HTMLPurifier_Exception
+     * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
     public function install()
@@ -341,6 +344,7 @@ class Elasticsearch extends Module
 
     /**
      * @return string
+     * @throws ReflectionException
      */
     public function getContent()
     {
@@ -875,6 +879,9 @@ class Elasticsearch extends Module
      *
      * @param int $chunks
      * @param int $idShop
+     * @throws Adapter_Exception
+     * @throws PrestaShopException
+     * @throws SmartyException
      */
     public function cronProcessRemainingProducts($chunks, $idShop)
     {

@@ -54,6 +54,10 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
      * Run the cron job
      *
      * ElasticsearchcronModuleFrontController constructor.
+     *
+     * @throws PrestaShopException
+     * @throws Adapter_Exception
+     * @throws SmartyException
      */
     public function __construct()
     {
@@ -97,5 +101,9 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
 }
 
 if (php_sapi_name() === 'cli') {
-    new ElasticsearchcronModuleFrontController();
+    try {
+        new ElasticsearchcronModuleFrontController();
+    } catch (Exception $e) {
+        die("Error: $e");
+    }
 }

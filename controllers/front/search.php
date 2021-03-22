@@ -26,13 +26,12 @@ if (!defined('_TB_VERSION_')) {
  */
 class ElasticsearchsearchModuleFrontController extends ModuleFrontController
 {
-    // @codingStandardsIgnoreStart
     /** @var bool Place a column on the left by default, regardless of the store's default settings */
     public $display_column_left = true;
-    // @codingStandardsIgnoreEnd
 
     /**
      * Initialize content
+     * @throws PrestaShopException
      */
     public function initContent()
     {

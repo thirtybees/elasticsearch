@@ -19,26 +19,31 @@
 
 namespace ElasticsearchModule;
 
+use Adapter_Exception;
 use AttributeGroup;
 use Category;
 use Configuration;
-use Group;
 use Context;
 use Customer;
 use Db;
 use DbQuery;
+use Elasticsearch;
+use Group;
 use Image;
 use ImageType;
 use Link;
 use Logger;
 use Manufacturer;
 use Page;
+use PrestaShopDatabaseException;
 use PrestaShopException;
 use Product;
 use ProductSale;
 use Shop;
+use SmartyException;
 use stdClass;
 use Tools;
+use Validate;
 
 if (!defined('_TB_VERSION_')) {
     return;
@@ -55,10 +60,16 @@ if (!defined('_TB_VERSION_')) {
  */
 class Fetcher
 {
-    // Cached category paths
+    /**
+     * Cached category paths
+     * @var array
+     */
     static $cachedCategoryPaths = [];
 
-    // Avoid these categories (root and home)
+    /**
+     * Avoid these categories (root and home)
+     * @var array
+     */
     static $avoidCategories = null;
 
     /**
@@ -368,14 +379,16 @@ class Fetcher
      * @param int $idLang
      *
      * @return stdClass
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
+     * @throws Adapter_Exception
+     * @throws SmartyException
      */
     public static function initProduct($idProduct, $idLang)
     {
         $elasticProduct = new stdClass();
         $elasticProduct->id = (int)$idProduct;
         $product = new Product($idProduct, true, $idLang);
-        if (!\Validate::isLoadedObject($product)) {
+        if (!Validate::isLoadedObject($product)) {
             return $elasticProduct;
         }
         $products = [$product];
@@ -396,7 +409,7 @@ class Fetcher
         }
 
         // Default properties
-        $propertyAliases = \Elasticsearch::getAliases(array_keys(static::$attributes));
+        $propertyAliases = Elasticsearch::getAliases(array_keys(static::$attributes));
         foreach (static::$attributes as $propName => $propItems) {
             $propAlias = $propertyAliases[$propName];
             if (!$metas[$propAlias]['enabled'] && !in_array($propName, [
@@ -440,7 +453,7 @@ class Fetcher
                     });
                     $featureCode = Tools::link_rewrite(current($frontFeature)['name']);
                 }
-                $featureAlias = \Elasticsearch::getAlias($featureCode, 'feature');
+                $featureAlias = Elasticsearch::getAlias($featureCode, 'feature');
                 if (!$metas[$featureAlias]['enabled']) {
                     continue;
                 }
@@ -459,7 +472,7 @@ class Fetcher
             $groupNames = array_map(function ($attribute) {
                 return Tools::link_rewrite($attribute['group_name']);
             }, $attributeGroups);
-            $attributeAliases = \Elasticsearch::getAliases($groupNames, 'attribute');
+            $attributeAliases = Elasticsearch::getAliases($groupNames, 'attribute');
             if (count($groupNames) === count($attributeAliases)) {
                 foreach (array_combine($attributeAliases, $attributeGroups) as $groupName => $attribute) {
                     if (!$metas[$groupName]['enabled']) {
@@ -473,7 +486,7 @@ class Fetcher
                         $attributeGroup = new AttributeGroup($attribute['id_attribute_group'], $idLangDefault);
                         $attributeCode = Tools::link_rewrite($attributeGroup->name);
                     }
-                    $attributeAlias = \Elasticsearch::getAlias($attributeCode, 'attribute');
+                    $attributeAlias = Elasticsearch::getAlias($attributeCode, 'attribute');
 
                     if (!isset($elasticProduct->{$attributeAlias}) || !is_array($elasticProduct->{$attributeAlias})) {
                         $elasticProduct->{$attributeAlias} = [];
@@ -565,7 +578,6 @@ class Fetcher
      *
      * @return string
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
      */
     public static function getCategoryPath($idCategory, $idLang)
     {
@@ -613,6 +625,9 @@ class Fetcher
 
     /**
      * Get stock quantity
+     *
+     * @param Product $product
+     * @return int
      */
     protected static function getStockQty($product)
     {
@@ -724,6 +739,7 @@ class Fetcher
      * @param int $idLang
      *
      * @return string
+     * @throws PrestaShopException
      */
     protected static function generateImageLinkLarge($product, $idLang)
     {
@@ -762,6 +778,7 @@ class Fetcher
      * @param int $idLang
      *
      * @return string
+     * @throws PrestaShopException
      */
     protected static function generateImageLinkSmall($product, $idLang)
     {
@@ -800,6 +817,7 @@ class Fetcher
      * @param int $idLang
      *
      * @return string
+     * @throws PrestaShopException
      */
     protected static function generateLinkRewrite($product, $idLang)
     {
@@ -831,6 +849,14 @@ class Fetcher
         }
     }
 
+    /**
+     * Get category name
+     *
+     * @param $product
+     * @param $idLang
+     * @return string
+     * @throws PrestaShopException
+     */
     protected static function getCategoryName($product, $idLang)
     {
         $category = new Category($product->id_category_default, $idLang);
@@ -846,7 +872,7 @@ class Fetcher
      *
      * @return array
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      */
     protected static function getCategoriesNamesWithoutPath($product, $idLang)
     {
@@ -863,7 +889,7 @@ class Fetcher
      *
      * @return array
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      */
     protected static function getCategoriesNames($product, $idLang)
     {
@@ -1128,6 +1154,7 @@ class Fetcher
      * @since   1.0.0
      *
      * @version 1.0.0 Initial version
+     * @throws SmartyException
      */
     protected static function addColorListHTML(&$products)
     {
@@ -1151,7 +1178,7 @@ class Fetcher
                 $colors = static::getAttributesColorList($productsNeedCache, true, $product->elastic_id_lang);
             }
             $tpl = Context::getContext()->smarty->createTemplate(
-                \Elasticsearch::tpl('front/product-list-colors.tpl'),
+                Elasticsearch::tpl('front/product-list-colors.tpl'),
                 Product::getColorsListCacheId($product->id)
             );
             if (isset($colors[$product->id])) {
@@ -1169,7 +1196,7 @@ class Fetcher
 
             if (!in_array($product->id, $productsNeedCache) || isset($colors[$product->id])) {
                 $product->color_list = $tpl->fetch(
-                    \Elasticsearch::tpl('front/product-list-colors.tpl'),
+                    Elasticsearch::tpl('front/product-list-colors.tpl'),
                     Product::getColorsListCacheId($product->id)
                 );
             } else {

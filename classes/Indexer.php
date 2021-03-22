@@ -19,10 +19,14 @@
 
 namespace ElasticsearchModule;
 
+use Category;
 use Configuration;
 use Elasticsearch;
 use Exception;
 use Language;
+use Link;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 use Shop;
 
 if (!defined('_TB_VERSION_')) {
@@ -47,9 +51,15 @@ class Indexer
         $this->fetcher = new Fetcher();
     }
 
+    /**
+     * @param $idLang
+     * @return array
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     private function getCategories($idLang)
     {
-        $cats = \Category::getNestedCategories(null, $idLang);
+        $cats = Category::getNestedCategories(null, $idLang);
 
         $results = [];
         $this->getNestedCats($cats, [], $results, $idLang);
@@ -78,6 +88,8 @@ class Indexer
      * @param $names
      * @param $results
      * @param $idLang
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     protected function getNestedCats($cats, $names, &$results, $idLang)
     {
@@ -90,9 +102,9 @@ class Indexer
                 $this->getNestedCats($cat['children'], $names, $results, $idLang);
             } else {
                 if ($cat['is_root_category'] == 0) {
-                    $category = new \Category($cat['id_category']);
+                    $category = new Category($cat['id_category']);
                     $productCount = $category->getProducts($idLang, 1, 10000, null, null, true);
-                    $link = new \Link();
+                    $link = new Link();
                     $link = $link->getCategoryLink($cat['id_category'], null, $idLang);
 
                     $names[] = [
@@ -115,7 +127,7 @@ class Indexer
      * @param int[]|null $idLangs
      * @param int[]|null $idShops
      *
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
     public static function eraseIndices($idLangs = null, $idShops = null)
     {
@@ -130,7 +142,7 @@ class Indexer
 
         // Delete the indices first
         $client = Elasticsearch::getWriteClient();
-        if (!$client instanceof \Elasticsearch\Client) {
+        if (!$client instanceof Elasticsearch\Client) {
             return;
         }
         foreach ($idShops as $idShop) {
@@ -155,7 +167,7 @@ class Indexer
      * @param int[]|null $idLangs
      * @param int[]|null $idShops
      *
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
     public static function createMappings($idLangs = null, $idShops = null)
     {

@@ -16,6 +16,9 @@
  * @copyright 2017-2018 thirty bees
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
+use Elasticsearch\Client;
+
 if (!defined('_TB_VERSION_')) {
     exit;
 }
@@ -26,14 +29,18 @@ if (!defined('_TB_VERSION_')) {
  */
 class ElasticsearchproxyModuleFrontController extends ModuleFrontController
 {
+
     /** @var Elasticsearch $module */
     public $module;
-    /** @var \Elasticsearch\Client $client */
+
+    /** @var Client $client */
     protected $client;
+
     /**
      * It should just process the ajax call, then die
      *
      * @return void
+     * @throws PrestaShopException
      */
     public function init()
     {
@@ -62,6 +69,7 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
         }
         die();
     }
+
     /**
      * Do a search
      *
@@ -70,6 +78,7 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
      *
      *
      * @return array Results or errors
+     * @throws PrestaShopException
      */
     public function ajaxProcessElasticsearch()
     {

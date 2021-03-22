@@ -19,12 +19,16 @@
 
 namespace ElasticsearchModule;
 
-use Context;
 use Db;
 use DbQuery;
 use Language;
+use Logger;
 use ObjectModel;
+use PDOStatement;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 use ReflectionClass;
+use ReflectionException;
 
 if (!defined('_TB_VERSION_')) {
     exit;
@@ -100,8 +104,8 @@ class Meta extends ObjectModel
         if (!is_array($idLangs) || !empty($idLangs)) {
             try {
                 $idLangs = Language::getLanguages(true, null, true);
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
                 return [];
             }
@@ -115,7 +119,7 @@ class Meta extends ObjectModel
                     ->rightJoin(bqSQL(static::$definition['table']) . '_lang', 'ml', 'ml.`' . bqSQL(static::$definition['primary']) . '` = m.`' . bqSQL(static::$definition['primary']) . '`')
                     ->where('ml.`id_lang` IN (' . implode(',', array_map('intval', $idLangs)) . ')')
             );
-        } catch (\PrestaShopException $e) {
+        } catch (PrestaShopException $e) {
             $results = false;
         }
         $metas = [];
@@ -134,8 +138,8 @@ class Meta extends ObjectModel
      *
      * @param array $metas
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public static function saveMetas($metas)
     {
@@ -191,8 +195,8 @@ class Meta extends ObjectModel
                         Db::getInstance()->insert($metaTable, $insert);
                     }
                 }
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
         }
 
@@ -202,8 +206,8 @@ class Meta extends ObjectModel
                     ->select("m.`alias`, m.`$metaPrimary`")
                     ->from($metaTable, 'm')
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
         foreach ($metas as $meta) {
             foreach ($meta['name'] as $idLang => $name) {
@@ -232,8 +236,8 @@ class Meta extends ObjectModel
             Db::getInstance()->delete("{$metaTable}_lang");
             try {
                 Db::getInstance()->insert("{$metaTable}_lang", $langInserts);
-            } catch (\PrestaShopException $e) {
-                \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+            } catch (PrestaShopException $e) {
+                Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
         }
     }
@@ -242,6 +246,7 @@ class Meta extends ObjectModel
      * Get Elastic types
      *
      * @return array
+     * @throws ReflectionException
      */
     public static function getElasticTypes()
     {
@@ -289,8 +294,8 @@ class Meta extends ObjectModel
                     )
                     ->where('m.`alias` = \'' . pSQL($alias) . '\'')
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             return false;
         }
@@ -301,7 +306,7 @@ class Meta extends ObjectModel
      *
      * @param bool $withWeights
      *
-     * @return array|false|null|\PDOStatement
+     * @return array|false|null|PDOStatement
      */
     public static function getSearchableMetas($withWeights = true)
     {
@@ -315,8 +320,8 @@ class Meta extends ObjectModel
                     // Only text type fields are truly searchable, removing the rest
                     ->where('m.`elastic_type` = \'text\'')
             );
-        } catch (\PrestaShopException $e) {
-            \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
+        } catch (PrestaShopException $e) {
+            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
             $metas = [];
         }
