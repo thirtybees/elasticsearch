@@ -12,6 +12,8 @@ FILES+=("upgrade/**")
 FILES+=("vendor/**")
 FILES+=("views/**")
 
+composer install --no-dev
+
 MODULE_VERSION="$(sed -ne "s/\\\$this->version *= *['\"]\([^'\"]*\)['\"] *;.*/\1/p" ${CWD_BASENAME}.php)"
 MODULE_VERSION=${MODULE_VERSION//[[:space:]]}
 ZIP_FILE="${CWD_BASENAME}/${CWD_BASENAME}-v${MODULE_VERSION}.zip"
