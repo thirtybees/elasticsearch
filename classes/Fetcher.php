@@ -73,287 +73,287 @@ class Fetcher
      * @var array $attributes
      */
     public static $attributes = [
-        'active'                  => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'active' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'name'                    => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'name' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'reference'               => [
-            'function'      => [__CLASS__, 'getTrimmedRef'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'reference' => [
+            'function' => [__CLASS__, 'getTrimmedRef'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 META::ELASTIC_TYPE_KEYWORD,
                 META::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'allow_oosp'              => [
-            'function'      => [__CLASS__, 'getAllowOosp'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'allow_oosp' => [
+            'function' => [__CLASS__, 'getAllowOosp'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'available_for_order'     => [
-            'function'      => [__CLASS__, 'getAvailableForOrder'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'available_for_order' => [
+            'function' => [__CLASS__, 'getAvailableForOrder'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'available_now'           => [
-            'function'      => [__CLASS__, 'getAvailableNow'],
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
+        'available_now' => [
+            'function' => [__CLASS__, 'getAvailableNow'],
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
-        'available_later'           => [
-            'function'      => [__CLASS__, 'getAvailableLater'],
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
+        'available_later' => [
+            'function' => [__CLASS__, 'getAvailableLater'],
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
-        'category'                => [
-            'function'      => [__CLASS__, 'getCategoryName'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'category' => [
+            'function' => [__CLASS__, 'getCategoryName'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'categories'              => [
-            'function'      => [__CLASS__, 'getCategoriesNames'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'categories' => [
+            'function' => [__CLASS__, 'getCategoriesNames'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
         'categories_without_path' => [
-            'function'      => [__CLASS__, 'getCategoriesNamesWithoutPath'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+            'function' => [__CLASS__, 'getCategoriesNamesWithoutPath'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'color_list'              => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
+        'color_list' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'condition'               => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible'       => false,
+        'condition' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
-        'customization_required'  => [
-            'function'      => [__CLASS__, 'getCustomizationRequired'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'customization_required' => [
+            'function' => [__CLASS__, 'getCustomizationRequired'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'date_add'                => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_DATE,
+        'date_add' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_DATE,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_DATE,
             ],
         ],
-        'date_upd'                => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_DATE,
+        'date_upd' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_DATE,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_DATE,
             ],
         ],
-        'description'             => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'description' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'description_short'       => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'description_short' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'ean13'                   => [
-            'function'      => [__CLASS__, 'getEan'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'ean13' => [
+            'function' => [__CLASS__, 'getEan'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'image_link_large'        => [
-            'function'      => [__CLASS__, 'generateImageLinkLarge'],
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible'       => false,
+        'image_link_large' => [
+            'function' => [__CLASS__, 'generateImageLinkLarge'],
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
-        'image_link_small'        => [
-            'function'      => [__CLASS__, 'generateImageLinkSmall'],
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible'       => false,
+        'image_link_small' => [
+            'function' => [__CLASS__, 'generateImageLinkSmall'],
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
-        'in_stock'                => [
-            'function'      => [__CLASS__, 'getInStock'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'in_stock' => [
+            'function' => [__CLASS__, 'getInStock'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'is_virtual'              => [
-            'function'      => [__CLASS__, 'getIsVirtual'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'is_virtual' => [
+            'function' => [__CLASS__, 'getIsVirtual'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
         ],
-        'link'                    => [
-            'function'      => [__CLASS__, 'generateLinkRewrite'],
-            'default'       => Meta::ELASTIC_TYPE_KEYWORD,
-            'visible'       => false,
+        'link' => [
+            'function' => [__CLASS__, 'generateLinkRewrite'],
+            'default' => Meta::ELASTIC_TYPE_KEYWORD,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
             ],
         ],
-        'id_tax_rules_group'      => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_INTEGER,
-            'visible'       => false,
+        'id_tax_rules_group' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_INTEGER,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_INTEGER,
             ],
         ],
-        'manufacturer'            => [
-            'function'      => [__CLASS__, 'getManufacturerName'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'manufacturer' => [
+            'function' => [__CLASS__, 'getManufacturerName'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'minimal_quantity'        => [
-            'function'      => [__CLASS__, 'getMinimalQuantity'],
-            'default'       => Meta::ELASTIC_TYPE_INTEGER,
+        'minimal_quantity' => [
+            'function' => [__CLASS__, 'getMinimalQuantity'],
+            'default' => Meta::ELASTIC_TYPE_INTEGER,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_INTEGER,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'new'                     => [
-            'function'      => [__CLASS__, 'getNew'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'new' => [
+            'function' => [__CLASS__, 'getNew'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
         ],
-        'price_tax_excl'          => [
-            'function'      => [__CLASS__, 'getPriceTaxExcl'],
-            'default'       => Meta::ELASTIC_TYPE_FLOAT,
+        'price_tax_excl' => [
+            'function' => [__CLASS__, 'getPriceTaxExcl'],
+            'default' => Meta::ELASTIC_TYPE_FLOAT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_FLOAT,
             ],
         ],
-        'show_price'              => [
-            'function'      => [__CLASS__, 'getShowPrice'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'show_price' => [
+            'function' => [__CLASS__, 'getShowPrice'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
-            'visible'       => false,
+            'visible' => false,
         ],
-        'supplier'                => [
-            'function'      => [__CLASS__, 'getSupplierName'],
-            'default'       => Meta::ELASTIC_TYPE_TEXT,
+        'supplier' => [
+            'function' => [__CLASS__, 'getSupplierName'],
+            'default' => Meta::ELASTIC_TYPE_TEXT,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_KEYWORD,
                 Meta::ELASTIC_TYPE_TEXT,
             ],
         ],
-        'on_sale'                 => [
-            'function'      => [__CLASS__, 'getOnSale'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'on_sale' => [
+            'function' => [__CLASS__, 'getOnSale'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
         ],
-        'online_only'             => [
-            'function'      => [__CLASS__, 'getOnlineOnly'],
-            'default'       => Meta::ELASTIC_TYPE_BOOLEAN,
+        'online_only' => [
+            'function' => [__CLASS__, 'getOnlineOnly'],
+            'default' => Meta::ELASTIC_TYPE_BOOLEAN,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_BOOLEAN,
             ],
         ],
-        'ordered_qty'             => [
-            'function'      => [__CLASS__, 'getOrderedQty'],
-            'default'       => Meta::ELASTIC_TYPE_INTEGER,
-            'visible'       => false,
+        'ordered_qty' => [
+            'function' => [__CLASS__, 'getOrderedQty'],
+            'default' => Meta::ELASTIC_TYPE_INTEGER,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_INTEGER,
             ],
         ],
-        'stock_qty'               => [
-            'function'      => [__CLASS__, 'getStockQty'],
-            'default'       => Meta::ELASTIC_TYPE_INTEGER,
-            'visible'       => false,
+        'stock_qty' => [
+            'function' => [__CLASS__, 'getStockQty'],
+            'default' => Meta::ELASTIC_TYPE_INTEGER,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_INTEGER,
             ],
         ],
-        'weight'                  => [
-            'function'      => null,
-            'default'       => Meta::ELASTIC_TYPE_FLOAT,
-            'visible'       => false,
+        'weight' => [
+            'function' => null,
+            'default' => Meta::ELASTIC_TYPE_FLOAT,
+            'visible' => false,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_FLOAT,
             ],
         ],
-        'pageviews'               => [
-            'function'      => [__CLASS__, 'getPageViews'],
-            'default'       => Meta::ELASTIC_TYPE_INTEGER,
+        'pageviews' => [
+            'function' => [__CLASS__, 'getPageViews'],
+            'default' => Meta::ELASTIC_TYPE_INTEGER,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_INTEGER,
             ],
         ],
-        'sales'                   => [
-            'function'      => [__CLASS__, 'getSales'],
-            'default'       => Meta::ELASTIC_TYPE_INTEGER,
+        'sales' => [
+            'function' => [__CLASS__, 'getSales'],
+            'default' => Meta::ELASTIC_TYPE_INTEGER,
             'elastic_types' => [
                 Meta::ELASTIC_TYPE_INTEGER,
             ],
@@ -373,14 +373,14 @@ class Fetcher
     public static function initProduct($idProduct, $idLang)
     {
         $elasticProduct = new stdClass();
-        $elasticProduct->id = (int) $idProduct;
+        $elasticProduct->id = (int)$idProduct;
         $product = new Product($idProduct, true, $idLang);
         if (!\Validate::isLoadedObject($product)) {
             return $elasticProduct;
         }
         $products = [$product];
         static::addColorListHTML($products);
-        $idLangDefault = (int) Configuration::get('PS_LANG_DEFAULT');
+        $idLangDefault = (int)Configuration::get('PS_LANG_DEFAULT');
 
         $metas = [];
         try {
@@ -400,11 +400,11 @@ class Fetcher
         foreach (static::$attributes as $propName => $propItems) {
             $propAlias = $propertyAliases[$propName];
             if (!$metas[$propAlias]['enabled'] && !in_array($propName, [
-                $propertyAliases['date_add'],
-                $propertyAliases['date_upd'],
-                $propertyAliases['price_tax_excl'],
-                $propertyAliases['id_tax_rules_group'],
-            ])) {
+                    $propertyAliases['date_add'],
+                    $propertyAliases['date_upd'],
+                    $propertyAliases['price_tax_excl'],
+                    $propertyAliases['id_tax_rules_group'],
+                ])) {
                 continue;
             }
 
@@ -526,8 +526,8 @@ class Fetcher
                     ->select('IFNULL(SUM(pv.`counter`), 0)')
                     ->from('page', 'pa')
                     ->leftJoin('page_viewed', 'pv', 'pa.`id_page` = pv.`id_page`')
-                    ->where('pa.`id_object` = '.(int) $product->id)
-                    ->where('pa.`id_page_type` = '.(int) Page::getPageTypeByName('product'))
+                    ->where('pa.`id_object` = ' . (int)$product->id)
+                    ->where('pa.`id_page_type` = ' . (int)Page::getPageTypeByName('product'))
             );
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -593,15 +593,15 @@ class Fetcher
                         ->leftJoin('category_lang', 'cl', 'c.`id_category` = cl.`id_category`')
                         ->join(Shop::addSqlRestrictionOnLang('cl'))
                         ->join(Shop::addSqlAssociation('category', 'c'))
-                        ->where('c.`nleft` <= '.(int) $interval['nleft'])
-                        ->where('c.`nright` >= '.(int) $interval['nright'])
-                        ->where('cl.`id_lang` = '.(int) $idLang)
+                        ->where('c.`nleft` <= ' . (int)$interval['nleft'])
+                        ->where('c.`nright` >= ' . (int)$interval['nright'])
+                        ->where('cl.`id_lang` = ' . (int)$idLang)
                         ->where('c.`active` = 1')
-                        ->where('c.`id_category` NOT IN ('.implode(',', array_map('intval', static::$avoidCategories)).')')
+                        ->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::$avoidCategories)) . ')')
                         ->orderBy('c.`level_depth` ASC')
                 );
 
-                return implode(' /// ', array_column((array) $categories, 'name'));
+                return implode(' /// ', array_column((array)$categories, 'name'));
             } catch (PrestaShopException $e) {
                 Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
@@ -639,11 +639,11 @@ class Fetcher
         }
 
         try {
-            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            return (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
                     ->select('SUM(`product_quantity`) AS `total`')
                     ->from('order_detail')
-                    ->where('`product_id` = '.(int) $product->id)
+                    ->where('`product_id` = ' . (int)$product->id)
             );
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -668,8 +668,8 @@ class Fetcher
         // Visitor group (1) is used as the default group for tax excl. prices
         try {
             $prices = [
-                'group_0' => (float) static::getProductBasePrice($product->id),
-                'group_1' => (float) Product::getPriceStatic($product->id, false, null, _TB_PRICE_DATABASE_PRECISION_),
+                'group_0' => (float)static::getProductBasePrice($product->id),
+                'group_1' => (float)Product::getPriceStatic($product->id, false, null, _TB_PRICE_DATABASE_PRECISION_),
             ];
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -678,7 +678,7 @@ class Fetcher
         }
         try {
             foreach (Group::getGroups(Context::getContext()->language->id) as $group) {
-                if ((int) $group['id_group'] === 1) {
+                if ((int)$group['id_group'] === 1) {
                     continue;
                 }
                 // Get a default customer in this group, if not available, skip. You will have to reindex this product
@@ -688,14 +688,14 @@ class Fetcher
                         ->select('c.`id_customer`')
                         ->from(bqSQL(Customer::$definition['table']), 'c')
                         ->innerJoin('customer_group', 'cg', 'cg.`id_customer` = c.`id_customer`')
-                        ->where('cg.`id_group` = '.(int) $group['id_group'])
+                        ->where('cg.`id_group` = ' . (int)$group['id_group'])
                 );
                 if (!$idCustomer) {
                     $prices["group_{$group['id_group']}"] = $prices['group_0'];
 
                     continue;
                 }
-                $prices["group_{$group['id_group']}"] = (float) Product::getPriceStatic(
+                $prices["group_{$group['id_group']}"] = (float)Product::getPriceStatic(
                     $product->id,
                     false,
                     null,
@@ -721,7 +721,7 @@ class Fetcher
      * Generate large image link
      *
      * @param Product $product
-     * @param int     $idLang
+     * @param int $idLang
      *
      * @return string
      */
@@ -744,7 +744,7 @@ class Fetcher
                     ImageType::getFormatedName('large')
                 );
             } else {
-                $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-large_default.jpg';
+                $imageLink = Tools::getHttpHost() . _THEME_PROD_DIR_ . 'en-default-large_default.jpg';
             }
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -759,7 +759,7 @@ class Fetcher
      * Generate small image link
      *
      * @param Product $product
-     * @param int     $idLang
+     * @param int $idLang
      *
      * @return string
      */
@@ -782,7 +782,7 @@ class Fetcher
                     ImageType::getFormatedName('small')
                 );
             } else {
-                $imageLink = Tools::getHttpHost()._THEME_PROD_DIR_.'en-default-small_default.jpg';
+                $imageLink = Tools::getHttpHost() . _THEME_PROD_DIR_ . 'en-default-small_default.jpg';
             }
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -797,7 +797,7 @@ class Fetcher
      * Generate url slug
      *
      * @param Product $product
-     * @param int     $idLang
+     * @param int $idLang
      *
      * @return string
      */
@@ -823,7 +823,7 @@ class Fetcher
     protected static function getAllowOosp($product)
     {
         try {
-            return (bool) Product::isAvailableWhenOutOfStock($product->out_of_stock);
+            return (bool)Product::isAvailableWhenOutOfStock($product->out_of_stock);
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
@@ -842,7 +842,7 @@ class Fetcher
      * Get category names without path
      *
      * @param Product $product
-     * @param int     $idLang
+     * @param int $idLang
      *
      * @return array
      * @throws PrestaShopException
@@ -859,7 +859,7 @@ class Fetcher
      * Get category names
      *
      * @param Product $product
-     * @param int     $idLang
+     * @param int $idLang
      *
      * @return array
      * @throws PrestaShopException
@@ -870,7 +870,7 @@ class Fetcher
         if (!$idLang) {
             $idLang = Context::getContext()->language->id;
         }
-        $idLang = (int) $idLang;
+        $idLang = (int)$idLang;
 
         if (!static::$avoidCategories) {
             static::$avoidCategories = [
@@ -883,15 +883,15 @@ class Fetcher
         }
 
         $categoryPaths = [];
-        $intervals = array_filter(array_map(function ($idCategory) use(&$categoryPaths, $idLang) {
-            if (!empty(static::$cachedCategoryPaths[$idLang][(int) $idCategory])) {
-                $categoryPaths[] = static::$cachedCategoryPaths[$idLang][(int) $idCategory];
+        $intervals = array_filter(array_map(function ($idCategory) use (&$categoryPaths, $idLang) {
+            if (!empty(static::$cachedCategoryPaths[$idLang][(int)$idCategory])) {
+                $categoryPaths[] = static::$cachedCategoryPaths[$idLang][(int)$idCategory];
 
                 return null;
             }
 
-            $interval = Category::getInterval((int) $idCategory);
-            $interval['id_category'] = (int) $idCategory;
+            $interval = Category::getInterval((int)$idCategory);
+            $interval['id_category'] = (int)$idCategory;
 
             return $interval;
         }, $product->getCategories()));
@@ -900,13 +900,13 @@ class Fetcher
             $sql = new DbQuery();
             $sql->select('`name`');
             $sql->from('category', 'c');
-            $sql->leftJoin('category_lang', 'cl', 'c.id_category = cl.id_category AND id_lang = '.(int) $idLang.Shop::addSqlRestrictionOnLang('cl'));
-            $sql->where('c.`nleft` <= '.(int) $interval['nleft']);
-            $sql->where('c.`nright` >= '.(int) $interval['nright']);
-            $sql->where('c.`id_category` NOT IN ('.implode(',', array_map('intval', static::$avoidCategories)).')');
+            $sql->leftJoin('category_lang', 'cl', 'c.id_category = cl.id_category AND id_lang = ' . (int)$idLang . Shop::addSqlRestrictionOnLang('cl'));
+            $sql->where('c.`nleft` <= ' . (int)$interval['nleft']);
+            $sql->where('c.`nright` >= ' . (int)$interval['nright']);
+            $sql->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::$avoidCategories)) . ')');
             $sql->orderBy('c.`level_depth`');
 
-            $result = implode(' /// ', array_column((array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
+            $result = implode(' /// ', array_column((array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
             static::$cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
             $categoryPaths[] = $result;
         }
@@ -921,7 +921,7 @@ class Fetcher
      */
     protected static function getCustomizationRequired($product)
     {
-        return (bool) $product->customization_required;
+        return (bool)$product->customization_required;
     }
 
     /**
@@ -934,7 +934,7 @@ class Fetcher
     protected static function getManufacturerName($product)
     {
         try {
-            return Manufacturer::getNameById((int) $product->id_manufacturer);
+            return Manufacturer::getNameById((int)$product->id_manufacturer);
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
@@ -951,7 +951,7 @@ class Fetcher
      */
     protected static function getMinimalQuantity($product)
     {
-        return (int) $product->minimal_quantity;
+        return (int)$product->minimal_quantity;
     }
 
     /**
@@ -963,7 +963,7 @@ class Fetcher
      */
     protected static function getShowPrice($product)
     {
-        return (bool) $product->show_price;
+        return (bool)$product->show_price;
     }
 
     /**
@@ -975,7 +975,7 @@ class Fetcher
      */
     protected static function getSupplierName($product)
     {
-        return (string) $product->supplier_name;
+        return (string)$product->supplier_name;
     }
 
     /**
@@ -989,7 +989,7 @@ class Fetcher
      */
     protected static function getTrimmedRef($product)
     {
-        return (string) substr($product->reference, 3, strlen($product->reference));
+        return (string)substr($product->reference, 3, strlen($product->reference));
     }
 
     /**
@@ -1001,7 +1001,7 @@ class Fetcher
      */
     protected static function getIsVirtual($product)
     {
-        return (bool) $product->is_virtual;
+        return (bool)$product->is_virtual;
     }
 
     /**
@@ -1013,7 +1013,7 @@ class Fetcher
      */
     protected static function getOnSale($product)
     {
-        return (bool) $product->on_sale;
+        return (bool)$product->on_sale;
     }
 
     /**
@@ -1025,7 +1025,7 @@ class Fetcher
      */
     protected static function getOnlineOnly($product)
     {
-        return (bool) $product->online_only;
+        return (bool)$product->online_only;
     }
 
     /**
@@ -1037,7 +1037,7 @@ class Fetcher
      */
     protected static function getAvailableForOrder($product)
     {
-        return (bool) $product->available_for_order;
+        return (bool)$product->available_for_order;
     }
 
     /**
@@ -1047,7 +1047,7 @@ class Fetcher
      */
     protected static function getNew($product)
     {
-        return (bool) $product->new;
+        return (bool)$product->new;
     }
 
     /**
@@ -1059,7 +1059,7 @@ class Fetcher
      */
     protected static function getAvailableNow($product)
     {
-        return (bool) $product->available_now;
+        return (bool)$product->available_now;
     }
 
     /**
@@ -1071,7 +1071,7 @@ class Fetcher
      */
     protected static function getAvailableLater($product)
     {
-        return (bool) $product->available_later;
+        return (bool)$product->available_later;
     }
 
     /**
@@ -1084,7 +1084,7 @@ class Fetcher
     protected static function getInStock($product)
     {
         try {
-            return (bool) Product::getQuantity($product->id) > 0;
+            return (bool)Product::getQuantity($product->id) > 0;
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
 
@@ -1102,16 +1102,16 @@ class Fetcher
     protected static function getProductBasePrice($idProduct)
     {
         try {
-            return (float) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            return (float)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
                     ->select('ps.`price`')
                     ->from('product', 'p')
                     ->innerJoin(
                         'product_shop',
                         'ps',
-                        'ps.`id_product` = p.`id_product` AND ps.`id_shop` = '.(int) Context::getContext()->shop->id
+                        'ps.`id_product` = p.`id_product` AND ps.`id_shop` = ' . (int)Context::getContext()->shop->id
                     )
-                    ->where('p.`id_product` = '.(int) $idProduct)
+                    ->where('p.`id_product` = ' . (int)$idProduct)
             );
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -1131,13 +1131,13 @@ class Fetcher
      */
     protected static function addColorListHTML(&$products)
     {
-        if (!is_array($products) || !count($products) || !file_exists(_PS_THEME_DIR_.'product-list-colors.tpl')) {
+        if (!is_array($products) || !count($products) || !file_exists(_PS_THEME_DIR_ . 'product-list-colors.tpl')) {
             return;
         }
 
         $productsNeedCache = [];
         foreach ($products as &$product) {
-            $productsNeedCache[] = (int) $product->id;
+            $productsNeedCache[] = (int)$product->id;
         }
         unset($product);
 
@@ -1157,10 +1157,10 @@ class Fetcher
             if (isset($colors[$product->id])) {
                 $tpl->assign(
                     [
-                        'id_product'  => $product->id,
-                        'id_lang'     => $product->elastic_id_lang,
+                        'id_product' => $product->id,
+                        'id_lang' => $product->elastic_id_lang,
                         'colors_list' => $colors[$product->id],
-                        'link'        => Context::getContext()->link,
+                        'link' => Context::getContext()->link,
                         'img_col_dir' => _THEME_COL_DIR_,
                         'col_img_dir' => _PS_COL_IMG_DIR_,
                     ]
@@ -1181,7 +1181,7 @@ class Fetcher
 
     /**
      * @param array $products
-     * @param bool  $haveStock
+     * @param bool $haveStock
      *
      * @return array|bool
      *
@@ -1208,16 +1208,16 @@ class Fetcher
         try {
             if (!$res = Db::getInstance()->executeS(
                 '
-                SELECT pa.`id_product`, a.`color`, pac.`id_product_attribute`, '.($checkStock ? 'SUM(IF(stock.`quantity` > 0, 1, 0))' : '0').' qty, a.`id_attribute`, al.`name`, IF(color = "", a.id_attribute, color) group_by
-                FROM `'._DB_PREFIX_.'product_attribute` pa
-                '.Shop::addSqlAssociation('product_attribute', 'pa').($checkStock ? Product::sqlStock('pa', 'pa') : '').'
-                JOIN `'._DB_PREFIX_.'product_attribute_combination` pac ON (pac.`id_product_attribute` = product_attribute_shop.`id_product_attribute`)
-                JOIN `'._DB_PREFIX_.'attribute` a ON (a.`id_attribute` = pac.`id_attribute`)
-                JOIN `'._DB_PREFIX_.'attribute_lang` al ON (a.`id_attribute` = al.`id_attribute` AND al.`id_lang` = '.(int) $idLang.')
-                JOIN `'._DB_PREFIX_.'attribute_group` ag ON (a.id_attribute_group = ag.`id_attribute_group`)
-                WHERE pa.`id_product` IN ('.implode(array_map('intval', $products), ',').') AND ag.`is_color_group` = 1
+                SELECT pa.`id_product`, a.`color`, pac.`id_product_attribute`, ' . ($checkStock ? 'SUM(IF(stock.`quantity` > 0, 1, 0))' : '0') . ' qty, a.`id_attribute`, al.`name`, IF(color = "", a.id_attribute, color) group_by
+                FROM `' . _DB_PREFIX_ . 'product_attribute` pa
+                ' . Shop::addSqlAssociation('product_attribute', 'pa') . ($checkStock ? Product::sqlStock('pa', 'pa') : '') . '
+                JOIN `' . _DB_PREFIX_ . 'product_attribute_combination` pac ON (pac.`id_product_attribute` = product_attribute_shop.`id_product_attribute`)
+                JOIN `' . _DB_PREFIX_ . 'attribute` a ON (a.`id_attribute` = pac.`id_attribute`)
+                JOIN `' . _DB_PREFIX_ . 'attribute_lang` al ON (a.`id_attribute` = al.`id_attribute` AND al.`id_lang` = ' . (int)$idLang . ')
+                JOIN `' . _DB_PREFIX_ . 'attribute_group` ag ON (a.id_attribute_group = ag.`id_attribute_group`)
+                WHERE pa.`id_product` IN (' . implode(array_map('intval', $products), ',') . ') AND ag.`is_color_group` = 1
                 GROUP BY pa.`id_product`, a.`id_attribute`, `group_by`
-                '.($checkStock ? 'HAVING qty > 0' : '').'
+                ' . ($checkStock ? 'HAVING qty > 0' : '') . '
                 ORDER BY a.`position` ASC;'
             )
             ) {
@@ -1231,12 +1231,12 @@ class Fetcher
 
         $colors = [];
         foreach ($res as $row) {
-            if (Tools::isEmpty($row['color']) && !@filemtime(_PS_COL_IMG_DIR_.$row['id_attribute'].'.jpg')) {
+            if (Tools::isEmpty($row['color']) && !@filemtime(_PS_COL_IMG_DIR_ . $row['id_attribute'] . '.jpg')) {
                 continue;
             }
 
-            $colors[(int) $row['id_product']][] = [
-                'id_product_attribute' => (int) $row['id_product_attribute'],
+            $colors[(int)$row['id_product']][] = [
+                'id_product_attribute' => (int)$row['id_product_attribute'],
                 'color' => $row['color'],
                 'id_product' => $row['id_product'],
                 'name' => $row['name'],

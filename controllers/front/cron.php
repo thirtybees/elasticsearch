@@ -40,8 +40,8 @@ if (!defined('_TB_VERSION_')) {
         $_GET['fc'] = 'module';
         $_GET['controller'] = 'cron';
 
-        require_once __DIR__.'/../../../../config/config.inc.php';
-        require_once __DIR__.'/../../elasticsearch.php';
+        require_once __DIR__ . '/../../../../config/config.inc.php';
+        require_once __DIR__ . '/../../elasticsearch.php';
     }
 }
 
@@ -60,13 +60,13 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
         // Use admin user for indexing
         Context::getContext()->employee = new Employee(Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
             (new DbQuery())
-                ->select('`'.bqSQL(Employee::$definition['primary']).'`')
+                ->select('`' . bqSQL(Employee::$definition['primary']) . '`')
                 ->from(bqSQL(Employee::$definition['table']))
                 ->where('`id_profile` = 1')
         ));
 
         if (isset($_GET['id_shop'])) {
-            $idShop = (int) $_GET['id_shop'];
+            $idShop = (int)$_GET['id_shop'];
         } else {
             $idShop = Context::getContext()->shop->id;
         }
@@ -87,7 +87,7 @@ class ElasticsearchcronModuleFrontController extends ModuleFrontController
 
         $chunks = INF;
         if (isset($_GET['chunks'])) {
-            $chunks = (int) $_GET['chunks'];
+            $chunks = (int)$_GET['chunks'];
         }
 
         /** @var Elasticsearch $module */

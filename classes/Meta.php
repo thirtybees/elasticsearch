@@ -70,21 +70,21 @@ class Meta extends ObjectModel
         'primary' => 'id_elasticsearch_meta',
         'table' => 'elasticsearch_meta',
         'fields' => [
-            'meta_type'    => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
-            'alias'        => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => false],
-            'code'         => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
-            'enabled'      => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
-            'elastic_type' => ['type' => self::TYPE_STRING,                 'validate' => 'isString',      'required' => true],
-            'searchable'   => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
-            'weight'       => ['type' => self::TYPE_INT,                    'validate' => 'isUnsignedInt', 'required' => true],
-            'position'     => ['type' => self::TYPE_INT,                    'validate' => 'isUnsignedInt', 'required' => true],
-            'aggregatable' => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
-            'operator'     => ['type' => self::TYPE_BOOL,                   'validate' => 'isBool',        'required' => true],
-            'display_type' => ['type' => self::TYPE_INT,                    'validate' => 'isUnsignedInt', 'required' => true],
-            'result_limit' => ['type' => self::TYPE_INT,                    'validate' => 'isUnsignedInt', 'required' => true],
+            'meta_type' => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true],
+            'alias' => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => false],
+            'code' => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true],
+            'enabled' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true],
+            'elastic_type' => ['type' => self::TYPE_STRING, 'validate' => 'isString', 'required' => true],
+            'searchable' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true],
+            'weight' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'position' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'aggregatable' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true],
+            'operator' => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'required' => true],
+            'display_type' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'result_limit' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
 
             // Multilang
-            'name'         => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isString',      'required' => true],
+            'name' => ['type' => self::TYPE_STRING, 'lang' => true, 'validate' => 'isString', 'required' => true],
         ],
     ];
 
@@ -108,22 +108,22 @@ class Meta extends ObjectModel
         }
 
         try {
-            $results = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            $results = (array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
                 (new DbQuery())
                     ->select('m.*, ml.`name`, ml.`id_lang`')
                     ->from(bqSQL(static::$definition['table']), 'm')
-                    ->rightJoin(bqSQL(static::$definition['table']).'_lang', 'ml', 'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'`')
-                    ->where('ml.`id_lang` IN ('.implode(',', array_map('intval', $idLangs)).')')
+                    ->rightJoin(bqSQL(static::$definition['table']) . '_lang', 'ml', 'ml.`' . bqSQL(static::$definition['primary']) . '` = m.`' . bqSQL(static::$definition['primary']) . '`')
+                    ->where('ml.`id_lang` IN (' . implode(',', array_map('intval', $idLangs)) . ')')
             );
         } catch (\PrestaShopException $e) {
             $results = false;
         }
         $metas = [];
         foreach ($results as &$result) {
-            if (!isset($metas[(int) $result['id_lang']])) {
-                $metas[(int) $result['id_lang']] = [];
+            if (!isset($metas[(int)$result['id_lang']])) {
+                $metas[(int)$result['id_lang']] = [];
             }
-            $metas[(int) $result['id_lang']][$result['code'].$result['meta_type']] = $result;
+            $metas[(int)$result['id_lang']][$result['code'] . $result['meta_type']] = $result;
         }
 
         return $metas;
@@ -175,17 +175,17 @@ class Meta extends ObjectModel
                 foreach ($inserts as $insert) {
                     if ($id = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                         (new DbQuery())
-                            ->select('`'.bqSQL(static::$definition['primary']).'`')
+                            ->select('`' . bqSQL(static::$definition['primary']) . '`')
                             ->from(bqSQL(static::$definition['table']))
-                            ->where('`code` = \''.pSQL($insert['code']).'\'')
-                            ->where('`meta_type` = \''.pSQL($insert['meta_type']).'\'')
+                            ->where('`code` = \'' . pSQL($insert['code']) . '\'')
+                            ->where('`meta_type` = \'' . pSQL($insert['meta_type']) . '\'')
                     )) {
                         unset($insert['position']);
 
                         Db::getInstance()->update(
                             $metaTable,
                             $insert,
-                            '`'.bqSQL(static::$definition['primary']).'` = '.(int) $id
+                            '`' . bqSQL(static::$definition['primary']) . '` = ' . (int)$id
                         );
                     } else {
                         Db::getInstance()->insert($metaTable, $insert);
@@ -197,7 +197,7 @@ class Meta extends ObjectModel
         }
 
         try {
-            $codesAndIds = (array) Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
+            $codesAndIds = (array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS(
                 (new DbQuery())
                     ->select("m.`alias`, m.`$metaPrimary`")
                     ->from($metaTable, 'm')
@@ -223,8 +223,8 @@ class Meta extends ObjectModel
                 // Insert
                 $langInserts[] = [
                     $metaPrimary => $primary,
-                    'id_lang'    => $idLang,
-                    'name'       => $meta['name'][$idLang],
+                    'id_lang' => $idLang,
+                    'name' => $meta['name'][$idLang],
                 ];
             }
         }
@@ -262,8 +262,8 @@ class Meta extends ObjectModel
             static::DISPLAY_TYPE_CHECKBOX => 'Checkbox',
 //            static::DISPLAY_TYPE_RADIO    => 'Radio buttons',
 //            static::DISPLAY_TYPE_LIST     => 'Dropdown',
-            static::DISPLAY_TYPE_SLIDER   => 'Slider',
-            static::DISPLAY_TYPE_COLORS   => 'Colors',
+            static::DISPLAY_TYPE_SLIDER => 'Slider',
+            static::DISPLAY_TYPE_COLORS => 'Colors',
         ];
     }
 
@@ -271,7 +271,7 @@ class Meta extends ObjectModel
      * Get the name of a meta
      *
      * @param string $alias
-     * @param int    $idLang
+     * @param int $idLang
      *
      * @return false|null|string
      */
@@ -281,13 +281,13 @@ class Meta extends ObjectModel
             return Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
                     ->select('ml.`name`')
-                    ->from(bqSQL(static::$definition['table']).'_lang', 'ml')
+                    ->from(bqSQL(static::$definition['table']) . '_lang', 'ml')
                     ->innerJoin(
                         bqSQL(static::$definition['table']),
                         'm',
-                        'ml.`'.bqSQL(static::$definition['primary']).'` = m.`'.bqSQL(static::$definition['primary']).'` AND ml.`id_lang` = '.(int) $idLang
+                        'ml.`' . bqSQL(static::$definition['primary']) . '` = m.`' . bqSQL(static::$definition['primary']) . '` AND ml.`id_lang` = ' . (int)$idLang
                     )
-                    ->where('m.`alias` = \''.pSQL($alias).'\'')
+                    ->where('m.`alias` = \'' . pSQL($alias) . '\'')
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -326,7 +326,7 @@ class Meta extends ObjectModel
         foreach ($metas as $meta) {
             $newMeta = $meta['alias'];
             if ($withWeights) {
-                $newMeta .= '^'.$meta['weight'];
+                $newMeta .= '^' . $meta['weight'];
             }
 
             $newMetas[] = $newMeta;

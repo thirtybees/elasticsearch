@@ -26,7 +26,7 @@ if (!defined('_TB_VERSION_')) {
     return;
 }
 
-require_once __DIR__.'/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * Class Elasticsearch
@@ -180,7 +180,7 @@ class Elasticsearch extends Module
         Configuration::updateGlobalValue(static::SHARDS, 3);
         Configuration::updateGlobalValue(static::SERVERS, json_encode([['url' => 'http://localhost:9200', 'read' => true, 'write' => true]]));
         Configuration::updateGlobalValue(static::REPLICAS, 2);
-        Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__.'/data/defaultquery.json'));
+        Configuration::updateGlobalValue(static::QUERY_JSON, file_get_contents(__DIR__ . '/data/defaultquery.json'));
         Configuration::updateGlobalValue(static::BLACKLISTED_FIELDS, 'pageviews,sales');
         Configuration::updateGlobalValue(static::REPLACE_NATIVE_PAGES, true);
         Configuration::updateGlobalValue(static::SEARCH_SUBCATEGORIES, true);
@@ -205,7 +205,7 @@ class Elasticsearch extends Module
 
             try {
                 foreach (Language::getLanguages(true) as $language) {
-                    $stopWords[(int) $language['id_lang']] = static::getStopWordLang(strtolower($language['iso_code']));
+                    $stopWords[(int)$language['id_lang']] = static::getStopWordLang(strtolower($language['iso_code']));
                 }
             } catch (PrestaShopException $e) {
             }
@@ -215,16 +215,16 @@ class Elasticsearch extends Module
                     static::STOP_WORDS,
                     $stopWords,
                     false,
-                    (int) $shop['id_shop_group'],
-                    (int) $shop['id_shop']
+                    (int)$shop['id_shop_group'],
+                    (int)$shop['id_shop']
                 );
             } catch (PrestaShopException $e) {
                 $this->context->controller->errors[] = $this->l('Unable to add stop words during installation, you might have to change these manually.');
             }
         }
 
-        $defaultMetas = json_decode(file_get_contents(__DIR__.'/data/defaultmetas.json'), true);
-        $attributes = Meta::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT'));
+        $defaultMetas = json_decode(file_get_contents(__DIR__ . '/data/defaultmetas.json'), true);
+        $attributes = Meta::getAllProperties((int)Configuration::get('PS_LANG_DEFAULT'));
         $metaInserts = [];
         $metaLangInserts = [];
         $langs = Language::getLanguages(true);
@@ -240,25 +240,25 @@ class Elasticsearch extends Module
         foreach ($attributes as $attribute) {
             $metaInserts[] = [
                 bqSQL(Meta::$definition['primary']) => $i,
-                'alias'                             => bqSQL($attribute->code.$attribute->meta_type),
-                'code'                              => bqSQL($attribute->code),
-                'enabled'                           => !in_array($attribute->code, ['sales', 'pageviews']),
-                'meta_type'                         => bqSQL($attribute->meta_type),
-                'elastic_type'                      => bqSQL($attribute->elastic_type),
-                'searchable'                        => in_array($attribute->code, ['name', 'reference', 'manufacturer']),
-                'weight'                            => 1,
-                'position'                          => $i,
-                'aggregatable'                      => in_array($attribute->code, ['category', 'manufacturer']),
-                'operator'                          => (float) $attribute->weight,
-                'display_type'                      => bqSQL($attribute->weight),
-                'result_limit'                      => 0,
+                'alias' => bqSQL($attribute->code . $attribute->meta_type),
+                'code' => bqSQL($attribute->code),
+                'enabled' => !in_array($attribute->code, ['sales', 'pageviews']),
+                'meta_type' => bqSQL($attribute->meta_type),
+                'elastic_type' => bqSQL($attribute->elastic_type),
+                'searchable' => in_array($attribute->code, ['name', 'reference', 'manufacturer']),
+                'weight' => 1,
+                'position' => $i,
+                'aggregatable' => in_array($attribute->code, ['category', 'manufacturer']),
+                'operator' => (float)$attribute->weight,
+                'display_type' => bqSQL($attribute->weight),
+                'result_limit' => 0,
             ];
 
             foreach ($langs as $lang) {
                 $metaLangInserts[] = [
                     bqSQL(Meta::$definition['primary']) => $i,
-                    'id_lang'                           => (int) $lang['id_lang'],
-                    'name'                              => isset($defaultMetas[$attribute->code][$lang['iso_code']])
+                    'id_lang' => (int)$lang['id_lang'],
+                    'name' => isset($defaultMetas[$attribute->code][$lang['iso_code']])
                         ? $defaultMetas[$attribute->code][$lang['iso_code']]
                         : $attribute->code,
                 ];
@@ -274,7 +274,7 @@ class Elasticsearch extends Module
             return false;
         }
         try {
-            Db::getInstance()->insert(bqSQL(Meta::$definition['table']).'_lang', $metaLangInserts);
+            Db::getInstance()->insert(bqSQL(Meta::$definition['table']) . '_lang', $metaLangInserts);
         } catch (PrestaShopException $e) {
             $this->context->controller->errors[] = "Elasticsearch module database error: {$e->getMessage()}";
             $this->uninstall();
@@ -293,20 +293,20 @@ class Elasticsearch extends Module
     public function uninstall()
     {
         foreach ([
-            static::SERVERS,
-            static::PROXY,
-            static::LOGGING_ENABLED,
-            static::INDEX_CHUNK_SIZE,
-            static::INDEX_PREFIX,
-            static::REPLICAS,
-            static::SHARDS,
-            static::BLACKLISTED_FIELDS,
-            static::DEFAULT_TAX_RULES_GROUP,
-            static::REPLACE_NATIVE_PAGES,
-            static::SEARCH_SUBCATEGORIES,
-            static::AUTOCOMPLETE,
-            static::INSTANT_SEARCH,
-            ] as $key) {
+                     static::SERVERS,
+                     static::PROXY,
+                     static::LOGGING_ENABLED,
+                     static::INDEX_CHUNK_SIZE,
+                     static::INDEX_PREFIX,
+                     static::REPLICAS,
+                     static::SHARDS,
+                     static::BLACKLISTED_FIELDS,
+                     static::DEFAULT_TAX_RULES_GROUP,
+                     static::REPLACE_NATIVE_PAGES,
+                     static::SEARCH_SUBCATEGORIES,
+                     static::AUTOCOMPLETE,
+                     static::INSTANT_SEARCH,
+                 ] as $key) {
             try {
                 Configuration::deleteByName($key);
             } catch (PrestaShopException $e) {
@@ -315,17 +315,17 @@ class Elasticsearch extends Module
         }
 
         try {
-            Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_index_status`');
+            Db::getInstance()->execute('DROP TABLE `' . _DB_PREFIX_ . 'elasticsearch_index_status`');
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
         try {
-            Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta`');
+            Db::getInstance()->execute('DROP TABLE `' . _DB_PREFIX_ . 'elasticsearch_meta`');
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
         try {
-            Db::getInstance()->execute('DROP TABLE `'._DB_PREFIX_.'elasticsearch_meta_lang`');
+            Db::getInstance()->execute('DROP TABLE `' . _DB_PREFIX_ . 'elasticsearch_meta_lang`');
         } catch (PrestaShopException $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
         }
@@ -349,33 +349,33 @@ class Elasticsearch extends Module
         $this->context->controller->addJqueryUI('ui.sortable');
 
         // Module CSS
-        $this->context->controller->addCSS($this->_path.'views/css/style.css', 'all');
-        $this->context->controller->addCSS($this->_path.'views/css/admin.css', 'all');
+        $this->context->controller->addCSS($this->_path . 'views/css/style.css', 'all');
+        $this->context->controller->addCSS($this->_path . 'views/css/admin.css', 'all');
 
         // Bootstrap select
-        $this->context->controller->addCSS($this->_path.'views/css/bootstrap-select-1.12.4.min.css', 'screen');
-        $this->context->controller->addJS($this->_path.'views/js/bootstrap-select-1.12.4.min.js');
+        $this->context->controller->addCSS($this->_path . 'views/css/bootstrap-select-1.12.4.min.css', 'screen');
+        $this->context->controller->addJS($this->_path . 'views/js/bootstrap-select-1.12.4.min.js');
 
         // SweetAlert 2
-        $this->context->controller->addJS($this->_path.'views/js/sweetalert-2.1.0.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/sweetalert-2.1.0.min.js');
 
         // Lodash
-        $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/lodash-4.17.4.min.js');
 
         // Ace editor
-        $this->context->controller->addJS(_PS_JS_DIR_.'ace/ace.js');
-        $this->context->controller->addCSS(_PS_JS_DIR_.'ace/aceinput.css');
+        $this->context->controller->addJS(_PS_JS_DIR_ . 'ace/ace.js');
+        $this->context->controller->addCSS(_PS_JS_DIR_ . 'ace/aceinput.css');
 
         // Vue.js
-        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/vue-2.5.11.min.js');
 
         // Vuex
-        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/vuex-2.5.0.min.js');
 
         try {
-            $elasticAjaxUrl = $this->context->link->getAdminLink('AdminModules', true)."&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}";
+            $elasticAjaxUrl = $this->context->link->getAdminLink('AdminModules', true) . "&configure={$this->name}&tab_module={$this->tab}&module_name={$this->name}";
             $configFormValues = $this->getConfigFormValues();
-            $configUpdated = (bool) Configuration::get(static::CONFIG_UPDATED);
+            $configUpdated = (bool)Configuration::get(static::CONFIG_UPDATED);
             $languages = Language::getLanguages(true, false, false);
         } catch (PrestaShopException $e) {
             $this->context->controller->errors[] = $e->getMessage();
@@ -385,49 +385,49 @@ class Elasticsearch extends Module
 
         Media::addJsDef(['elasticAjaxUrl' => $elasticAjaxUrl]);
         $this->context->smarty->assign([
-            'config'         => $configFormValues,
-            'configUpdated'  => $configUpdated,
-            'initialTab'     => 'config',
-            'status'         => [
+            'config' => $configFormValues,
+            'configUpdated' => $configUpdated,
+            'initialTab' => 'config',
+            'status' => [
                 'indexed' => IndexStatus::getIndexed(null, $this->context->shop->id),
-                'total'   => (int) IndexStatus::countProducts(null, $this->context->shop->id),
+                'total' => (int)IndexStatus::countProducts(null, $this->context->shop->id),
             ],
-            'totalProducts'  => IndexStatus::countProducts($this->context->language->id, $this->context->shop->id),
-            'languages'      => $languages,
+            'totalProducts' => IndexStatus::countProducts($this->context->language->id, $this->context->shop->id),
+            'languages' => $languages,
             'tabGroups' => [
                 [
                     [
                         'name' => 'Configuration',
-                        'key'  => 'config',
+                        'key' => 'config',
                         'icon' => 'cogs',
                     ],
                     [
                         'name' => 'Connection',
-                        'key'  => 'connection',
+                        'key' => 'connection',
                         'icon' => 'plug',
                     ],
                 ],
                 [
                     [
                         'name' => 'Indexing',
-                        'key'  => 'indexing',
+                        'key' => 'indexing',
                         'icon' => 'sort',
                     ],
                     [
                         'name' => 'Search',
-                        'key'  => 'search',
+                        'key' => 'search',
                         'icon' => 'search',
                     ],
                     [
                         'name' => 'Filter',
-                        'key'  => 'filter',
+                        'key' => 'filter',
                         'icon' => 'filter',
                     ],
                 ],
                 [
                     [
                         'name' => 'Display',
-                        'key'  => 'display',
+                        'key' => 'display',
                         'icon' => 'desktop',
                     ],
                 ],
@@ -453,10 +453,10 @@ class Elasticsearch extends Module
     public function hookDisplayTop()
     {
         // lodash
-        $this->context->controller->addJS($this->_path.'views/js/lodash-4.17.4.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/lodash-4.17.4.min.js');
 
         // Vue.js
-        $this->context->controller->addJS($this->_path.'views/js/vue-2.5.11.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/vue-2.5.11.min.js');
 
         try {
             if (Configuration::get(static::INFINITE_SCROLL)) {
@@ -467,16 +467,16 @@ class Elasticsearch extends Module
         }
 
         // Vuex
-        $this->context->controller->addJS($this->_path.'views/js/vuex-2.5.0.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/vuex-2.5.0.min.js');
 
         // Elasticsearch client
-        $this->context->controller->addJS($this->_path.'views/js/elasticsearch.13.3.1.min.js');
+        $this->context->controller->addJS($this->_path . 'views/js/elasticsearch.13.3.1.min.js');
 
         // Autocomplete CSS
-        if (file_exists(__DIR__.'/views/templates/themes/'.$this->context->shop->theme_directory.'/front.css')) {
-            $this->context->controller->addCSS(__DIR__.'/views/templates/themes/'.$this->context->shop->theme_directory.'/front.css');
+        if (file_exists(__DIR__ . '/views/templates/themes/' . $this->context->shop->theme_directory . '/front.css')) {
+            $this->context->controller->addCSS(__DIR__ . '/views/templates/themes/' . $this->context->shop->theme_directory . '/front.css');
         } else {
-            $this->context->controller->addCSS($this->_path.'views/css/front.css', 'screen');
+            $this->context->controller->addCSS($this->_path . 'views/css/front.css', 'screen');
         }
 
         // Calculate the conversion to make before displaying prices
@@ -487,7 +487,7 @@ class Elasticsearch extends Module
         $conversion = $defaultCurrency->conversion_rate * $currentCurrency->conversion_rate;
 
         $taxes = TaxRulesGroup::getAssociatedTaxRatesByIdCountry(Context::getContext()->country->id);
-        if (!Tax::excludeTaxeOption() && (int) Group::getPriceDisplayMethod($this->context->customer->id_default_group) === PS_TAX_EXC) {
+        if (!Tax::excludeTaxeOption() && (int)Group::getPriceDisplayMethod($this->context->customer->id_default_group) === PS_TAX_EXC) {
             foreach ($taxes as &$tax) {
                 $tax = 100.000;
             }
@@ -495,14 +495,14 @@ class Elasticsearch extends Module
 
         $defaultTax = 1.0000;
         if (isset($taxes[Configuration::get(static::DEFAULT_TAX_RULES_GROUP)])) {
-            $defaultTax = 1 + (float) $taxes[Configuration::get(static::DEFAULT_TAX_RULES_GROUP)] / 100;
+            $defaultTax = 1 + (float)$taxes[Configuration::get(static::DEFAULT_TAX_RULES_GROUP)] / 100;
         }
 
         $this->context->smarty->assign([
-            'idGroup'            => (int) $this->context->customer->id_default_group ?: 1,
-            'defaultTax'         => $defaultTax,
-            'taxes'              => $taxes,
-            'currencyConversion' => (float) $conversion,
+            'idGroup' => (int)$this->context->customer->id_default_group ?: 1,
+            'defaultTax' => $defaultTax,
+            'taxes' => $taxes,
+            'currencyConversion' => (float)$conversion,
         ]);
 
         $metas = Meta::getAllMetas([$this->context->language->id]);
@@ -517,31 +517,31 @@ class Elasticsearch extends Module
             }
 
             // If meta is a slider (display_type = slider/4), then pick the min and max value
-            if ((int) $meta['display_type'] === 4) {
+            if ((int)$meta['display_type'] === 4) {
                 $aggegrations["{$meta['alias']}_min"] = [
-                    'min'  => [
-                        'field' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
+                    'min' => [
+                        'field' => $meta['alias'] . '_group_' . (int)Context::getContext()->customer->id_default_group,
                     ],
                     'meta' => [
-                        'name'            => $meta['name'],
-                        'code'            => "{$meta['alias']}_min",
-                        'slider_code'     => $meta['alias'],
-                        'slider_agg_code' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
-                        'position'        => $meta['position'],
-                        'display_type'    => $meta['display_type'],
+                        'name' => $meta['name'],
+                        'code' => "{$meta['alias']}_min",
+                        'slider_code' => $meta['alias'],
+                        'slider_agg_code' => $meta['alias'] . '_group_' . (int)Context::getContext()->customer->id_default_group,
+                        'position' => $meta['position'],
+                        'display_type' => $meta['display_type'],
                     ],
                 ];
                 $aggegrations["{$meta['alias']}_max"] = [
-                    'max'  => [
-                        'field' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
+                    'max' => [
+                        'field' => $meta['alias'] . '_group_' . (int)Context::getContext()->customer->id_default_group,
                     ],
                     'meta' => [
-                        'name'            => $meta['name'],
-                        'code'            => "{$meta['alias']}_max",
-                        'slider_code'     => $meta['alias'],
-                        'slider_agg_code' => $meta['alias'].'_group_'.(int) Context::getContext()->customer->id_default_group,
-                        'position'        => $meta['position'],
-                        'display_type'    => $meta['display_type'],
+                        'name' => $meta['name'],
+                        'code' => "{$meta['alias']}_max",
+                        'slider_code' => $meta['alias'],
+                        'slider_agg_code' => $meta['alias'] . '_group_' . (int)Context::getContext()->customer->id_default_group,
+                        'position' => $meta['position'],
+                        'display_type' => $meta['display_type'],
                     ],
                 ];
 
@@ -549,13 +549,13 @@ class Elasticsearch extends Module
             }
 
             // Pick the meta value and code (via _agg)
-            $aggs  = [
+            $aggs = [
                 'name' => ['top_hits' => ['size' => 1, '_source' => ['includes' => [$meta['alias']]]]],
                 'code' => ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['alias']}_agg"]]]],
             ];
 
             // If meta is a color (display_type = color/5), then pick the color code as well
-            if ((int) $meta['display_type'] === 5) {
+            if ((int)$meta['display_type'] === 5) {
                 $aggs['color_code'] = ['top_hits' => ['size' => 1, '_source' => ['includes' => ["{$meta['alias']}_color_code"]]]];
             }
 
@@ -563,8 +563,8 @@ class Elasticsearch extends Module
                 $subAgg = $agg;
                 $agg = [
                     'terms' => [
-                        'field' => $meta['alias'].'_agg',
-                        'size'  => (int) $meta['result_limit'] ?: 10000,
+                        'field' => $meta['alias'] . '_agg',
+                        'size' => (int)$meta['result_limit'] ?: 10000,
                     ],
                     'aggs' => [
                         $aggName => $subAgg,
@@ -577,11 +577,11 @@ class Elasticsearch extends Module
                 // Aggregate on the special aggregate field
 
                 // This part is added to get the actual display name and meta code of the filter value
-                'aggs'  => $aggs,
+                'aggs' => $aggs,
                 'meta' => [
-                    'name'         => $meta['name'],
-                    'code'         => $meta['alias'],
-                    'position'     => $meta['position'],
+                    'name' => $meta['name'],
+                    'code' => $meta['alias'],
+                    'position' => $meta['position'],
                     'display_type' => $meta['display_type'],
                 ],
             ];
@@ -591,12 +591,12 @@ class Elasticsearch extends Module
         $sources = [];
         foreach ($metas as $meta) {
             if (!$meta['enabled'] || !$meta['aggregatable'] && !$meta['searchable'] && !in_array($meta['alias'], [
-                static::getAlias('name'),
-                static::getAlias('price_tax_excl'),
-                static::getAlias('id_tax_rules_group'),
-                static::getAlias('image_link_small'),
-                static::getAlias('image_link_large'),
-            ])) {
+                    static::getAlias('name'),
+                    static::getAlias('price_tax_excl'),
+                    static::getAlias('id_tax_rules_group'),
+                    static::getAlias('image_link_small'),
+                    static::getAlias('image_link_large'),
+                ])) {
                 continue;
             }
 
@@ -621,14 +621,14 @@ class Elasticsearch extends Module
 
         // Find if there is a special filter
         $this->context->smarty->assign([
-            'autocomplete'  => $autocomplete,
-            'shop'          => $this->context->shop,
-            'language'      => $this->context->language,
-            'aggregations'  => $aggegrations,
-            'fields'        => $searchableMetas,
-            'sources'       => $sources,
-            'metas'         => $metas,
-            'fixedFilter'   => $fixedFilter,
+            'autocomplete' => $autocomplete,
+            'shop' => $this->context->shop,
+            'language' => $this->context->language,
+            'aggregations' => $aggegrations,
+            'fields' => $searchableMetas,
+            'sources' => $sources,
+            'metas' => $metas,
+            'fixedFilter' => $fixedFilter,
         ]);
 
         try {
@@ -669,7 +669,7 @@ class Elasticsearch extends Module
     {
         $readHosts = [];
         try {
-            foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
+            foreach ((array)json_decode(Configuration::get(static::SERVERS), true) as $host) {
                 if ($host['read']) {
                     $parsed = self::splitUrl($host['url']);
                     if (empty($parsed['host'])) {
@@ -729,7 +729,7 @@ class Elasticsearch extends Module
     {
         $writeHosts = [];
         try {
-            foreach ((array) json_decode(Configuration::get(static::SERVERS), true) as $host) {
+            foreach ((array)json_decode(Configuration::get(static::SERVERS), true) as $host) {
                 if ($host['write']) {
                     $parsed = self::splitUrl($host['url']);
                     if (empty($parsed['host'])) {
@@ -822,20 +822,20 @@ class Elasticsearch extends Module
      */
     public static function tpl($relativePath)
     {
-        $themeBaseDir = _PS_THEME_DIR_.'modules/elasticsearch/';
-        $modThemeBaseDir = __DIR__.'/views/templates/themes/'.Context::getContext()->shop->theme_directory.'/';
-        $modDir = __DIR__.'/views/templates/';
+        $themeBaseDir = _PS_THEME_DIR_ . 'modules/elasticsearch/';
+        $modThemeBaseDir = __DIR__ . '/views/templates/themes/' . Context::getContext()->shop->theme_directory . '/';
+        $modDir = __DIR__ . '/views/templates/';
 
         // Search for a theme-specific file
         if (in_array(substr($relativePath, 0, 5), ['hook/', 'front'])) {
             foreach ([$themeBaseDir, $modThemeBaseDir, $modDir] as $basePath) {
-                if (file_exists($basePath.$relativePath)) {
-                    return $basePath.$relativePath;
+                if (file_exists($basePath . $relativePath)) {
+                    return $basePath . $relativePath;
                 }
             }
         } else {
-            if (file_exists($modDir.$relativePath)) {
-                return $modDir.$relativePath;
+            if (file_exists($modDir . $relativePath)) {
+                return $modDir . $relativePath;
             }
         }
 
@@ -885,7 +885,7 @@ class Elasticsearch extends Module
                 'success' => false,
             ]));
         }
-        $amount = (int) (Configuration::get(static::INDEX_CHUNK_SIZE) ?: 100);
+        $amount = (int)(Configuration::get(static::INDEX_CHUNK_SIZE) ?: 100);
         if (!$amount) {
             $amount = 100;
         }
@@ -913,8 +913,8 @@ class Elasticsearch extends Module
                 $params['body'][] = [
                     'index' => [
                         '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
-                        '_type'  => 'product',
-                        '_id'     => $product->id,
+                        '_type' => 'product',
+                        '_id' => $product->id,
                     ],
                 ];
 
@@ -955,7 +955,7 @@ class Elasticsearch extends Module
                         }
                     }
 
-                    $product->{$name.'_agg'} = $var;
+                    $product->{$name . '_agg'} = $var;
                 }
 
                 $params['body'][] = $product;
@@ -969,24 +969,24 @@ class Elasticsearch extends Module
             }
             $failed = [];
             foreach ($results['items'] as $result) {
-                if ((int) substr($result['index']['status'], 0, 1) !== 2) {
+                if ((int)substr($result['index']['status'], 0, 1) !== 2) {
                     preg_match('/(?P<index>[a-zA-Z]+)\_(?P<id_shop>\d+)\_(?P<id_lang>\d+)/', $result['index']['_index'], $details);
                     $failed[] = [
-                        'id_lang'    => (int) $details['id_lang'],
-                        'id_shop'    => (int) $details['id_shop'],
-                        'id_product' => (int) $result['index']['_id'],
-                        'error'      => isset($result['index']['error']['reason']) ? $result['index']['error']['reason'].(isset($result['index']['error']['caused_by']['reason']) ? ' '.$result['index']['error']['caused_by']['reason'] : '') : 'Unknown error',
+                        'id_lang' => (int)$details['id_lang'],
+                        'id_shop' => (int)$details['id_shop'],
+                        'id_product' => (int)$result['index']['_id'],
+                        'error' => isset($result['index']['error']['reason']) ? $result['index']['error']['reason'] . (isset($result['index']['error']['caused_by']['reason']) ? ' ' . $result['index']['error']['caused_by']['reason'] : '') : 'Unknown error',
                     ];
                 }
             }
             if (!empty($failed)) {
                 foreach ($failed as $failure) {
                     foreach ($products as $index => $product) {
-                        if ((int) $product->id === (int) $failure['id_product']
-                            && (int) $product->elastic_id_shop === (int) $failure['id_shop']
-                            && (int) $product->elastic_id_lang === (int) $failure['id_lang']
+                        if ((int)$product->id === (int)$failure['id_product']
+                            && (int)$product->elastic_id_shop === (int)$failure['id_shop']
+                            && (int)$product->elastic_id_lang === (int)$failure['id_lang']
                         ) {
-                            Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
+                            Db::getInstance()->execute('INSERT INTO `' . _DB_PREFIX_ . "elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
 
                             unset($products[$index]);
                         }
@@ -1002,7 +1002,7 @@ class Elasticsearch extends Module
             }
             $values = rtrim($values, ',');
             if ($values) {
-                Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
+                Db::getInstance()->execute('INSERT INTO `' . _DB_PREFIX_ . "elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
             }
 
             $chunks--;
@@ -1018,9 +1018,9 @@ class Elasticsearch extends Module
      */
     protected function installDB()
     {
-        if (!file_exists(__DIR__.'/sql/install.sql')) {
+        if (!file_exists(__DIR__ . '/sql/install.sql')) {
             return false;
-        } elseif (!$sql = file_get_contents(__DIR__.'/sql/install.sql')) {
+        } elseif (!$sql = file_get_contents(__DIR__ . '/sql/install.sql')) {
             return false;
         }
         $sql = str_replace(['PREFIX_', 'ENGINE_TYPE'], [_DB_PREFIX_, _MYSQL_ENGINE_], $sql);
@@ -1047,28 +1047,28 @@ class Elasticsearch extends Module
     {
         $stopWords = [];
         foreach (Language::getLanguages(true) as $language) {
-            $idLang = (int) $language['id_lang'];
-            $stopWords[$idLang] = (string) Configuration::get(static::STOP_WORDS, $idLang);
+            $idLang = (int)$language['id_lang'];
+            $stopWords[$idLang] = (string)Configuration::get(static::STOP_WORDS, $idLang);
         }
 
 
         return [
-            static::LOGGING_ENABLED         => (int) Configuration::get(static::LOGGING_ENABLED),
-            static::PROXY                   => (int) Configuration::get(static::PROXY),
-            static::SERVERS                 => (array) json_decode(Configuration::get(static::SERVERS), true),
-            static::SHARDS                  => (int) Configuration::get(static::SHARDS),
-            static::REPLICAS                => (int) Configuration::get(static::REPLICAS),
-            static::METAS                   => Meta::getAllProperties((int) Configuration::get('PS_LANG_DEFAULT')),
-            static::INDEX_PREFIX            => Configuration::get(static::INDEX_PREFIX),
-            static::QUERY_JSON              => Configuration::get(static::QUERY_JSON),
-            static::PRODUCT_LIST            => Configuration::get(static::PRODUCT_LIST),
+            static::LOGGING_ENABLED => (int)Configuration::get(static::LOGGING_ENABLED),
+            static::PROXY => (int)Configuration::get(static::PROXY),
+            static::SERVERS => (array)json_decode(Configuration::get(static::SERVERS), true),
+            static::SHARDS => (int)Configuration::get(static::SHARDS),
+            static::REPLICAS => (int)Configuration::get(static::REPLICAS),
+            static::METAS => Meta::getAllProperties((int)Configuration::get('PS_LANG_DEFAULT')),
+            static::INDEX_PREFIX => Configuration::get(static::INDEX_PREFIX),
+            static::QUERY_JSON => Configuration::get(static::QUERY_JSON),
+            static::PRODUCT_LIST => Configuration::get(static::PRODUCT_LIST),
             static::DEFAULT_TAX_RULES_GROUP => Configuration::get(static::DEFAULT_TAX_RULES_GROUP),
-            static::STOP_WORDS              => $stopWords,
-            static::BLACKLISTED_FIELDS      => Configuration::get(static::BLACKLISTED_FIELDS),
-            static::REPLACE_NATIVE_PAGES    => (int) Configuration::get(static::REPLACE_NATIVE_PAGES),
-            static::SEARCH_SUBCATEGORIES    => (int) Configuration::get(static::SEARCH_SUBCATEGORIES),
-            static::INSTANT_SEARCH          => (int) Configuration::get(static::INSTANT_SEARCH),
-            static::AUTOCOMPLETE            => (int) Configuration::get(static::AUTOCOMPLETE),
+            static::STOP_WORDS => $stopWords,
+            static::BLACKLISTED_FIELDS => Configuration::get(static::BLACKLISTED_FIELDS),
+            static::REPLACE_NATIVE_PAGES => (int)Configuration::get(static::REPLACE_NATIVE_PAGES),
+            static::SEARCH_SUBCATEGORIES => (int)Configuration::get(static::SEARCH_SUBCATEGORIES),
+            static::INSTANT_SEARCH => (int)Configuration::get(static::INSTANT_SEARCH),
+            static::AUTOCOMPLETE => (int)Configuration::get(static::AUTOCOMPLETE),
         ];
     }
 
@@ -1098,7 +1098,7 @@ class Elasticsearch extends Module
                 if (isset($stats['nodes']['versions'])) {
                     $clusterStats = $client->cluster()->stats();
 
-                    return (string) min($clusterStats['nodes']['versions']);
+                    return (string)min($clusterStats['nodes']['versions']);
                 }
             } catch (Exception $e) {
                 $context = Context::getContext();
@@ -1124,7 +1124,7 @@ class Elasticsearch extends Module
             return null;
         }
 
-        $idLang = (int) Context::getContext()->language->id;
+        $idLang = (int)Context::getContext()->language->id;
         $controller = Context::getContext()->controller;
         if ($controller instanceof CategoryControllerCore) {
             $category = $controller->getCategory();
@@ -1134,8 +1134,8 @@ class Elasticsearch extends Module
                     return [
                         'aggregationCode' => static::getAlias('category'),
                         'aggregationName' => Meta::getName(static::getAlias('category'), $idLang),
-                        'filterCode'      => Tools::link_rewrite($category->name),
-                        'filterName'      => $category->name,
+                        'filterCode' => Tools::link_rewrite($category->name),
+                        'filterName' => $category->name,
                     ];
                 }
 
@@ -1144,8 +1144,8 @@ class Elasticsearch extends Module
                 return [
                     'aggregationCode' => static::getAlias('categories'),
                     'aggregationName' => Meta::getName(static::getAlias('category'), $idLang),
-                    'filterCode'      => Tools::link_rewrite($categoryPath),
-                    'filterName'      => $category->name,
+                    'filterCode' => Tools::link_rewrite($categoryPath),
+                    'filterName' => $category->name,
                 ];
             }
         } elseif ($controller instanceof ManufacturerControllerCore) {
@@ -1155,8 +1155,8 @@ class Elasticsearch extends Module
                 return [
                     'aggregationCode' => static::getAlias('manufacturer'),
                     'aggregationName' => Meta::getName(static::getAlias('manufacturer'), $idLang),
-                    'filterCode'      => Tools::link_rewrite($manufacturer->name),
-                    'filterName'      => $manufacturer->name,
+                    'filterCode' => Tools::link_rewrite($manufacturer->name),
+                    'filterName' => $manufacturer->name,
                 ];
             }
         } elseif ($controller instanceof SupplierControllerCore) {
@@ -1166,8 +1166,8 @@ class Elasticsearch extends Module
                 return [
                     'aggregationCode' => static::getAlias('supplier'),
                     'aggregationName' => Meta::getName(static::getAlias('supplier'), Context::getContext()->language->id),
-                    'filterCode'      => Tools::link_rewrite($supplier->name),
-                    'filterName'      => $supplier->name,
+                    'filterCode' => Tools::link_rewrite($supplier->name),
+                    'filterName' => $supplier->name,
                 ];
             }
         }
@@ -1177,7 +1177,7 @@ class Elasticsearch extends Module
 
     /**
      * @param string $url
-     * @param bool   $decode
+     * @param bool $decode
      *
      * @return mixed
      *
@@ -1186,11 +1186,11 @@ class Elasticsearch extends Module
     protected static function splitUrl($url, $decode = true)
     {
         $xunressub = 'a-zA-Z\d\-._~\!$&\'()*+,;=';
-        $xpchar = $xunressub.':@%';
+        $xpchar = $xunressub . ':@%';
 
         $xscheme = '([a-zA-Z][a-zA-Z\d+-.]*)';
 
-        $xuserinfo = '((['.$xunressub.'%]*)'.'(:(['.$xunressub.':%]*))?)';
+        $xuserinfo = '(([' . $xunressub . '%]*)' . '(:([' . $xunressub . ':%]*))?)';
 
         $xipv4 = '(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})';
 
@@ -1198,23 +1198,23 @@ class Elasticsearch extends Module
 
         $xhostName = '([a-zA-Z\d-.%]+)';
 
-        $xhost = '('.$xhostName.'|'.$xipv4.'|'.$xipv6.')';
+        $xhost = '(' . $xhostName . '|' . $xipv4 . '|' . $xipv6 . ')';
         $xport = '(\d*)';
-        $xauthority = '(('.$xuserinfo.'@)?'.$xhost.'?(:'.$xport.')?)';
+        $xauthority = '((' . $xuserinfo . '@)?' . $xhost . '?(:' . $xport . ')?)';
 
-        $xslashSeg = '(/['.$xpchar.']*)';
-        $xpathAuthabs = '((//'.$xauthority.')((/['.$xpchar.']*)*))';
-        $xpathRel = '(['.$xpchar.']+'.$xslashSeg.'*)';
-        $xpathAbs = '(/('.$xpathRel.')?)';
-        $xapath = '('.$xpathAuthabs.'|'.$xpathAbs.'|'.$xpathRel.')';
+        $xslashSeg = '(/[' . $xpchar . ']*)';
+        $xpathAuthabs = '((//' . $xauthority . ')((/[' . $xpchar . ']*)*))';
+        $xpathRel = '([' . $xpchar . ']+' . $xslashSeg . '*)';
+        $xpathAbs = '(/(' . $xpathRel . ')?)';
+        $xapath = '(' . $xpathAuthabs . '|' . $xpathAbs . '|' . $xpathRel . ')';
 
-        $xqueryfrag = '(['.$xpchar.'/?'.']*)';
+        $xqueryfrag = '([' . $xpchar . '/?' . ']*)';
 
-        $xurl = '^('.$xscheme.':)?'.$xapath.'?'.'(\?'.$xqueryfrag.')?(#'.$xqueryfrag.')?$';
+        $xurl = '^(' . $xscheme . ':)?' . $xapath . '?' . '(\?' . $xqueryfrag . ')?(#' . $xqueryfrag . ')?$';
 
 
         // Split the URL into components.
-        if (!preg_match('!'.$xurl.'!', $url, $m)) {
+        if (!preg_match('!' . $xurl . '!', $url, $m)) {
             return false;
         }
 
@@ -1288,7 +1288,7 @@ class Elasticsearch extends Module
 
     /**
      * @param array $parts
-     * @param bool  $encode
+     * @param bool $encode
      *
      * @return string
      *
@@ -1320,25 +1320,25 @@ class Elasticsearch extends Module
 
         $url = '';
         if (!empty($parts['scheme'])) {
-            $url .= $parts['scheme'].':';
+            $url .= $parts['scheme'] . ':';
         }
         if (isset($parts['host'])) {
             $url .= '//';
             if (isset($parts['user'])) {
                 $url .= $parts['user'];
                 if (isset($parts['pass'])) {
-                    $url .= ':'.$parts['pass'];
+                    $url .= ':' . $parts['pass'];
                 }
                 $url .= '@';
             }
             if (preg_match('!^[\da-f]*:[\da-f.:]+$!ui', $parts['host'])) {
-                $url .= '['.$parts['host'].']';
+                $url .= '[' . $parts['host'] . ']';
             } // IPv6
             else {
                 $url .= $parts['host'];
             }             // IPv4 or name
             if (isset($parts['port'])) {
-                $url .= ':'.$parts['port'];
+                $url .= ':' . $parts['port'];
             }
             if (!empty($parts['path']) && $parts['path'][0] != '/') {
                 $url .= '/';
@@ -1348,10 +1348,10 @@ class Elasticsearch extends Module
             $url .= $parts['path'];
         }
         if (isset($parts['query'])) {
-            $url .= '?'.$parts['query'];
+            $url .= '?' . $parts['query'];
         }
         if (isset($parts['fragment'])) {
-            $url .= '#'.$parts['fragment'];
+            $url .= '#' . $parts['fragment'];
         }
 
         return $url;
@@ -1366,18 +1366,18 @@ class Elasticsearch extends Module
      */
     public static function getAlias($code, $type = 'property')
     {
-        return (string) \Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+        return (string)\Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
             (new \DbQuery())
                 ->select('`alias`')
                 ->from(bqSQL(Meta::$definition['table']))
-                ->where('`code` = \''.$code.'\'')
-                ->where('`meta_type` = \''.pSQL($type).'\'')
+                ->where('`code` = \'' . $code . '\'')
+                ->where('`meta_type` = \'' . pSQL($type) . '\'')
         );
     }
 
     /**
      * @param string[] $codes
-     * @param string   $type
+     * @param string $type
      *
      * @return string[]
      * @throws PrestaShopDatabaseException
@@ -1393,8 +1393,8 @@ class Elasticsearch extends Module
             (new \DbQuery())
                 ->select('`code`, `alias`')
                 ->from(bqSQL(Meta::$definition['table']))
-                ->where('`code` IN (\''.implode('\',\'', array_map('pSQL', $codes)).'\')')
-                ->where('`meta_type` = \''.pSQL($type).'\'')
+                ->where('`code` IN (\'' . implode('\',\'', array_map('pSQL', $codes)) . '\')')
+                ->where('`meta_type` = \'' . pSQL($type) . '\'')
         );
 
         if (!is_array($results)) {

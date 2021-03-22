@@ -53,11 +53,11 @@ class IndexStatus extends \ObjectModel
     public static $definition = [
         'primary' => 'id_elasticsearch_index_status',
         'table' => 'elasticsearch_index_status',
-        'fields'  => [
-            'id_product' => ['type' => self::TYPE_INT,  'validate' => 'isUnsignedInt', 'required' => true],
-            'id_lang'    => ['type' => self::TYPE_INT,  'validate' => 'isUnsignedInt', 'required' => true],
-            'id_shop'    => ['type' => self::TYPE_INT,  'validate' => 'isUnsignedInt', 'required' => true],
-            'date_upd'   => ['type' => self::TYPE_DATE, 'validate' => 'isDate',        'required' => true],
+        'fields' => [
+            'id_product' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'id_lang' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'id_shop' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'required' => true],
+            'date_upd' => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'required' => true],
         ],
     ];
 
@@ -72,13 +72,13 @@ class IndexStatus extends \ObjectModel
     public static function getIndexed($idLang = null, $idShop = null)
     {
         try {
-            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            return (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
                     ->select('COUNT(*)')
                     ->from(bqSQL(static::$definition['table']), 'eis')
-                    ->innerJoin(bqSQL(Product::$definition['table']).'_shop', 'p', 'p.`id_product` = eis.`id_product` AND p.`id_shop` = eis.`id_shop` AND p.`date_upd` = eis.`date_upd`')
-                    ->where($idLang ? 'eis.`id_lang` = '.(int) $idLang : '')
-                    ->where($idShop ? 'eis.`id_shop` = '.(int) $idShop : '')
+                    ->innerJoin(bqSQL(Product::$definition['table']) . '_shop', 'p', 'p.`id_product` = eis.`id_product` AND p.`id_shop` = eis.`id_shop` AND p.`date_upd` = eis.`date_upd`')
+                    ->where($idLang ? 'eis.`id_lang` = ' . (int)$idLang : '')
+                    ->where($idShop ? 'eis.`id_shop` = ' . (int)$idShop : '')
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -102,17 +102,17 @@ class IndexStatus extends \ObjectModel
         }
 
         try {
-            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            return (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
                     ->select('COUNT(*)')
-                    ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
+                    ->from(bqSQL(Product::$definition['table']) . '_shop', 'ps')
                     ->leftJoin(
-                        bqSQL(Product::$definition['table']).'_lang',
+                        bqSQL(Product::$definition['table']) . '_lang',
                         'pl',
-                        'ps.`id_product` = pl.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : '')
+                        'ps.`id_product` = pl.`id_product`' . ($idLang ? ' AND pl.`id_lang` = ' . (int)$idLang : '')
                     )
-                    ->join(!$idLang ? 'INNER JOIN `'._DB_PREFIX_.'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
-                    ->where('ps.`id_shop` = '.(int) $idShop)
+                    ->join(!$idLang ? 'INNER JOIN `' . _DB_PREFIX_ . 'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
+                    ->where('ps.`id_shop` = ' . (int)$idShop)
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -135,12 +135,12 @@ class IndexStatus extends \ObjectModel
         }
 
         try {
-            return (int) Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
+            return (int)Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
                 (new DbQuery())
                     ->select('COUNT(ls.*)')
-                    ->from(bqSQL(Language::$definition['table']).'_shop', 'ls')
+                    ->from(bqSQL(Language::$definition['table']) . '_shop', 'ls')
                     ->innerJoin(bqSQL(Language::$definition['table']), 'l', 'ls.`id_lang` = l.`id_lang` AND l.`active` = 1')
-                    ->where('ls.`id_shop` = '.(int) $idShop)
+                    ->where('ls.`id_shop` = ' . (int)$idShop)
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -161,7 +161,7 @@ class IndexStatus extends \ObjectModel
         try {
             return Db::getInstance()->delete(
                 bqSQL(static::$definition['table']),
-                $idShop ? '`id_shop` = '.(int) $idShop : ''
+                $idShop ? '`id_shop` = ' . (int)$idShop : ''
             );
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -171,8 +171,8 @@ class IndexStatus extends \ObjectModel
     }
 
     /**
-     * @param int      $limit
-     * @param int      $offset
+     * @param int $limit
+     * @param int $offset
      * @param int|null $idLang
      * @param int|null $idShop
      *
@@ -190,19 +190,19 @@ class IndexStatus extends \ObjectModel
                 (new DbQuery())
                     ->select('ps.`id_product`, ps.`id_shop`, pl.`id_lang`, ps.`date_upd` AS `product_updated`')
                     ->select('eis.`date_upd` AS `product_indexed`')
-                    ->from(bqSQL(Product::$definition['table']).'_shop', 'ps')
+                    ->from(bqSQL(Product::$definition['table']) . '_shop', 'ps')
                     ->leftJoin(
-                        bqSQL(Product::$definition['table']).'_lang',
+                        bqSQL(Product::$definition['table']) . '_lang',
                         'pl',
-                        'pl.`id_product` = ps.`id_product`'.($idLang ? ' AND pl.`id_lang` = '.(int) $idLang : '')
+                        'pl.`id_product` = ps.`id_product`' . ($idLang ? ' AND pl.`id_lang` = ' . (int)$idLang : '')
                     )
                     ->leftJoin(
                         bqSQL(IndexStatus::$definition['table']),
                         'eis',
                         'ps.`id_product` = eis.`id_product` AND ps.`id_shop` = eis.`id_shop` AND eis.`id_lang` = pl.`id_lang`'
                     )
-                    ->join(!$idLang ? 'INNER JOIN `'._DB_PREFIX_.'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
-                    ->where($idShop ? 'ps.`id_shop` = '.(int) $idShop : '')
+                    ->join(!$idLang ? 'INNER JOIN `' . _DB_PREFIX_ . 'lang` l ON pl.`id_lang` = l.`id_lang` AND l.`active` = 1' : '')
+                    ->where($idShop ? 'ps.`id_shop` = ' . (int)$idShop : '')
                     ->where('ps.`date_upd` != eis.`date_upd` OR eis.`date_upd` IS NULL')
                     ->groupBy('ps.`id_product`, ps.`id_shop`, pl.`id_lang`')
                     ->limit($limit, $offset)
@@ -252,28 +252,28 @@ class IndexStatus extends \ObjectModel
                 foreach (Dispatcher::getInstance()->default_routes as $id => $route) {
                     switch ($id) {
                         case 'product_rule':
-                            $rule = Configuration::get($prodroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($prodroutes, (int)$lang['id_lang']);
                             break;
                         case 'category_rule':
-                            $rule = Configuration::get($catroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($catroutes, (int)$lang['id_lang']);
                             break;
                         case 'supplier_rule':
-                            $rule = Configuration::get($supproutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($supproutes, (int)$lang['id_lang']);
                             break;
                         case 'manufacturer_rule':
-                            $rule = Configuration::get($manuroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($manuroutes, (int)$lang['id_lang']);
                             break;
                         case 'layered_rule':
-                            $rule = Configuration::get($layeredroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($layeredroutes, (int)$lang['id_lang']);
                             break;
                         case 'cms_rule':
-                            $rule = Configuration::get($cmsroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($cmsroutes, (int)$lang['id_lang']);
                             break;
                         case 'cms_category_rule':
-                            $rule = Configuration::get($cmscatroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($cmscatroutes, (int)$lang['id_lang']);
                             break;
                         case 'module':
-                            $rule = Configuration::get($moduleroutes, (int) $lang['id_lang']);
+                            $rule = Configuration::get($moduleroutes, (int)$lang['id_lang']);
                             break;
                         default:
                             $rule = $route['rule'];

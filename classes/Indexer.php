@@ -140,7 +140,7 @@ class Indexer
                 } catch (Exception $e) {
                     $error = json_decode($e->getMessage());
                     if (isset($error->error->status)) {
-                        if ((int) substr($error->error->status, 0, 1) !== 4) {
+                        if ((int)substr($error->error->status, 0, 1) !== 4) {
                             die($e->getMessage());
                         }
                     }
@@ -199,7 +199,7 @@ class Indexer
                 ];
             }
 
-            if ((int) $meta['display_type'] === Meta::DISPLAY_TYPE_COLORS) {
+            if ((int)$meta['display_type'] === Meta::DISPLAY_TYPE_COLORS) {
                 $properties["{$meta['alias']}_color_code"] = [
                     'type' => 'keyword',
                 ];
@@ -221,14 +221,14 @@ class Indexer
             foreach ($idLangs as $idLang) {
                 $params = [
                     'index' => "{$indexPrefix}_{$idShop}_{$idLang}",
-                    'body'  => [
+                    'body' => [
                         'settings' => [
-                            'number_of_shards'   => (int) Configuration::get(Elasticsearch::SHARDS),
-                            'number_of_replicas' => (int) Configuration::get(Elasticsearch::REPLICAS),
+                            'number_of_shards' => (int)Configuration::get(Elasticsearch::SHARDS),
+                            'number_of_replicas' => (int)Configuration::get(Elasticsearch::REPLICAS),
                         ],
                         'mappings' => [
                             'product' => [
-                                '_source'    => [
+                                '_source' => [
                                     'enabled' => true,
                                 ],
                                 'properties' => $properties,
@@ -241,7 +241,7 @@ class Indexer
                     $analysis = [
                         'analyzer' => [
                             'tb_analyzer' => [
-                                'type'      => 'standard',
+                                'type' => 'standard',
                                 'stopwords' => explode(',', $stopWords),
                             ],
                         ],

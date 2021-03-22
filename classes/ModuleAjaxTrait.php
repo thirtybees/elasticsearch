@@ -95,7 +95,7 @@ trait ModuleAjaxTrait
         die(json_encode([
             'success' => true,
             'indexed' => 0,
-            'total'   => (int) IndexStatus::countProducts(null, $this->context->shop->id),
+            'total' => (int)IndexStatus::countProducts(null, $this->context->shop->id),
         ]));
     }
 
@@ -116,8 +116,8 @@ trait ModuleAjaxTrait
         }
         $input = json_decode(file_get_contents('php://input'), true);
         try {
-            $amount = (int) (isset($input['amount'])
-                ? (int) $input['amount']
+            $amount = (int)(isset($input['amount'])
+                ? (int)$input['amount']
                 : Configuration::get(static::INDEX_CHUNK_SIZE));
         } catch (\PrestaShopException $e) {
             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
@@ -149,11 +149,11 @@ trait ModuleAjaxTrait
         if (empty($products)) {
             // Nothing to index
             die(json_encode([
-                'success'  => true,
-                'indexed'  => IndexStatus::getIndexed(null, $this->context->shop->id),
-                'total'    => (int) IndexStatus::countProducts(null, $this->context->shop->id),
+                'success' => true,
+                'indexed' => IndexStatus::getIndexed(null, $this->context->shop->id),
+                'total' => (int)IndexStatus::countProducts(null, $this->context->shop->id),
                 'nbErrors' => 0,
-                'errors'   => [],
+                'errors' => [],
             ]));
         }
 
@@ -164,8 +164,8 @@ trait ModuleAjaxTrait
             $params['body'][] = [
                 'index' => [
                     '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
-                    '_type'  => 'product',
-                    '_id'     => $product->id,
+                    '_type' => 'product',
+                    '_id' => $product->id,
                 ],
             ];
 
@@ -206,7 +206,7 @@ trait ModuleAjaxTrait
                     }
                 }
 
-                $product->{$name.'_agg'} = $var;
+                $product->{$name . '_agg'} = $var;
             }
 
             $params['body'][] = $product;
@@ -222,19 +222,19 @@ trait ModuleAjaxTrait
         }
         $failed = [];
         foreach ($results['items'] as $result) {
-            if ((int) substr($result['index']['status'], 0, 1) !== 2) {
+            if ((int)substr($result['index']['status'], 0, 1) !== 2) {
                 preg_match(
                     '/(?P<index>[a-zA-Z]+)\_(?P<id_shop>\d+)\_(?P<id_lang>\d+)/',
                     $result['index']['_index'],
                     $details
                 );
                 $failed[] = [
-                    'id_lang'    => (int) $details['id_lang'],
-                    'id_shop'    => (int) $details['id_shop'],
-                    'id_product' => (int) $result['index']['_id'],
-                    'error'      => isset($result['index']['error']['reason'])
-                        ? $result['index']['error']['reason'].(isset($result['index']['error']['caused_by']['reason'])
-                            ? ' '.$result['index']['error']['caused_by']['reason']
+                    'id_lang' => (int)$details['id_lang'],
+                    'id_shop' => (int)$details['id_shop'],
+                    'id_product' => (int)$result['index']['_id'],
+                    'error' => isset($result['index']['error']['reason'])
+                        ? $result['index']['error']['reason'] . (isset($result['index']['error']['caused_by']['reason'])
+                            ? ' ' . $result['index']['error']['caused_by']['reason']
                             : '')
                         : 'Unknown error',
                 ];
@@ -243,12 +243,12 @@ trait ModuleAjaxTrait
         if (!empty($failed)) {
             foreach ($failed as $failure) {
                 foreach ($products as $index => $product) {
-                    if ((int) $product->id === (int) $failure['id_product']
-                        && (int) $product->elastic_id_shop === (int) $failure['id_shop']
-                        && (int) $product->elastic_id_lang === (int) $failure['id_lang']
+                    if ((int)$product->id === (int)$failure['id_product']
+                        && (int)$product->elastic_id_shop === (int)$failure['id_shop']
+                        && (int)$product->elastic_id_lang === (int)$failure['id_lang']
                     ) {
                         try {
-                            Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
+                            Db::getInstance()->execute('INSERT INTO `' . _DB_PREFIX_ . "elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `error`) VALUES ('{$failed['id_product']}', '{$failed['id_lang']}', '{$failed['id_shop']}', '{$failed['error']}') ON DUPLICATE KEY UPDATE `error` = VALUES(`error`)");
                         } catch (\PrestaShopException $e) {
                             \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
                         }
@@ -262,12 +262,12 @@ trait ModuleAjaxTrait
         // Insert index status into database
         $values = '';
         foreach ($products as &$product) {
-            $values .=  "('{$product->id}', '{$product->elastic_id_lang}', '{$this->context->shop->id}', '{$product->{$dateUpdAlias}}', ''),";
+            $values .= "('{$product->id}', '{$product->elastic_id_lang}', '{$this->context->shop->id}', '{$product->{$dateUpdAlias}}', ''),";
         }
         $values = rtrim($values, ',');
         if ($values) {
             try {
-                Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_."elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
+                Db::getInstance()->execute('INSERT INTO `' . _DB_PREFIX_ . "elasticsearch_index_status` (`id_product`,`id_lang`,`id_shop`, `date_upd`, `error`) VALUES $values ON DUPLICATE KEY UPDATE `date_upd` = VALUES(`date_upd`), `error` = ''");
             } catch (\PrestaShopException $e) {
                 \Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
             }
@@ -275,11 +275,11 @@ trait ModuleAjaxTrait
 
         // Response status
         die(json_encode([
-            'success'  => true,
-            'indexed'  => IndexStatus::getIndexed(null, $this->context->shop->id),
-            'total'    => (int) IndexStatus::countProducts(null, $this->context->shop->id),
+            'success' => true,
+            'indexed' => IndexStatus::getIndexed(null, $this->context->shop->id),
+            'total' => (int)IndexStatus::countProducts(null, $this->context->shop->id),
             'nbErrors' => count($failed),
-            'errors'   => $failed,
+            'errors' => $failed,
         ]));
     }
 
@@ -313,7 +313,7 @@ trait ModuleAjaxTrait
         die(json_encode([
             'success' => true,
             'indexed' => IndexStatus::getIndexed(null, $idShop),
-            'total'   => (int) IndexStatus::countProducts(null, $idShop),
+            'total' => (int)IndexStatus::countProducts(null, $idShop),
         ]));
     }
 
@@ -325,7 +325,7 @@ trait ModuleAjaxTrait
         header('Content-Type: application/json; charset=utf-8');
         die(json_encode([
             'version' => $this->getElasticVersion(),
-            'errors'  => $this->context->controller->errors,
+            'errors' => $this->context->controller->errors,
         ]));
     }
 }
