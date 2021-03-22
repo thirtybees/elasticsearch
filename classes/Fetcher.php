@@ -615,17 +615,9 @@ class Fetcher
      * @param int $idLang
      *
      * @return string
-     * @throws PrestaShopException
      */
     public static function getCategoryPath($idCategory, $idLang)
     {
-        if (!static::$avoidCategories) {
-            static::$avoidCategories = [
-                Configuration::get('PS_HOME_CATEGORY'),
-                Configuration::get('PS_ROOT_CATEGORY'),
-            ];
-        }
-
         try {
             $interval = Category::getInterval($idCategory);
         } catch (PrestaShopException $e) {
@@ -647,7 +639,7 @@ class Fetcher
                         ->where('c.`nright` >= ' . (int)$interval['nright'])
                         ->where('cl.`id_lang` = ' . (int)$idLang)
                         ->where('c.`active` = 1')
-                        ->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::$avoidCategories)) . ')')
+                        ->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::getCategoriesToAvoid())) . ')')
                         ->orderBy('c.`level_depth` ASC')
                 );
 
@@ -936,24 +928,15 @@ class Fetcher
         }
         $idLang = (int)$idLang;
 
-        // Avoid these categories (root and home)
-        static $avoidCategories = null;
-        if (!$avoidCategories) {
-            $avoidCategories = [
-                Configuration::get('PS_HOME_CATEGORY'),
-                Configuration::get('PS_ROOT_CATEGORY'),
-            ];
-        }
         // Cached category paths
-        static $cachedCategoryPaths = [];
-        if (!array_key_exists($idLang, $cachedCategoryPaths)) {
-            $cachedCategoryPaths[$idLang] = [];
+        if (!array_key_exists($idLang, static::$cachedCategoryPaths)) {
+            static::$cachedCategoryPaths[$idLang] = [];
         }
 
         $categoryPaths = [];
-        $intervals = array_filter(array_map(function ($idCategory) use (&$categoryPaths, $idLang, $cachedCategoryPaths) {
-            if (!empty($cachedCategoryPaths[$idLang][(int)$idCategory])) {
-                $categoryPaths[] = $cachedCategoryPaths[$idLang][(int)$idCategory];
+        $intervals = array_filter(array_map(function ($idCategory) use (&$categoryPaths, $idLang) {
+            if (!empty(static::$cachedCategoryPaths[$idLang][(int)$idCategory])) {
+                $categoryPaths[] = static::$cachedCategoryPaths[$idLang][(int)$idCategory];
                 return null;
             }
 
@@ -970,12 +953,11 @@ class Fetcher
             $sql->leftJoin('category_lang', 'cl', 'c.id_category = cl.id_category AND id_lang = ' . (int)$idLang . Shop::addSqlRestrictionOnLang('cl'));
             $sql->where('c.`nleft` <= ' . (int)$interval['nleft']);
             $sql->where('c.`nright` >= ' . (int)$interval['nright']);
-            $sql->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::$avoidCategories)) . ')');
+            $sql->where('c.`id_category` NOT IN (' . implode(',', array_map('intval', static::getCategoriesToAvoid())) . ')');
             $sql->orderBy('c.`level_depth`');
 
             $result = implode(' /// ', array_column((array)Db::getInstance(_PS_USE_SQL_SLAVE_)->executeS($sql), 'name'));
             static::$cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
-            $cachedCategoryPaths[$idLang][$interval['id_category']] = $result;
             $categoryPaths[] = $result;
         }
 
@@ -1283,7 +1265,7 @@ class Fetcher
                 JOIN `' . _DB_PREFIX_ . 'attribute` a ON (a.`id_attribute` = pac.`id_attribute`)
                 JOIN `' . _DB_PREFIX_ . 'attribute_lang` al ON (a.`id_attribute` = al.`id_attribute` AND al.`id_lang` = ' . (int)$idLang . ')
                 JOIN `' . _DB_PREFIX_ . 'attribute_group` ag ON (a.id_attribute_group = ag.`id_attribute_group`)
-                WHERE pa.`id_product` IN (' . implode(array_map('intval', $products), ',') . ') AND ag.`is_color_group` = 1
+                WHERE pa.`id_product` IN (' . implode(',',  array_map('intval', $products)) . ') AND ag.`is_color_group` = 1
                 GROUP BY pa.`id_product`, a.`id_attribute`
                 ORDER BY al.`name` ASC;'
             )
@@ -1312,5 +1294,20 @@ class Fetcher
         }
 
         return $colors;
+    }
+
+    /**
+     * @return array
+     * @throws PrestaShopException
+     */
+    protected static function getCategoriesToAvoid()
+    {
+        if (is_null(static::$avoidCategories)) {
+            static::$avoidCategories = [
+                Configuration::get('PS_HOME_CATEGORY'),
+                Configuration::get('PS_ROOT_CATEGORY'),
+            ];
+        }
+        return static::$avoidCategories;
     }
 }
