@@ -775,32 +775,7 @@ class Fetcher
      */
     protected static function generateImageLinkLarge($product, $idLang)
     {
-        $link = new Link();
-        try {
-            $cover = Image::getCover($product->id);
-        } catch (PrestaShopException $e) {
-            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-            return '';
-        }
-
-        try {
-            if ($cover['id_image']) {
-                $imageLink = $link->getImageLink(
-                    $product->link_rewrite[$idLang],
-                    $cover['id_image'],
-                    ImageType::getFormatedName('large')
-                );
-            } else {
-                $imageLink = Tools::getHttpHost() . _THEME_PROD_DIR_ . 'en-default-large_default.jpg';
-            }
-        } catch (PrestaShopException $e) {
-            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-            return '';
-        }
-
-        return $imageLink;
+        return static::resolveImage($product, $idLang, 'large');
     }
 
     /**
@@ -814,32 +789,34 @@ class Fetcher
      */
     protected static function generateImageLinkSmall($product, $idLang)
     {
+        return static::resolveImage($product, $idLang, 'small');
+    }
+
+    /**
+     * Returns product image
+     *
+     * @param Product $product
+     * @param int $idLang
+     * @param string $type
+     * @return string
+     * @throws PrestaShopException
+     */
+    protected static function resolveImage($product, $idLang, $type)
+    {
         $link = new Link();
         try {
             $cover = Image::getCover($product->id);
-        } catch (PrestaShopException $e) {
-            Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-            return '';
-        }
-
-        try {
-            if ($cover['id_image']) {
-                $imageLink = $link->getImageLink(
+            if (is_array($cover) && isset($cover['id_image']) && $cover['id_image']) {
+                return $link->getImageLink(
                     $product->link_rewrite[$idLang],
                     $cover['id_image'],
-                    ImageType::getFormatedName('small')
+                    ImageType::getFormatedName($type)
                 );
-            } else {
-                $imageLink = Tools::getHttpHost() . _THEME_PROD_DIR_ . 'en-default-small_default.jpg';
             }
-        } catch (PrestaShopException $e) {
+        } catch (Exception $e) {
             Logger::addLog("Elasticsearch module error: {$e->getMessage()}");
-
-            return '';
         }
-
-        return $imageLink;
+        return '';
     }
 
     /**
