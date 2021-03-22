@@ -52,36 +52,6 @@ class Indexer
     }
 
     /**
-     * @param $idLang
-     * @return array
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     */
-    private function getCategories($idLang)
-    {
-        $cats = Category::getNestedCategories(null, $idLang);
-
-        $results = [];
-        $this->getNestedCats($cats, [], $results, $idLang);
-
-        $results = array_map(
-            function ($cat) {
-                $newCategory = $cat[count($cat) - 1];
-                $path = $cat;
-                array_pop($path);
-
-                $path[] = $newCategory['name'];
-                $newCategory['path'] = implode(' / ', $path);
-
-                return $newCategory;
-            },
-            $results
-        );
-
-        return $results;
-    }
-
-    /**
      * Get nested categories
      *
      * @param $cats
