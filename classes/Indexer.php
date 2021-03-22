@@ -138,6 +138,7 @@ class Indexer
      * @param int[]|null $idShops
      *
      * @throws PrestaShopException
+     * @throws Exception
      */
     public static function createMappings($idLangs = null, $idShops = null)
     {
@@ -199,6 +200,22 @@ class Indexer
         if (!$client) {
             return;
         }
+
+        if (version_compare(Elasticsearch::getElasticVersion(), '7.0', '<')) {
+            $mappings = [
+                'product' => [
+                    '_source' => [
+                        'enabled' => true,
+                    ],
+                    'properties' => $properties,
+                ]
+            ];
+        } else {
+            $mappings = [
+                'properties' => $properties
+            ];
+        }
+
         foreach ($idShops as $idShop) {
             foreach ($idLangs as $idLang) {
                 $params = [
@@ -210,9 +227,7 @@ class Indexer
                                 'number_of_replicas' => (int)Configuration::get(Elasticsearch::REPLICAS),
                             ]
                         ],
-                        'mappings' => [
-                            'properties' => $properties,
-                        ],
+                        'mappings' => $mappings
                     ],
                 ];
 

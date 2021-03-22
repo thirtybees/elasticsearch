@@ -104,10 +104,16 @@ class Elasticsearch extends Module
         'tr' => '_turkish_',
     ];
 
-    /** @var Client $readClient */
-    protected static $readClient;
     /** @var Client $writeClient */
     protected static $writeClient;
+
+    /**
+     * Cached version of elastic search server version
+     *
+     * @var string
+     */
+    private static $elasticSearchVersion = null;
+
     /**
      * Hooks
      *
@@ -118,6 +124,7 @@ class Elasticsearch extends Module
         'displayLeftColumn',
         'displayRightColumn',
     ];
+
 
     /**
      * ElasticSearch constructor.
@@ -1063,32 +1070,19 @@ class Elasticsearch extends Module
      * Get ElasticSearch version
      *
      * @return string
+     * @throws Exception
      */
-    protected function getElasticVersion()
+    public static function getElasticVersion()
     {
-        $client = static::getClient();
-
-        if (isset($client)) {
-            try {
-                $stats = $client->cluster()->stats();
-
-                if (isset($stats['nodes']['versions'])) {
-                    $clusterStats = $client->cluster()->stats();
-
-                    return (string)min($clusterStats['nodes']['versions']);
-                }
-            } catch (Exception $e) {
-                $context = Context::getContext();
-                if (isset($context->employee->id) && $context->employee->id) {
-                    $context->controller->errors[] = sprintf(
-                        $this->l('Unable to initialize Elasticsearch: %s'),
-                        strip_tags($e->getMessage())
-                    );
-                }
+        if (is_null(static::$elasticSearchVersion)) {
+            $stats = static::getClient()->cluster()->stats();
+            if (isset($stats['nodes']['versions'])) {
+                static::$elasticSearchVersion = (string)min($stats['nodes']['versions']);
+            } else {
+                throw new Exception("Failed to resolve elastic search server version");
             }
         }
-
-        return $this->l('Unknown');
+        return static::$elasticSearchVersion;
     }
 
     /**

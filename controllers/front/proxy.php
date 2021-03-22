@@ -84,11 +84,15 @@ class ElasticsearchproxyModuleFrontController extends ModuleFrontController
     {
         $idShop = (int) Context::getContext()->shop->id;
         $idLang = (int) Context::getContext()->language->id;
-        $results = $this->client->search([
+        $request = [
             'index' => Configuration::get(Elasticsearch::INDEX_PREFIX)."_{$idShop}_{$idLang}",
             'body'  => json_decode(file_get_contents('php://input')),
-        ]);
+        ];
 
-        return $results;
+        try {
+            return $this->client->search($request);
+        } catch (Exception $e) {
+            return [];
+        }
     }
 }

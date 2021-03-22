@@ -46,6 +46,7 @@ if (!defined('_TB_VERSION_')) {
  */
 trait ModuleAjaxTrait
 {
+
     /**
      * Ajax process save module settings
      * @throws HTMLPurifier_Exception
@@ -126,6 +127,15 @@ trait ModuleAjaxTrait
                 'success' => false,
             ]));
         }
+
+        $version = static::getElasticVersion();
+        $extra = [];
+        if (version_compare($version, '7.0', '<')) {
+            $extra = [
+                '_type' => 'product'
+            ];
+        }
+
         $input = json_decode(file_get_contents('php://input'), true);
         try {
             $amount = (int)(isset($input['amount'])
@@ -174,10 +184,10 @@ trait ModuleAjaxTrait
         ];
         foreach ($products as &$product) {
             $params['body'][] = [
-                'index' => [
+                'index' => array_merge($extra, [
                     '_index' => "{$index}_{$idShop}_{$product->elastic_id_lang}",
                     '_id'     => $product->id,
-                ],
+                ]),
             ];
 
             // Process prices for customer groups
@@ -334,9 +344,20 @@ trait ModuleAjaxTrait
     public function ajaxProcessGetElasticsearchVersion()
     {
         header('Content-Type: application/json; charset=utf-8');
-        die(json_encode([
-            'version' => $this->getElasticVersion(),
-            'errors' => $this->context->controller->errors,
-        ]));
+        try {
+            die(json_encode([
+                'version' => static::getElasticVersion()
+            ]));
+        } catch (Exception $e) {
+            die(json_encode([
+                'version' => $this->l('Unknown'),
+                'errors' => [
+                    sprintf(
+                        $this->l('Unable to initialize Elasticsearch: %s'),
+                        strip_tags($e->getMessage())
+                    )
+                ]
+            ]));
+        }
     }
 }
