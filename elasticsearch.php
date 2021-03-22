@@ -104,8 +104,8 @@ class Elasticsearch extends Module
         'tr' => '_turkish_',
     ];
 
-    /** @var Client $writeClient */
-    protected static $writeClient;
+    /** @var Client $client */
+    protected static $client;
 
     /**
      * Cached version of elastic search server version
@@ -755,16 +755,21 @@ class Elasticsearch extends Module
      */
     public static function getClient()
     {
-        if (!isset(static::$writeClient)) {
+        if (!isset(static::$client)) {
             try {
                 $client = ClientBuilder::create()
                     ->setHosts(static::getWriteHosts())
                     ->build();
 
                 // Check connection, throws an exception if something's wrong
-                $client->cluster()->stats();
+                $stats = $client->cluster()->stats();
+                if (isset($stats['nodes']['versions'])) {
+                    static::$elasticSearchVersion = (string)min($stats['nodes']['versions']);
+                } else {
+                    throw new Exception("Failed to resolve elastic search version");
+                }
 
-                static::$writeClient = $client;
+                static::$client = $client;
             } catch (Exception $e) {
                 $context = Context::getContext();
                 if (isset($context->employee->id) && $context->employee->id) {
@@ -774,7 +779,7 @@ class Elasticsearch extends Module
             }
         }
 
-        return static::$writeClient;
+        return static::$client;
     }
 
     /**
@@ -1075,10 +1080,8 @@ class Elasticsearch extends Module
     public static function getElasticVersion()
     {
         if (is_null(static::$elasticSearchVersion)) {
-            $stats = static::getClient()->cluster()->stats();
-            if (isset($stats['nodes']['versions'])) {
-                static::$elasticSearchVersion = (string)min($stats['nodes']['versions']);
-            } else {
+            static::getClient();
+            if (is_null(static::$elasticSearchVersion)) {
                 throw new Exception("Failed to resolve elastic search server version");
             }
         }
