@@ -139,6 +139,7 @@ class Elasticsearch extends Module
         $this->tab = 'front_office_features';
 
         $this->bootstrap = true;
+        $this->need_instance = false;
 
         parent::__construct();
 
